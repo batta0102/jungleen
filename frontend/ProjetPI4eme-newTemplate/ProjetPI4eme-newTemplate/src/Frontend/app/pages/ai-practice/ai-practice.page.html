@@ -1,0 +1,379 @@
+<div class="ai-practice">
+
+  <!-- ═══════════════ TOP BAR ═══════════════ -->
+  <div class="top-bar">
+    <!-- Memory / streak badge -->
+    @if (userMemory(); as mem) {
+      <div class="user-badge">
+        <span class="streak-icon">🔥</span>
+        <span class="streak-count">{{ mem.streakDays }}d</span>
+        <span class="divider">|</span>
+        <span class="session-label">Session #{{ mem.sessionCount }}</span>
+        <span class="divider">|</span>
+        <span class="level-badge" [attr.data-level]="mem.skillLevel">{{ mem.skillLevel }}</span>
+      </div>
+    }
+
+    <!-- Mode Toggle -->
+    <div class="mode-toggle">
+      <button class="mode-btn" [class.active]="mode() === 'chat'" (click)="switchMode('chat')">
+        <span class="mode-icon">💬</span> Chat
+      </button>
+      <button class="mode-btn" [class.active]="mode() === 'voice'" (click)="switchMode('voice')">
+        <span class="mode-icon">🎤</span> Voice
+      </button>
+      <button class="mode-btn script-btn" [class.active]="mode() === 'script'" (click)="switchMode('script')">
+        <span class="mode-icon">📖</span> Script
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════════ ANIMATED AVATAR ═══════════════ -->
+  <div class="ai-header">
+    <div
+      class="ai-avatar"
+      [class.speaking]="isSpeaking()"
+      [class.thinking]="avatarEmotion() === 'thinking'"
+      [class.celebrating]="avatarEmotion() === 'celebrating'"
+      [class.happy]="avatarEmotion() === 'happy'">
+
+      <!-- Lottie ambient effects layer -->
+      <div class="lottie-layer" #lottieContainer></div>
+
+      <!-- Outer ring -->
+      <div class="avatar-ring">
+        <svg viewBox="0 0 120 120">
+          <circle class="ring-bg" cx="60" cy="60" r="54" />
+          <circle class="ring-progress" cx="60" cy="60" r="54"
+            [style.stroke-dashoffset]="340 - (340 * scriptProgress() / 100)" />
+        </svg>
+      </div>
+
+      <!-- Character body -->
+      <div class="avatar-body">
+        <!-- Jungle leaf accessories -->
+        <div class="leaf left-leaf">🌿</div>
+        <div class="leaf right-leaf">🍃</div>
+
+        <!-- Face -->
+        <div class="avatar-face">
+          <div class="eyebrow left-brow"></div>
+          <div class="eyebrow right-brow"></div>
+          <div class="eye left-eye">
+            <div class="pupil"></div>
+            <div class="eye-shine"></div>
+          </div>
+          <div class="eye right-eye">
+            <div class="pupil"></div>
+            <div class="eye-shine"></div>
+          </div>
+          <div class="nose"></div>
+          <div class="mouth" [class.talking]="isSpeaking()" [class.smile]="avatarEmotion() === 'happy' || avatarEmotion() === 'celebrating'"></div>
+        </div>
+
+        <!-- Emotion particles -->
+        @if (avatarEmotion() === 'celebrating') {
+          <div class="confetti">
+            <span>⭐</span><span>🎉</span><span>✨</span><span>🌟</span><span>💫</span>
+          </div>
+        }
+        @if (avatarEmotion() === 'thinking') {
+          <div class="thought-bubbles">
+            <span class="bubble b1"></span>
+            <span class="bubble b2"></span>
+            <span class="bubble b3"></span>
+          </div>
+        }
+      </div>
+
+      <div class="avatar-glow"></div>
+    </div>
+
+    <h1 class="ai-title">Jungle English Tutor</h1>
+    @if (userMemory(); as mem) {
+      <p class="ai-subtitle">{{ mem.totalMessages }} messages together · Level: {{ mem.skillLevel }}</p>
+    } @else {
+      <p class="ai-subtitle">Your personal AI reading companion</p>
+    }
+  </div>
+
+  <!-- ═══════════════ CHAT / VOICE MODE ═══════════════ -->
+  @if (mode() === 'chat' || mode() === 'voice') {
+
+    <!-- Chat Messages -->
+    <div class="chat-area" #chatContainer>
+      @for (msg of messages(); track msg.timestamp) {
+        <div class="message" [class.user]="msg.role === 'user'" [class.assistant]="msg.role === 'assistant'">
+          @if (msg.role === 'assistant') {
+            <div class="msg-avatar tutor-avatar">
+              <span>🦜</span>
+            </div>
+          }
+
+          <div class="msg-bubble">
+            <p class="msg-text">{{ msg.content }}</p>
+
+            @if (msg.corrections.length > 0) {
+              <div class="corrections">
+                @for (c of msg.corrections; track c.original) {
+                  <div class="correction-card">
+                    <div class="correction-header">✏️ Correction</div>
+                    <div class="correction-body">
+                      <span class="wrong">{{ c.original }}</span>
+                      <span class="arrow">→</span>
+                      <span class="right">{{ c.corrected }}</span>
+                    </div>
+                    <p class="correction-explanation">{{ c.explanation }}</p>
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- Speak button for assistant messages -->
+            @if (msg.role === 'assistant') {
+              <button class="speak-btn" (click)="speak(msg.content)" title="Listen">
+                🔊
+              </button>
+            }
+          </div>
+
+          @if (msg.role === 'user') {
+            <div class="msg-avatar user-avatar">
+              <span>👤</span>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Typing indicator -->
+      @if (isLoading()) {
+        <div class="message assistant">
+          <div class="msg-avatar tutor-avatar"><span>🦜</span></div>
+          <div class="msg-bubble typing">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Input Area -->
+    <div class="input-area">
+      @if (mode() === 'voice') {
+        <div class="voice-controls">
+          <button
+            class="record-btn"
+            [class.recording]="isRecording()"
+            (click)="toggleRecording()">
+            @if (isRecording()) {
+              <div class="wave-bars">
+                <span></span><span></span><span></span><span></span><span></span>
+              </div>
+              Stop
+            } @else {
+              🎤 Tap to Speak
+            }
+          </button>
+        </div>
+      } @else {
+        <div class="chat-input">
+          <input
+            type="text"
+            placeholder="Type your message in English..."
+            [value]="inputText()"
+            (input)="onInputChange($event)"
+            (keydown)="onKeyDown($event)"
+            [disabled]="isLoading()" />
+          <button
+            class="send-btn"
+            (click)="handleSend()"
+            [disabled]="!inputText().trim() || isLoading()">
+            ➤
+          </button>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ═══════════════ SCRIPT READING MODE ═══════════════ -->
+  @if (mode() === 'script') {
+
+    @if (showScriptPicker() && !currentScript()) {
+      <!-- Script Picker -->
+      <div class="script-picker">
+        <h2 class="picker-title">📖 Choose a Script to Practice</h2>
+        <p class="picker-subtitle">Read along with the AI tutor, practice your pronunciation, and get instant feedback!</p>
+
+        <!-- Custom topic -->
+        <div class="custom-topic">
+          <input
+            type="text"
+            placeholder="Or type a custom topic (e.g. 'booking a hotel')..."
+            [value]="scriptTopicInput()"
+            (input)="onTopicInput($event)"
+            (keydown.enter)="generateNewScript()" />
+          <button class="generate-btn" (click)="generateNewScript()" [disabled]="isGeneratingScript()">
+            @if (isGeneratingScript()) {
+              <div class="mini-spinner"></div> Generating...
+            } @else {
+              ✨ Generate
+            }
+          </button>
+        </div>
+
+        <!-- Quick topics -->
+        <div class="quick-topics">
+          @for (t of getQuickScriptTopics(); track t.topic) {
+            <button class="topic-card" (click)="generateNewScript(t.topic)" [disabled]="isGeneratingScript()">
+              <span class="topic-icon">{{ t.icon }}</span>
+              <span class="topic-label">{{ t.label }}</span>
+            </button>
+          }
+        </div>
+      </div>
+
+    } @else if (currentScript(); as script) {
+
+      <!-- Script Reader -->
+      <div class="script-reader" #scriptContainer>
+
+        <!-- Script Header -->
+        <div class="script-header">
+          <button class="back-btn" (click)="backToScriptPicker()">← Back</button>
+          <div class="script-info">
+            <h2 class="script-title">{{ script.title }}</h2>
+            <p class="script-desc">{{ script.description }}</p>
+          </div>
+          <div class="script-progress-badge">
+            {{ currentLineIndex() + 1 }}/{{ script.lines.length }}
+          </div>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="script-progress-bar">
+          <div class="progress-fill" [style.width.%]="scriptProgress()"></div>
+        </div>
+
+        <!-- Script Lines Display -->
+        <div class="script-lines">
+          @for (line of script.lines; track $index; let i = $index) {
+            <div
+              class="script-line"
+              [class.active]="i === currentLineIndex()"
+              [class.completed]="i < currentLineIndex() || getScoreForLine(i)"
+              [class.tutor-line]="line.speaker === 'tutor'"
+              [class.student-line]="line.speaker === 'student'">
+
+              <!-- Speaker badge -->
+              <div class="line-speaker">
+                @if (line.speaker === 'tutor') {
+                  <span class="speaker-icon">🦜</span>
+                  <span class="speaker-name">Tutor</span>
+                } @else {
+                  <span class="speaker-icon">🎯</span>
+                  <span class="speaker-name">You</span>
+                }
+              </div>
+
+              <!-- Line text -->
+              <div class="line-content">
+                <p class="line-text">{{ line.text }}</p>
+
+                @if (line.hint && i === currentLineIndex()) {
+                  <p class="line-hint">💡 {{ line.hint }}</p>
+                }
+
+                <!-- Score display (if already scored) -->
+                @if (getScoreForLine(i); as scoreData) {
+                  <div class="line-score" [class.great]="scoreData.score >= 80" [class.ok]="scoreData.score >= 50 && scoreData.score < 80" [class.low]="scoreData.score < 50">
+                    <div class="score-badge">{{ scoreData.score }}%</div>
+                    <span class="score-feedback">{{ scoreData.feedback }}</span>
+                  </div>
+                }
+
+                <!-- What user said -->
+                @if (getScoreForLine(i) && lastSpokenText() && i === currentLineIndex()) {
+                  <div class="spoken-text">
+                    <span class="spoken-label">You said:</span>
+                    <span class="spoken-content">{{ lastSpokenText() }}</span>
+                  </div>
+                }
+              </div>
+
+              <!-- Line number -->
+              <div class="line-number">{{ i + 1 }}</div>
+            </div>
+          }
+        </div>
+
+        <!-- Script Controls -->
+        <div class="script-controls">
+          @if (currentLine(); as line) {
+            @if (line.speaker === 'tutor') {
+              <button class="ctrl-btn listen-btn" (click)="tutorReadsLine()" [disabled]="isSpeaking()">
+                @if (isSpeaking()) {
+                  🔊 Speaking...
+                } @else {
+                  🔊 Listen
+                }
+              </button>
+              <button class="ctrl-btn next-btn" (click)="nextLine()">
+                Next →
+              </button>
+            } @else {
+              <button
+                class="ctrl-btn read-btn"
+                [class.recording]="isRecording()"
+                (click)="studentReadsLine()"
+                [disabled]="isRecording()">
+                @if (isRecording()) {
+                  <div class="wave-bars small">
+                    <span></span><span></span><span></span><span></span><span></span>
+                  </div>
+                  Listening...
+                } @else {
+                  🎤 Read This Line
+                }
+              </button>
+              @if (getScoreForLine(currentLineIndex())) {
+                <button class="ctrl-btn next-btn" (click)="nextLine()">
+                  @if (currentLineIndex() >= (currentScript()?.lines?.length ?? 0) - 1) {
+                    ✅ Finish
+                  } @else {
+                    Next →
+                  }
+                </button>
+              }
+            }
+
+            @if (currentLineIndex() > 0) {
+              <button class="ctrl-btn prev-btn" (click)="previousLine()">← Back</button>
+            }
+          }
+        </div>
+
+        <!-- Script Complete Overlay -->
+        @if (isScriptComplete()) {
+          <div class="script-complete-overlay">
+            <div class="complete-card">
+              <div class="complete-icon">🎉</div>
+              <h3>Script Complete!</h3>
+              <div class="final-score">
+                <div class="score-circle" [class.great]="averageScore() >= 80" [class.ok]="averageScore() >= 50" [class.low]="averageScore() < 50">
+                  {{ averageScore() }}%
+                </div>
+                <p>Average Score</p>
+              </div>
+              <div class="complete-actions">
+                <button class="ctrl-btn" (click)="backToScriptPicker()">📖 New Script</button>
+                <button class="ctrl-btn" (click)="switchMode('chat')">💬 Back to Chat</button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+
+</div>

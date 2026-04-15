@@ -1,0 +1,600 @@
+<div class="gami-admin">
+  <!-- Page header -->
+  <header class="gami-header">
+    <div>
+      <h1 class="gami-title">Gamification</h1>
+      <p class="gami-subtitle">Manage games, avatars, skins, and player engagement.</p>
+    </div>
+    @if (activeTab() === 'games') {
+      <button class="btn btn-primary" type="button" (click)="openPopup()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="8" y1="2" x2="8" y2="14"/><line x1="2" y1="8" x2="14" y2="8"/></svg>
+        New Game
+      </button>
+    }
+    @if (activeTab() === 'badges') {
+      <button class="btn btn-primary" type="button" (click)="openBadgePopup()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="8" y1="2" x2="8" y2="14"/><line x1="2" y1="8" x2="14" y2="8"/></svg>
+        New Badge
+      </button>
+    }
+  </header>
+
+  <!-- Tab navigation -->
+  <nav class="gami-tabs" aria-label="Gamification sections">
+    <button class="gami-tab" type="button"
+            [class.active]="activeTab() === 'games'"
+            (click)="setTab('games')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><circle cx="17" cy="10" r="1"/><circle cx="15" cy="13" r="1"/></svg>
+      Games
+    </button>
+    <button class="gami-tab" type="button"
+            [class.active]="activeTab() === 'avatars'"
+            (click)="setTab('avatars')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/></svg>
+      Avatars
+    </button>
+    <button class="gami-tab" type="button"
+            [class.active]="activeTab() === 'skins'"
+            (click)="setTab('skins')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      Skins
+    </button>
+    <button class="gami-tab" type="button"
+            [class.active]="activeTab() === 'badges'"
+            (click)="setTab('badges')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M9 18l-3 4"/><path d="M15 18l3 4"/><path d="M12 14v4"/></svg>
+      Badges
+    </button>
+  </nav>
+
+  <!-- Stats row -->
+  @if (activeTab() === 'games') {
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon games-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/></svg>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ games().length }}</div>
+          <div class="stat-label">Total Games</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon xword-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ crosswordCount() }}</div>
+          <div class="stat-label">Crosswords</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon xp-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ totalXpReward() }}</div>
+          <div class="stat-label">Total XP Reward</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon lb-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10l-1 9H8L7 4z"/><path d="M7 4c0 0-2 1-2 3s2 3 2 3"/><path d="M17 4c0 0 2 1 2 3s-2 3-2 3"/></svg>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ leaderboard.length }}</div>
+          <div class="stat-label">Leaderboard</div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Games Tab -->
+  @if (activeTab() === 'games') {
+    <div class="content-grid">
+      <!-- Games table card -->
+      <div class="card main-card">
+        <div class="card-header">
+          <h2 class="card-title">All Games</h2>
+          <span class="badge-count">{{ games().length }} items</span>
+        </div>
+        <div class="card-body table-body">
+          @if (loading()) {
+            <div class="empty-state">
+              <div class="spinner"></div>
+              <p>Loading games...</p>
+            </div>
+          } @else if (games().length === 0) {
+            <div class="empty-state">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.35"><rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/></svg>
+              <p>No games yet. Create your first game to get started.</p>
+              <button class="btn btn-primary" type="button" (click)="openPopup()">Create Game</button>
+            </div>
+          } @else {
+            <div class="games-table">
+              <div class="table-head">
+                <span>Title</span>
+                <span>Category</span>
+                <span>XP Reward</span>
+                <span>Timer</span>
+                <span class="col-actions">Actions</span>
+              </div>
+              @for (game of pagedGames(); track game.id) {
+                <div class="table-row">
+                  <div class="cell-title">
+                    <div class="game-icon-sm" [class]="game.category === 'Crossword' ? 'cat-crossword' : 'cat-other'">
+                      @if (game.category === 'Crossword') {
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                      } @else {
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="17" cy="10" r="1"/></svg>
+                      }
+                    </div>
+                    <div>
+                      <div class="game-name">{{ game.title }}</div>
+                      @if (game.description) {
+                        <div class="game-desc">{{ game.description }}</div>
+                      }
+                    </div>
+                  </div>
+                  <div>
+                    <span class="cat-pill" [class]="game.category === 'Crossword' ? 'cat-pill-crossword' : 'cat-pill-other'">
+                      {{ game.category }}
+                    </span>
+                  </div>
+                  <div class="xp-cell">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    {{ game.xpReward || 0 }} XP
+                  </div>
+                  <div>
+                    <span class="cat-pill">
+                      @if (game.timerDuration) {
+                        {{ game.timerDuration >= 60 ? (game.timerDuration / 60) + 'min' : game.timerDuration + 's' }}
+                      } @else {
+                        No timer
+                      }
+                    </span>
+                  </div>
+                  <div class="col-actions">
+                    <button class="icon-btn edit-btn" type="button" (click)="startEdit(game)" title="Edit">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </button>
+                    <button class="icon-btn delete-btn" type="button" (click)="deleteGame(game.id!)" title="Delete">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+
+            @if (games().length > gamesPageSize) {
+              <app-pagination
+                [currentPage]="gamesPage()"
+                [totalPages]="gamesPageCount()"
+                [totalItems]="games().length"
+                (pageChange)="setGamesPage($event)"
+              />
+            }
+          }
+        </div>
+      </div>
+
+      <!-- Leaderboard sidebar -->
+      <div class="card sidebar-card">
+        <div class="card-header">
+          <h2 class="card-title">Leaderboard</h2>
+          <span class="lb-trophy">🏆</span>
+        </div>
+        <div class="card-body">
+          <div class="lb-list">
+            @for (player of leaderboard; track player.rank) {
+              <div class="lb-entry">
+                <div class="lb-rank">
+                  @if (player.rank <= 3) {
+                    <span class="lb-medal">{{ player.rank === 1 ? '🥇' : player.rank === 2 ? '🥈' : '🥉' }}</span>
+                  } @else {
+                    <span class="lb-num">#{{ player.rank }}</span>
+                  }
+                </div>
+                <div class="lb-avatar">{{ player.avatar }}</div>
+                <div class="lb-info">
+                  <div class="lb-name">{{ player.name }}</div>
+                  <div class="lb-pts">{{ player.points.toLocaleString() }} pts</div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Avatars Tab -->
+  @if (activeTab() === 'avatars') {
+    <div class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Avatar Management</h2>
+        </div>
+        <div class="card-body">
+          <app-avatars></app-avatars>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Skins Tab -->
+  @if (activeTab() === 'skins') {
+    <div class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Skin Management</h2>
+        </div>
+        <div class="card-body">
+          <app-skins></app-skins>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Badges Tab -->
+  @if (activeTab() === 'badges') {
+    <!-- Badge Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon badge-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M9 18l-3 4"/><path d="M15 18l3 4"/></svg>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ badgeCount() }}</div>
+          <div class="stat-label">Total Badges</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon easy-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ easyBadgeCount() }}</div>
+          <div class="stat-label">Easy (L1-3)</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon mid-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ midBadgeCount() }}</div>
+          <div class="stat-label">Medium (L4-6)</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon hard-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ hardBadgeCount() }}</div>
+          <div class="stat-label">Hard (L7+)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Badges Table -->
+    <div class="content-grid">
+      <div class="card main-card">
+        <div class="card-header">
+          <h2 class="card-title">All Badges</h2>
+          <span class="badge-count">{{ badgeCount() }} items</span>
+        </div>
+        <div class="card-body table-body">
+          @if (badgesList().length === 0) {
+            <div class="empty-state">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.35"><circle cx="12" cy="8" r="6"/><path d="M9 18l-3 4"/><path d="M15 18l3 4"/></svg>
+              <p>No badges yet. Create your first badge to get started.</p>
+              <button class="btn btn-primary" type="button" (click)="openBadgePopup()">Create Badge</button>
+            </div>
+          } @else {
+            <div class="games-table">
+              <div class="table-head badge-table-head">
+                <span>Badge</span>
+                <span>Level</span>
+                <span>Image</span>
+                <span class="col-actions">Actions</span>
+              </div>
+              @for (b of pagedBadges(); track b.id) {
+                <div class="table-row badge-table-row">
+                  <div class="cell-title">
+                    <div class="game-icon-sm" [style.background]="levelColor(b.unlockLevel) + '1e'" [style.color]="levelColor(b.unlockLevel)">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M9 18l-3 4"/><path d="M15 18l3 4"/></svg>
+                    </div>
+                    <div>
+                      <div class="game-name">{{ b.name }}</div>
+                      <div class="game-desc">{{ b.description }}</div>
+                    </div>
+                  </div>
+                  <div>
+                    <span class="cat-pill" [style.background]="levelColor(b.unlockLevel) + '1e'" [style.color]="levelColor(b.unlockLevel)">
+                      Level {{ b.unlockLevel }}
+                    </span>
+                  </div>
+                  <div class="badge-img-cell">
+                    @if (b.imageUrl) {
+                      <img [src]="b.imageUrl" [alt]="b.name" class="badge-thumb" />
+                    } @else {
+                      <span class="badge-placeholder">🏅</span>
+                    }
+                  </div>
+                  <div class="col-actions">
+                    <button class="icon-btn edit-btn" type="button" (click)="startEditBadge(b)" title="Edit">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </button>
+                    <button class="icon-btn delete-btn" type="button" (click)="deleteBadge(b.id!)" title="Delete">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+
+            @if (badgesList().length > badgesPageSize) {
+              <app-pagination
+                [currentPage]="badgesPage()"
+                [totalPages]="badgesPageCount()"
+                [totalItems]="badgesList().length"
+                (pageChange)="setBadgesPage($event)"
+              />
+            }
+          }
+        </div>
+      </div>
+
+      <!-- Badge Tier Sidebar -->
+      <div class="card sidebar-card">
+        <div class="card-header">
+          <h2 class="card-title">Badge Tiers</h2>
+          <span class="lb-trophy">🏅</span>
+        </div>
+        <div class="card-body">
+          <div class="lb-list">
+            <div class="lb-entry">
+              <div class="lb-rank"><span class="lb-medal" style="color:#27ae60;">●</span></div>
+              <div class="lb-info">
+                <div class="lb-name">Easy (Level 1–3)</div>
+                <div class="lb-pts">{{ easyBadgeCount() }} badges</div>
+              </div>
+            </div>
+            <div class="lb-entry">
+              <div class="lb-rank"><span class="lb-medal" style="color:#f59e0b;">●</span></div>
+              <div class="lb-info">
+                <div class="lb-name">Medium (Level 4–6)</div>
+                <div class="lb-pts">{{ midBadgeCount() }} badges</div>
+              </div>
+            </div>
+            <div class="lb-entry">
+              <div class="lb-rank"><span class="lb-medal" style="color:#ef4444;">●</span></div>
+              <div class="lb-info">
+                <div class="lb-name">Hard (Level 7–10)</div>
+                <div class="lb-pts">{{ hardMidBadgeCount() }} badges</div>
+              </div>
+            </div>
+            <div class="lb-entry">
+              <div class="lb-rank"><span class="lb-medal" style="color:#8b5cf6;">●</span></div>
+              <div class="lb-info">
+                <div class="lb-name">Legendary (Level 11+)</div>
+                <div class="lb-pts">{{ hardHighBadgeCount() }} badges</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+
+<!-- Create Game Modal -->
+@if (showPopup()) {
+  <div class="modal-overlay" (click)="closePopup()">
+    <div class="modal-panel" (click)="$event.stopPropagation()">
+      <div class="modal-head">
+        <h2 class="modal-title">Create New Game</h2>
+        <button class="icon-btn" type="button" (click)="closePopup()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <form (ngSubmit)="createGame()" class="modal-form">
+        <div class="field">
+          <label for="newTitle">Title</label>
+          <input id="newTitle" [ngModel]="newGame().title" (ngModelChange)="updateNewGame('title', $event)"
+                 name="title" placeholder="Enter game title" required />
+        </div>
+        <div class="field">
+          <label for="newDesc">Description</label>
+          <textarea id="newDesc" [ngModel]="newGame().description" (ngModelChange)="updateNewGame('description', $event)"
+                    name="description" placeholder="Describe the game..." rows="3"></textarea>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="newCat">Category</label>
+            <select id="newCat" [ngModel]="newGame().category" (ngModelChange)="updateNewGame('category', $event)"
+                    name="category" required>
+              <option value="" disabled>Select category</option>
+              <option value="Crossword">Crossword</option>
+              <option value="Others">Others</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="newXp">XP Reward</label>
+            <input id="newXp" type="number" [ngModel]="newGame().xpReward" (ngModelChange)="updateNewGame('xpReward', $event)"
+                   name="xpReward" placeholder="0" min="0" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="newTimer">Timer</label>
+          <select id="newTimer" [ngModel]="newGame().timerDuration" (ngModelChange)="updateNewGame('timerDuration', +$event)"
+                  name="timerDuration">
+            <option [ngValue]="0">No timer</option>
+            <option [ngValue]="30">30 seconds</option>
+            <option [ngValue]="60">1 minute</option>
+            <option [ngValue]="180">3 minutes</option>
+            <option [ngValue]="300">5 minutes</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn" (click)="closePopup()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="!newGame().title || !newGame().category">
+            Create Game
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Edit Game Modal -->
+@if (editGame()) {
+  <div class="modal-overlay" (click)="editGame.set(null)">
+    <div class="modal-panel" (click)="$event.stopPropagation()">
+      <div class="modal-head">
+        <h2 class="modal-title">Edit Game</h2>
+        <button class="icon-btn" type="button" (click)="editGame.set(null)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <form (ngSubmit)="updateGame()" class="modal-form">
+        <div class="field">
+          <label for="editTitle">Title</label>
+          <input id="editTitle" [ngModel]="editGame()!.title" (ngModelChange)="updateEditGame('title', $event)"
+                 name="editTitle" required />
+        </div>
+        <div class="field">
+          <label for="editDesc">Description</label>
+          <textarea id="editDesc" [ngModel]="editGame()!.description" (ngModelChange)="updateEditGame('description', $event)"
+                    name="editDescription" rows="3"></textarea>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="editCat">Category</label>
+            <select id="editCat" [ngModel]="editGame()!.category" (ngModelChange)="updateEditGame('category', $event)"
+                    name="editCategory" required>
+              <option value="" disabled>Select category</option>
+              <option value="Crossword">Crossword</option>
+              <option value="Others">Others</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="editXp">XP Reward</label>
+            <input id="editXp" type="number" [ngModel]="editGame()!.xpReward" (ngModelChange)="updateEditGame('xpReward', $event)"
+                   name="editXpReward" min="0" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="editTimer">Timer</label>
+          <select id="editTimer" [ngModel]="editGame()!.timerDuration" (ngModelChange)="updateEditGame('timerDuration', +$event)"
+                  name="editTimerDuration">
+            <option [ngValue]="0">No timer</option>
+            <option [ngValue]="30">30 seconds</option>
+            <option [ngValue]="60">1 minute</option>
+            <option [ngValue]="180">3 minutes</option>
+            <option [ngValue]="300">5 minutes</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn" (click)="editGame.set(null)">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Create Badge Modal -->
+@if (showBadgePopup()) {
+  <div class="modal-overlay" (click)="closeBadgePopup()">
+    <div class="modal-panel" (click)="$event.stopPropagation()">
+      <div class="modal-head">
+        <h2 class="modal-title">Create New Badge</h2>
+        <button class="icon-btn" type="button" (click)="closeBadgePopup()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-form">
+        <div class="field">
+          <label for="badgeName">Name</label>
+          <input id="badgeName" [value]="newBadge().name" (input)="updateNewBadge('name', $any($event.target).value)"
+                 placeholder="e.g. Grammar Guru" />
+        </div>
+        <div class="field">
+          <label for="badgeDesc">Description</label>
+          <textarea id="badgeDesc" [value]="newBadge().description" (input)="updateNewBadge('description', $any($event.target).value)"
+                    placeholder="Describe how to earn this badge..." rows="3"></textarea>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="badgeLevel">Unlock Level</label>
+            <input id="badgeLevel" type="number" [value]="newBadge().unlockLevel" (input)="updateNewBadge('unlockLevel', +$any($event.target).value)"
+                   min="1" />
+          </div>
+          <div class="field">
+            <label for="badgeFile">Badge Image</label>
+            <input id="badgeFile" type="file" accept="image/*" (change)="onBadgeFileSelected($event)" />
+          </div>
+        </div>
+        @if (badgePreviewUrl()) {
+          <div style="text-align:center;margin-bottom:0.75rem;">
+            <img [src]="badgePreviewUrl()" alt="Preview" style="max-width:128px;max-height:128px;border-radius:12px;border:1px solid var(--jie-border);" />
+          </div>
+        }
+        <div class="modal-actions">
+          <button type="button" class="btn" (click)="closeBadgePopup()">Cancel</button>
+          <button type="button" class="btn btn-primary" (click)="createBadge()">
+            Create Badge
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Edit Badge Modal -->
+@if (editBadgeData()) {
+  <div class="modal-overlay" (click)="editBadgeData.set(null)">
+    <div class="modal-panel" (click)="$event.stopPropagation()">
+      <div class="modal-head">
+        <h2 class="modal-title">Edit Badge</h2>
+        <button class="icon-btn" type="button" (click)="editBadgeData.set(null)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-form">
+        <div class="field">
+          <label for="editBadgeName">Name</label>
+          <input id="editBadgeName" [value]="editBadgeData()!.name" (input)="updateEditBadgeField('name', $any($event.target).value)" />
+        </div>
+        <div class="field">
+          <label for="editBadgeDesc">Description</label>
+          <textarea id="editBadgeDesc" [value]="editBadgeData()!.description" (input)="updateEditBadgeField('description', $any($event.target).value)"
+                    rows="3"></textarea>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="editBadgeLevel">Unlock Level</label>
+            <input id="editBadgeLevel" type="number" [value]="editBadgeData()!.unlockLevel" (input)="updateEditBadgeField('unlockLevel', +$any($event.target).value)"
+                   min="1" />
+          </div>
+          <div class="field">
+            <label for="editBadgeFile">Badge Image</label>
+            <input id="editBadgeFile" type="file" accept="image/*" (change)="onEditBadgeFileSelected($event)" />
+          </div>
+        </div>
+        @if (editBadgePreviewUrl() || editBadgeData()!.imageUrl) {
+          <div style="text-align:center;margin-bottom:0.75rem;">
+            <img [src]="editBadgePreviewUrl() || editBadgeData()!.imageUrl" alt="Preview" style="max-width:128px;max-height:128px;border-radius:12px;border:1px solid var(--jie-border);" />
+          </div>
+        }
+        <div class="modal-actions">
+          <button type="button" class="btn" (click)="editBadgeData.set(null)">Cancel</button>
+          <button type="button" class="btn btn-primary" (click)="updateBadge()">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

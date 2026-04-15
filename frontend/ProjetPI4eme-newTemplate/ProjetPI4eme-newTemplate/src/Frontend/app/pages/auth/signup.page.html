@@ -1,0 +1,67 @@
+<div class="auth-wrap">
+  <div class="auth-card" aria-label="Signup form">
+    <div class="auth-logo-wrap">
+      <img class="auth-logo" src="/logojungle.png" alt="Jungle in English" />
+    </div>
+
+    <div class="auth-head">
+      <h1 class="auth-title">Sign Up</h1>
+      <p class="auth-subtitle">Join the Jungle in English community</p>
+    </div>
+
+    @if (error(); as msg) {
+      <div class="alert" role="alert">{{ msg }}</div>
+    }
+
+    @if (success(); as msg) {
+      <div class="success" role="status">{{ msg }}</div>
+    }
+
+    <form (ngSubmit)="submit()">
+    <div class="form-group">
+      <label for="firstName">First Name</label>
+      <input id="firstName" class="form-control" type="text" autocomplete="given-name" [ngModel]="firstName()" (ngModelChange)="firstName.set($event)" name="firstName" [disabled]="busy()" />
+    </div>
+
+    <div class="form-group">
+      <label for="lastName">Last Name</label>
+      <input id="lastName" class="form-control" type="text" autocomplete="family-name" [ngModel]="lastName()" (ngModelChange)="lastName.set($event)" name="lastName" [disabled]="busy()" />
+    </div>
+
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input id="email" class="form-control" type="email" autocomplete="email" [ngModel]="email()" (ngModelChange)="email.set($event)" name="email" required [disabled]="busy()" />
+    </div>
+
+    <div class="form-group">
+      <label for="username">Username</label>
+      <input id="username" class="form-control" type="text" autocomplete="username" [ngModel]="username()" (ngModelChange)="username.set($event)" name="username" required [disabled]="busy()" />
+    </div>
+
+    <div class="form-group">
+      <label for="role">I am a</label>
+      <select id="role" class="form-control" aria-label="Role" [ngModel]="role()" (ngModelChange)="role.set($event)" name="role" [disabled]="busy()">
+        <option value="student">Student</option>
+        <option value="teacher">Tutor</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input id="password" class="form-control" type="password" autocomplete="new-password" [ngModel]="password()" (ngModelChange)="password.set($event)" name="password" required [disabled]="busy()" />
+    </div>
+
+    <div class="form-group">
+      <label for="confirmPassword">Confirm Password</label>
+      <input id="confirmPassword" class="form-control" type="password" autocomplete="new-password" [ngModel]="confirmPassword()" (ngModelChange)="confirmPassword.set($event)" name="confirmPassword" required [disabled]="busy()" />
+    </div>
+
+    <button class="signup-btn" type="submit" [disabled]="busy()">Sign Up</button>
+    </form>
+
+    <div class="auth-foot">
+      <span>Already have an account?</span>
+      <a routerLink="/front/login">Log in</a>
+    </div>
+  </div>
+</div>

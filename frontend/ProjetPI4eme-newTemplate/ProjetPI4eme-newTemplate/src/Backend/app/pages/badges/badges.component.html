@@ -1,0 +1,113 @@
+<div class="badges-admin">
+  <div class="badges-toolbar">
+    <h3 class="badges-heading">Manage Badges</h3>
+    <button class="ba-btn ba-btn--primary" (click)="openPopup()">+ New Badge</button>
+  </div>
+
+  <!-- Create Popup -->
+  @if (showPopup()) {
+    <div class="ba-overlay">
+      <div class="ba-modal">
+        <h3 class="ba-modal__title">Create Badge</h3>
+        <form (ngSubmit)="create()">
+          <label class="ba-field">
+            <span class="ba-field__label">Name</span>
+            <input [value]="newBadge().name" (input)="updateNewBadge('name', $any($event.target).value)"
+                   class="ba-input" placeholder="e.g. Grammar Guru" required />
+          </label>
+          <label class="ba-field">
+            <span class="ba-field__label">Description</span>
+            <input [value]="newBadge().description" (input)="updateNewBadge('description', $any($event.target).value)"
+                   class="ba-input" placeholder="e.g. Reach level 5" />
+          </label>
+          <label class="ba-field">
+            <span class="ba-field__label">Unlock Level</span>
+            <input type="number" [value]="newBadge().unlockLevel" min="1"
+                   (input)="updateNewBadge('unlockLevel', +$any($event.target).value)"
+                   class="ba-input" />
+          </label>
+          <label class="ba-field">
+            <span class="ba-field__label">Image URL (optional)</span>
+            <input [value]="newBadge().imageUrl || ''" (input)="updateNewBadge('imageUrl', $any($event.target).value)"
+                   class="ba-input" placeholder="https://..." />
+          </label>
+          <div class="ba-modal__actions">
+            <button type="button" class="ba-btn" (click)="closePopup()">Cancel</button>
+            <button type="submit" class="ba-btn ba-btn--primary" [disabled]="!newBadge().name">Create</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Edit Popup -->
+  @if (editBadge(); as eb) {
+    <div class="ba-overlay">
+      <div class="ba-modal">
+        <h3 class="ba-modal__title">Edit Badge</h3>
+        <form (ngSubmit)="update()">
+          <label class="ba-field">
+            <span class="ba-field__label">Name</span>
+            <input [value]="eb.name" (input)="updateEditBadge('name', $any($event.target).value)"
+                   class="ba-input" required />
+          </label>
+          <label class="ba-field">
+            <span class="ba-field__label">Description</span>
+            <input [value]="eb.description" (input)="updateEditBadge('description', $any($event.target).value)"
+                   class="ba-input" />
+          </label>
+          <label class="ba-field">
+            <span class="ba-field__label">Unlock Level</span>
+            <input type="number" [value]="eb.unlockLevel" min="1"
+                   (input)="updateEditBadge('unlockLevel', +$any($event.target).value)"
+                   class="ba-input" />
+          </label>
+          <label class="ba-field">
+            <span class="ba-field__label">Image URL (optional)</span>
+            <input [value]="eb.imageUrl || ''" (input)="updateEditBadge('imageUrl', $any($event.target).value)"
+                   class="ba-input" />
+          </label>
+          <div class="ba-modal__actions">
+            <button type="button" class="ba-btn" (click)="editBadge.set(null)">Cancel</button>
+            <button type="submit" class="ba-btn ba-btn--primary">Update</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Badges Grid -->
+  @if (badges().length === 0) {
+    <div class="ba-empty">
+      <div class="ba-empty__icon">🏅</div>
+      <p>No badges yet. Create your first badge.</p>
+    </div>
+  } @else {
+    <div class="ba-grid">
+      @for (b of badges(); track b.id) {
+        <div class="ba-card">
+          <div class="ba-card__icon" [style.background]="levelColor(b.unlockLevel) + '18'" [style.color]="levelColor(b.unlockLevel)">
+            @if (b.imageUrl) {
+              <img [src]="b.imageUrl" [alt]="b.name" class="ba-card__img" />
+            } @else {
+              <span class="ba-card__emoji">🏅</span>
+            }
+          </div>
+          <div class="ba-card__body">
+            <div class="ba-card__name">{{ b.name }}</div>
+            <div class="ba-card__desc">{{ b.description }}</div>
+            <div class="ba-card__level">
+              <span class="ba-level-pill" [style.background]="levelColor(b.unlockLevel) + '22'" [style.color]="levelColor(b.unlockLevel)">
+                Level {{ b.unlockLevel }}
+              </span>
+            </div>
+          </div>
+          <div class="ba-card__actions">
+            <button class="ba-icon-btn" (click)="startEdit(b)" title="Edit">✏️</button>
+            <button class="ba-icon-btn" (click)="delete(b.id!)" title="Delete">🗑️</button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

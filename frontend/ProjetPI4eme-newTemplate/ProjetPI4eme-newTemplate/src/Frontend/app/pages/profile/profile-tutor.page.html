@@ -1,0 +1,44 @@
+<div class="container">
+  <header class="page-header">
+    <h1 class="page-title">Tutor Space</h1>
+    <p class="page-subtitle">Manage course content and support learners.</p>
+  </header>
+
+  <div class="profile-grid">
+    <section class="card">
+      <div class="card-body">
+        <div class="item-title">Personal information</div>
+        <p class="muted">Demo profile (no backend). Tutor tools appear inside course details.</p>
+
+        <div class="field">
+          <label for="role">Profile type</label>
+          <select id="role" [value]="role()" (change)="setRole(($any($event.target)).value)">
+            <option value="student">Student</option>
+            <option value="tutor">Tutor</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Name</label>
+          <input type="text" value="Tutor" disabled />
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" value="tutor@jungle.example" disabled />
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-body">
+        <div class="item-title">Quick links</div>
+        <p class="muted">Open any course and use the Tutor tools section to add chapters or sections.</p>
+        <div class="pill-row" style="margin-top: 0.75rem;">
+          <a class="btn" [routerLink]="['/trainings']">Courses</a>
+          <a class="btn" [routerLink]="['/events']">Events</a>
+          <a class="btn" [routerLink]="['/clubs']">Clubs</a>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

@@ -1,0 +1,180 @@
+<div class="container">
+  <header class="page-header">
+    <button class="btn btn-ghost" type="button" (click)="back()">Back to courses</button>
+
+    @if (training(); as t) {
+      <h1 class="page-title">{{ t.name }}</h1>
+      <p class="page-subtitle">Progress: {{ progress().completed }}/{{ progress().total }} ({{ progress().percent }}%)</p>
+    }
+  </header>
+
+  @if (training(); as t) {
+    <div class="grid grid-2">
+      <section class="card">
+        <div class="card-body">
+          <h2 class="section-title" style="margin-top: 0;">Learning objectives</h2>
+          <ul class="muted">
+            @for (obj of t.learningObjectives; track obj) {
+              <li>{{ obj }}</li>
+            }
+          </ul>
+
+          <div class="actions">
+            @if (enrolled()) {
+              <span class="pill">
+                Enrolled
+                @if (enrollmentMode() === 'onsite') {
+                  (On-site)
+                } @else if (enrollmentMode() === 'online') {
+                  (Online)
+                }
+              </span>
+            } @else {
+              <div class="enroll-block">
+                <div class="price-pair" aria-label="Prices">
+                  <div class="price-line"><span class="muted">Online</span><span class="price-value">{{ pricesTnd().online }} TND</span></div>
+                  <div class="price-line"><span class="muted">On-site</span><span class="price-value">{{ pricesTnd().onsite }} TND</span></div>
+                </div>
+
+                <button class="btn btn-primary" type="button" (click)="enroll('online')">Enroll Online</button>
+                <button class="btn" type="button" (click)="enroll('onsite')">Enroll On-site</button>
+              </div>
+            }
+
+            <button class="btn" type="button" (click)="downloadCertificate()" [disabled]="progress().percent < 100">Download certificate</button>
+            <button class="btn" type="button" (click)="toggleCertificateView()" [disabled]="progress().percent < 100">
+              @if (showCertificate()) {
+                Hide certificate
+              } @else {
+                View certificate
+              }
+            </button>
+          </div>
+          <p class="muted" style="margin: 0.5rem 0 0;">Certificate download is enabled when progress is 100%.</p>
+
+          @if (showCertificate() && progress().percent >= 100) {
+            <div class="content-panel" style="margin-top: 0.75rem;">
+              <pre class="cert-pre">{{ certificateContent() }}</pre>
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-body">
+          <h2 class="section-title" style="margin-top: 0;">Chapters</h2>
+          <p class="muted">Mark sections as complete, view content types, and track your progress.</p>
+        </div>
+      </section>
+    </div>
+
+    <section class="section" style="padding-top: 1.25rem;">
+      <div class="grid" style="gap: 1rem;">
+        @for (chapter of t.chapters; track chapter.id) {
+          <article class="card">
+            <div class="card-body">
+              <div class="chapter-title">{{ chapter.title }}</div>
+
+              @if (chapter.sections.length === 0) {
+                <p class="muted">No sections yet.</p>
+              } @else {
+                <div class="sections">
+                  @for (section of chapter.sections; track section.id) {
+                    <div class="section-row">
+                      <label class="check">
+                        <input
+                          type="checkbox"
+                          [checked]="data.isSectionComplete(t.id, chapter.id, section.id)"
+                          (change)="toggleSection(t.id, chapter.id, section.id, ($any($event.target)).checked)"
+                        />
+                        <span class="section-title">{{ section.title }}</span>
+                      </label>
+                      <button class="btn btn-ghost" type="button" (click)="toggleContent(t.id, chapter.id, section.id)">
+                        View content
+                      </button>
+                    </div>
+                    <div class="muted">{{ section.objective }}</div>
+                    <div class="pill-row">
+                      @for (ct of section.contentTypes; track ct) {
+                        <span class="pill">{{ ct }}</span>
+                      }
+                    </div>
+
+                    @if (isExpanded(t.id, chapter.id, section.id)) {
+                      <div class="content-panel">
+                        <div class="muted">Content placeholders:</div>
+                        <ul class="muted">
+                          @for (ct of section.contentTypes; track ct) {
+                            <li>@switch (ct) { @case ('video') { Video lesson } @case ('quiz') { Quiz } @default { Reading text } }</li>
+                          }
+                        </ul>
+                      </div>
+                    }
+                    <hr class="divider" />
+                  }
+                </div>
+              }
+            </div>
+          </article>
+        }
+      </div>
+    </section>
+
+    @if (role() === 'tutor') {
+      <section class="section" style="padding-top: 0;">
+        <div class="container" style="padding: 0;">
+          <h2 class="section-title">Tutor tools</h2>
+          <p class="section-lead">Add chapters and manage sections inside this training course.</p>
+
+          <div class="grid grid-2">
+            <div class="card">
+              <div class="card-body">
+                <h3 style="margin-top: 0;">Add chapter</h3>
+                <form [formGroup]="tutorChapterForm" (ngSubmit)="addChapter()" novalidate>
+                  <div class="field">
+                    <label for="ch-title">Chapter title</label>
+                    <input id="ch-title" type="text" formControlName="title" />
+                  </div>
+                  <button class="btn btn-primary" type="submit">Add chapter</button>
+                </form>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-body">
+                <h3 style="margin-top: 0;">Add section</h3>
+                <form [formGroup]="tutorSectionForm" (ngSubmit)="addSection()" novalidate>
+                  <div class="field">
+                    <label for="sec-ch">Chapter</label>
+                    <select id="sec-ch" formControlName="chapterId">
+                      <option value="" disabled>Select chapter</option>
+                      @for (ch of t.chapters; track ch.id) {
+                        <option [value]="ch.id">{{ ch.title }}</option>
+                      }
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="sec-title">Section title</label>
+                    <input id="sec-title" type="text" formControlName="title" />
+                  </div>
+                  <div class="field">
+                    <label for="sec-obj">Learning objective</label>
+                    <textarea id="sec-obj" formControlName="objective"></textarea>
+                  </div>
+                  <div class="pill-row" style="margin-bottom: 0.75rem;">
+                    <label class="pill"><input type="checkbox" formControlName="hasVideo" /> Video</label>
+                    <label class="pill"><input type="checkbox" formControlName="hasText" /> Text</label>
+                    <label class="pill"><input type="checkbox" formControlName="hasQuiz" /> Quiz</label>
+                  </div>
+                  <button class="btn btn-primary" type="submit">Add section</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    }
+  } @else {
+    <p class="muted">Course not found.</p>
+  }
+</div>

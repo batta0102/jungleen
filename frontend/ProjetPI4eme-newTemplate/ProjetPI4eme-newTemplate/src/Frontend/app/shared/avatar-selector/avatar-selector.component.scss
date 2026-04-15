@@ -1,0 +1,183 @@
+/* ── Avatar Selector (dark-theme, matches gamification page) ── */
+$teal: var(--jie-teal, #14b8a6);
+$surface: color-mix(in srgb, black 80%, #{$teal});
+$surface-hover: color-mix(in srgb, black 72%, #{$teal});
+$border: color-mix(in srgb, #{$teal} 35%, black);
+$text: color-mix(in srgb, white 90%, var(--jie-bg, #fff));
+$muted: color-mix(in srgb, white 65%, var(--jie-bg, #fff));
+
+.avatar-selector {
+  padding: 1.5rem;
+  border: 1px solid $border;
+  border-radius: 16px;
+  background: $surface;
+  max-width: 720px;
+  margin: 0 auto;
+  color: $text;
+}
+
+/* Tab Navigation */
+.tabs-nav {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 1.5rem;
+  padding: 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, black 88%, #{$teal});
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: $muted;
+  border-radius: 999px;
+  transition: all 0.2s;
+  white-space: nowrap;
+
+  &:hover { color: $text; background: rgba(255,255,255,0.06); }
+  &.active { background: $teal; color: #fff; }
+}
+
+/* Tab Content */
+.tab-content { min-height: 260px; }
+
+.as-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: $text;
+}
+
+/* Avatars */
+.avatar-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.avatar-card {
+  border: 2px solid transparent;
+  padding: 0.75rem 0.5rem;
+  background: color-mix(in srgb, black 70%, #{$teal});
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 14px;
+  transition: all 0.2s;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+    background: $surface-hover;
+  }
+  &.selected {
+    border-color: $teal;
+    box-shadow: 0 0 0 3px color-mix(in srgb, #{$teal} 35%, transparent);
+    background: color-mix(in srgb, #{$teal} 15%, black);
+  }
+}
+
+.avatar-img {
+  width: 76px;
+  height: 76px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid $border;
+}
+
+.avatar-type {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+  color: $muted;
+}
+
+/* Skins */
+.skin-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+.skin-item {
+  border: 1px solid $border;
+  padding: 0.85rem;
+  border-radius: 14px;
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  background: color-mix(in srgb, black 70%, #{$teal});
+  transition: all 0.2s;
+
+  &:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+}
+
+.skin-img {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid $border;
+}
+
+.skin-info { flex: 1; }
+
+.skin-name { font-weight: 700; margin-bottom: 0.2rem; }
+.skin-meta { font-size: 0.75rem; color: $muted; margin-bottom: 0.4rem; }
+.skin-actions { margin-top: 0.4rem; }
+
+.btn {
+  padding: 0.45rem 0.85rem;
+  border: 1px solid $border;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: color-mix(in srgb, black 74%, #{$teal});
+  color: $text;
+  transition: all 0.2s;
+
+  &:hover { background: $surface-hover; }
+
+  &.btn-sm { padding: 0.35rem 0.7rem; font-size: 0.78rem; }
+
+  &.btn-primary {
+    background: $teal;
+    color: #fff;
+    border-color: $teal;
+    &:hover { background: color-mix(in srgb, #{$teal} 85%, black); }
+  }
+  &.btn-success {
+    background: #10b981;
+    color: #fff;
+    border-color: #10b981;
+    cursor: default;
+    &:hover { background: #10b981; }
+  }
+}
+
+/* Empty States */
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: $muted;
+  font-style: italic;
+}
+
+.warning-msg {
+  padding: 0.85rem 1rem;
+  background: color-mix(in srgb, #fbbf24 20%, transparent);
+  border: 1px solid color-mix(in srgb, #fbbf24 50%, #{$teal});
+  border-radius: 10px;
+  color: #fde68a;
+  margin-bottom: 1rem;
+}
+

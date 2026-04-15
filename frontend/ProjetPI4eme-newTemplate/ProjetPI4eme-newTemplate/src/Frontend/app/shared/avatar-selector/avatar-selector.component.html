@@ -1,0 +1,150 @@
+<div class="avatar-selector">
+  <!-- Tab Navigation -->
+  <div class="tabs-nav">
+    <button type="button" 
+            class="tab-btn" 
+            [class.active]="activeTab() === 'avatars'"
+            (click)="setTab('avatars')">
+      Avatars
+    </button>
+    <button type="button" 
+            class="tab-btn" 
+            [class.active]="activeTab() === 'hoodies'"
+            (click)="setTab('hoodies')">
+      Hoodies
+    </button>
+    <button type="button" 
+            class="tab-btn" 
+            [class.active]="activeTab() === 'hats'"
+            (click)="setTab('hats')">
+      Hats
+    </button>
+    <button type="button" 
+            class="tab-btn" 
+            [class.active]="activeTab() === 'glasses'"
+            (click)="setTab('glasses')">
+      Glasses
+    </button>
+  </div>
+
+  <!-- Avatars Tab -->
+  <div *ngIf="activeTab() === 'avatars'" class="tab-content">
+    <h3 class="as-title">Choose Your Avatar</h3>
+    <div class="avatar-list">
+      <button *ngFor="let a of avatars()" type="button"
+              class="avatar-card"
+              [class.selected]="selectedAvatarId() === a.id"
+              (click)="selectAvatar(a.id!)">
+        <img [src]="a.imageUrl || '/logojungle.png'" 
+             alt="{{ a.type }}" 
+             class="avatar-img" />
+        <div class="avatar-type">{{ a.type }}</div>
+      </button>
+    </div>
+    <div *ngIf="avatars().length === 0" class="empty-state">
+      No avatars available yet.
+    </div>
+  </div>
+
+  <!-- Hoodies Tab -->
+  <div *ngIf="activeTab() === 'hoodies'" class="tab-content">
+    <h3 class="as-title">Hoodies</h3>
+    <div *ngIf="selectedAvatarId() === null" class="warning-msg">
+      Please select an avatar first to customize with hoodies.
+    </div>
+    <div *ngIf="selectedAvatarId() !== null" class="skin-list">
+      <div *ngFor="let s of skinsForCategory('hoodie')" class="skin-item">
+        <img [src]="s.imageUrl || '/assets/default-skin.png'" 
+             alt="{{ s.name }}" 
+             class="skin-img" />
+        <div class="skin-info">
+          <div class="skin-name">{{ s.name }}</div>
+          <div class="skin-meta">Level {{ s.unlockLevel || 0 }} required</div>
+          <div class="skin-actions">
+            <button *ngIf="!isEquipped('hoodie', s.id!)" 
+                    class="btn btn-sm btn-primary" 
+                    (click)="equip('hoodie', s.id!)">
+              Equip
+            </button>
+            <button *ngIf="isEquipped('hoodie', s.id!)" 
+                    class="btn btn-sm btn-success" 
+                    (click)="unequip('hoodie')">
+              ✓ Equipped
+            </button>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="skinsForCategory('hoodie').length === 0" class="empty-state">
+        No hoodies available for this avatar.
+      </div>
+    </div>
+  </div>
+
+  <!-- Hats Tab -->
+  <div *ngIf="activeTab() === 'hats'" class="tab-content">
+    <h3 class="as-title">Hats</h3>
+    <div *ngIf="selectedAvatarId() === null" class="warning-msg">
+      Please select an avatar first to customize with hats.
+    </div>
+    <div *ngIf="selectedAvatarId() !== null" class="skin-list">
+      <div *ngFor="let s of skinsForCategory('hat')" class="skin-item">
+        <img [src]="s.imageUrl || '/assets/default-skin.png'" 
+             alt="{{ s.name }}" 
+             class="skin-img" />
+        <div class="skin-info">
+          <div class="skin-name">{{ s.name }}</div>
+          <div class="skin-meta">Level {{ s.unlockLevel || 0 }} required</div>
+          <div class="skin-actions">
+            <button *ngIf="!isEquipped('hat', s.id!)" 
+                    class="btn btn-sm btn-primary" 
+                    (click)="equip('hat', s.id!)">
+              Equip
+            </button>
+            <button *ngIf="isEquipped('hat', s.id!)" 
+                    class="btn btn-sm btn-success" 
+                    (click)="unequip('hat')">
+              ✓ Equipped
+            </button>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="skinsForCategory('hat').length === 0" class="empty-state">
+        No hats available for this avatar.
+      </div>
+    </div>
+  </div>
+
+  <!-- Glasses Tab -->
+  <div *ngIf="activeTab() === 'glasses'" class="tab-content">
+    <h3 class="as-title">Glasses</h3>
+    <div *ngIf="selectedAvatarId() === null" class="warning-msg">
+      Please select an avatar first to customize with glasses.
+    </div>
+    <div *ngIf="selectedAvatarId() !== null" class="skin-list">
+      <div *ngFor="let s of skinsForCategory('glasses')" class="skin-item">
+        <img [src]="s.imageUrl || '/assets/default-skin.png'" 
+             alt="{{ s.name }}" 
+             class="skin-img" />
+        <div class="skin-info">
+          <div class="skin-name">{{ s.name }}</div>
+          <div class="skin-meta">Level {{ s.unlockLevel || 0 }} required</div>
+          <div class="skin-actions">
+            <button *ngIf="!isEquipped('glasses', s.id!)" 
+                    class="btn btn-sm btn-primary" 
+                    (click)="equip('glasses', s.id!)">
+              Equip
+            </button>
+            <button *ngIf="isEquipped('glasses', s.id!)" 
+                    class="btn btn-sm btn-success" 
+                    (click)="unequip('glasses')">
+              ✓ Equipped
+            </button>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="skinsForCategory('glasses').length === 0" class="empty-state">
+        No glasses available for this avatar.
+      </div>
+    </div>
+  </div>
+</div>

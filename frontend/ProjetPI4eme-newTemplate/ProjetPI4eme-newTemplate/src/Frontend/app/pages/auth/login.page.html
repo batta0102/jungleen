@@ -1,0 +1,57 @@
+<div class="auth-wrap">
+  <div class="auth-card" aria-label="Login form">
+    <div class="auth-logo-wrap">
+      <img class="auth-logo" src="/logojungle.png" alt="Jungle in English" />
+    </div>
+
+    <div class="auth-head">
+      <h1 class="auth-title">Login</h1>
+      <p class="auth-subtitle">Welcome back to Jungle in English</p>
+    </div>
+
+    @if (error(); as msg) {
+      <div class="alert" role="alert">{{ msg }}</div>
+    }
+
+    <form (ngSubmit)="submit()">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input
+          type="text"
+          id="username"
+          class="form-control"
+          [ngModel]="username()"
+          (ngModelChange)="username.set($event)"
+          name="username"
+          required
+          [disabled]="busy()"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          class="form-control"
+          [ngModel]="password()"
+          (ngModelChange)="password.set($event)"
+          name="password"
+          required
+          [disabled]="busy()"
+        />
+      </div>
+
+      <button class="login-btn" type="submit" [disabled]="busy()">Login</button>
+    </form>
+
+    <div class="auth-foot">
+      <span>Don't have an account?</span>
+      <a routerLink="/front/signup">Sign up here</a>
+    </div>
+
+    <div class="auth-divider" aria-hidden="true"></div>
+
+    <p class="auth-legal">By logging in, you agree to our Terms of Service and Privacy Policy</p>
+  </div>
+</div>

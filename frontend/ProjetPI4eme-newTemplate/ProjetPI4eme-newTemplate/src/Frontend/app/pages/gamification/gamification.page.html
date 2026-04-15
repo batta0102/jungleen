@@ -1,0 +1,484 @@
+<div class="gami">
+  <div class="container gami-container">
+    <header class="g-header">
+      <div class="g-brand">
+        <div class="g-brand-top">Jungle in English</div>
+        <div class="g-brand-sub">Gamification</div>
+      </div>
+
+      <button class="btn btn-ghost g-menu" type="button" (click)="toggleMobileMenu()" [attr.aria-expanded]="mobileMenuOpen()">
+        Menu
+      </button>
+
+      <nav class="g-nav" aria-label="Gamification navigation" [class.open]="mobileMenuOpen()">
+        <button class="g-nav-btn" type="button" (click)="setTab('dashboard')" [attr.aria-current]="tab() === 'dashboard' ? 'page' : null">Dashboard</button>
+        <button class="g-nav-btn" type="button" (click)="setTab('ai-practice')" [attr.aria-current]="tab() === 'ai-practice' ? 'page' : null">AI Practice</button>
+        <button class="g-nav-btn" type="button" (click)="setTab('statistics')" [attr.aria-current]="tab() === 'statistics' ? 'page' : null">Statistics</button>
+      </nav>
+
+      <div class="g-actions">
+        <a class="btn btn-primary" [routerLink]="['/front/profile/student']">Your profile</a>
+      </div>
+    </header>
+
+    @if (confetti()) {
+      <div class="confetti" aria-hidden="true">
+        @for (n of [1,2,3,4,5,6,7,8,9,10,11,12]; track n) {
+          <span class="confetti-piece"></span>
+        }
+      </div>
+    }
+
+    <div class="toasts" aria-live="polite" aria-relevant="additions">
+      @for (t of toasts(); track t.id) {
+        <div class="toast" role="status">
+          <div class="toast-title">{{ t.title }}</div>
+          <div class="toast-body">{{ t.body }}</div>
+        </div>
+      }
+    </div>
+
+    @if (tab() === 'dashboard') {
+      <section class="g-section">
+        <h1 class="g-title">Your Dashboard</h1>
+        <p class="g-lead">Progress, challenges, rewards — all in one place.</p>
+
+        <!-- Profile card (name, xp bar, avatar) -->
+        <div class="profile-card card g-card" style="margin:1rem 0;padding:1rem;display:flex;align-items:center;gap:1rem;">
+          <div style="flex:1;">
+            <div style="font-size:1.25rem;font-weight:600;">{{ displayName() }}</div>
+            <div style="margin-top:0.5rem;color:var(--muted);">Level {{ gami.level() }} · {{ gami.xp() }} XP</div>
+            <div class="bar" role="progressbar" [attr.aria-valuenow]="gami.xpInLevel()" aria-valuemin="0" [attr.aria-valuemax]="500" style="margin-top:0.5rem;">
+              <div class="bar-fill" [style.width.%]="(gami.xpInLevel() / 500) * 100"></div>
+            </div>
+          </div>
+
+          <div style="width:120px;text-align:center;">
+            <button type="button" (click)="openAvatarModal()" style="border:none;background:transparent;cursor:pointer;padding:0;">
+              <div style="position:relative;display:inline-block;">
+                <img [src]="selectedAvatarImage()" alt="avatar" style="width:96px;height:96px;border-radius:999px;object-fit:cover;border:6px solid rgba(0,0,0,0.08);" />
+                <div style="position:absolute;right:-6px;bottom:-8px;background:#111;color:#fff;padding:6px 8px;border-radius:12px;font-weight:700;">{{ gami.level() }}</div>
+              </div>
+            </button>
+            <div style="margin-top:0.5rem;color:var(--muted);font-size:0.9rem;">Tap avatar to change</div>
+          </div>
+        </div>
+
+        <div class="grid grid-3">
+          <article class="card g-card">
+            <div class="card-body">
+              <div class="g-kicker">XP</div>
+              <div class="g-metric">{{ gami.xp() }}</div>
+              <div class="g-sub">{{ gami.xpToNext() }} XP to next level</div>
+              <div class="bar" role="progressbar" [attr.aria-valuenow]="gami.xpInLevel()" aria-valuemin="0" [attr.aria-valuemax]="500">
+                <div class="bar-fill" [style.width.%]="(gami.xpInLevel() / 500) * 100"></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="card g-card">
+            <div class="card-body">
+              <div class="g-kicker">Level</div>
+              <div class="g-metric">{{ gami.level() }}</div>
+              <div class="g-sub">Keep completing tasks to level up.</div>
+            </div>
+          </article>
+
+          <article class="card g-card">
+            <div class="card-body">
+              <div class="g-kicker">Streak</div>
+              <div class="g-metric">{{ gami.streakDays() }} days</div>
+              <div class="g-sub">Learn daily to keep your streak.</div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- games list from backend -->
+      <section class="g-section">
+        <div class="g-section-head">
+          <h2 class="g-h2">Games</h2>
+          <span class="g-muted">Earn XP by playing our educational games.</span>
+        </div>
+        <div class="grid grid-3">
+          @if (errorMessage()) {
+            <p class="g-error">{{ errorMessage() }}</p>
+          }
+          @if (gamesList().length === 0 && !errorMessage()) {
+            <p class="g-muted">No games available.</p>
+          }
+          @for (g of gamesList(); track g.id) {
+            <article class="card g-card">
+              <div class="card-body">
+                <div class="g-card-title">{{ g.title }}</div>
+                <div class="g-sub">{{ g.category }}</div>
+                <div class="g-metric">{{ g.xpReward || 0 }} XP</div>
+                @if (g.timerDuration) {
+                  <div class="g-muted" style="font-size:0.82rem;margin-top:0.2rem;">
+                    ⏱ {{ g.timerDuration >= 60 ? (g.timerDuration / 60) + ' min' : g.timerDuration + 's' }}
+                  </div>
+                }
+                <div class="g-buttons">
+                  <button class="btn btn-primary" type="button" (click)="playGame(g)">Play Now</button>
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+
+      <section class="g-section">
+        <div class="g-section-head">
+          <h2 class="g-h2">Badges & achievements</h2>
+          <span class="g-muted">Unlock rewards as you progress.</span>
+        </div>
+
+        <div class="grid grid-2">
+          <article class="card g-card">
+            <div class="card-body">
+              <div class="g-card-title">Challenge Badges</div>
+              <p class="g-muted">Earn badges for milestones and challenge completions.</p>
+
+              <div class="badge-grid">
+                @for (b of badges(); track b.id) {
+                  <button
+                    class="badge"
+                    type="button"
+                    [class.earned]="gami.earnedBadges().includes(b.id)"
+                    [attr.title]="b.description"
+                  >
+                    <span class="badge-top">{{ b.name }}</span>
+                    <span class="badge-sub">{{ gami.earnedBadges().includes(b.id) ? 'Earned' : 'Locked' }}</span>
+                  </button>
+                }
+              </div>
+            </div>
+          </article>
+
+          <article class="card g-card">
+            <div class="card-body">
+              <div class="g-card-title">Achievements</div>
+              <p class="g-muted">Progress bars show how close you are.</p>
+
+              <div class="ach-list">
+                @for (a of achievements(); track a.id) {
+                  <button class="ach" type="button" (click)="openAchievement(a.id)">
+                    <div class="ach-top">
+                      <span class="ach-name">{{ a.name }}</span>
+                      <span class="ach-val">{{ a.current }}/{{ a.goal }}</span>
+                    </div>
+                    <div class="bar" role="progressbar" [attr.aria-valuenow]="a.current" aria-valuemin="0" [attr.aria-valuemax]="a.goal">
+                      <div class="bar-fill" [style.width.%]="(a.current / a.goal) * 100"></div>
+                    </div>
+                    <div class="g-muted">{{ a.description }}</div>
+                  </button>
+                }
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- Server badges from API -->
+      <section class="g-section">
+        <div class="g-section-head">
+          <h2 class="g-h2">Collectible Badges</h2>
+          <span class="g-muted">Unlock these badges by reaching the required level.</span>
+        </div>
+
+        @if (apiBadges().length === 0) {
+          <p class="g-muted">No collectible badges available yet.</p>
+        } @else {
+          <div class="grid grid-3">
+            @for (b of apiBadges(); track b.id) {
+              <article class="card g-card api-badge-card" [class.badge-unlocked]="gami.level() >= b.unlockLevel">
+                <div class="card-body api-badge-body">
+                  <div class="api-badge-icon" [style.background]="badgeLevelColor(b.unlockLevel) + '1a'" [style.border-color]="badgeLevelColor(b.unlockLevel)">
+                    @if (b.imageUrl) {
+                      <img [src]="b.imageUrl" [alt]="b.name" class="api-badge-img" />
+                    } @else {
+                      <span class="api-badge-emoji">🏅</span>
+                    }
+                  </div>
+                  <div class="api-badge-name">{{ b.name }}</div>
+                  <div class="g-muted api-badge-desc">{{ b.description }}</div>
+                  <span class="pill api-badge-pill" [style.background]="badgeLevelColor(b.unlockLevel) + '22'" [style.color]="badgeLevelColor(b.unlockLevel)" [style.border-color]="badgeLevelColor(b.unlockLevel)">
+                    Level {{ b.unlockLevel }}
+                  </span>
+                  <div class="api-badge-status">
+                    @if (gami.level() >= b.unlockLevel) {
+                      <span class="api-badge-unlocked">✓ Unlocked</span>
+                    } @else {
+                      <span class="g-muted">{{ b.unlockLevel - gami.level() }} levels to go</span>
+                    }
+                  </div>
+                </div>
+              </article>
+            }
+          </div>
+        }
+      </section>
+    }
+
+    @if (tab() === 'ai-practice') {
+      <section class="g-section">
+        <h1 class="g-title">AI Practice</h1>
+        <p class="g-lead">Sharpen your English skills with our AI tutor — chat, read scripts, and get scored.</p>
+
+        <div class="grid grid-3">
+          <!-- Quick stats cards -->
+          <article class="card g-card">
+            <div class="card-body">
+              <div class="g-kicker">AI Sessions</div>
+              <div class="g-metric">{{ stats().aiSessionsCount }}</div>
+              <div class="g-sub">Total conversations with the AI.</div>
+            </div>
+          </article>
+
+          <article class="card g-card">
+            <div class="card-body">
+              <div class="g-kicker">Messages Sent</div>
+              <div class="g-metric">{{ stats().aiMessagesTotal }}</div>
+              <div class="g-sub">Across all practice sessions.</div>
+            </div>
+          </article>
+
+          <article class="card g-card">
+            <div class="card-body">
+              <div class="g-kicker">Scripts Completed</div>
+              <div class="g-metric">{{ stats().scriptsCompleted }}</div>
+              <div class="g-sub">Reading exercises finished.</div>
+            </div>
+          </article>
+        </div>
+
+        <div class="grid grid-2" style="margin-top:1rem;">
+          <article class="card g-card">
+            <div class="card-body" style="text-align:center;padding:2rem 1rem;">
+              <div class="g-kicker" style="font-size:1rem;">Total Talking Time</div>
+              <div class="g-metric" style="font-size:2.5rem;">{{ stats().totalAiMinutes }} min</div>
+              <div class="g-sub">Time spent practising with the AI tutor.</div>
+            </div>
+          </article>
+
+          <article class="card g-card ai-launch-card">
+            <div class="card-body" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;padding:2rem 1rem;">
+              <div style="font-size:2.5rem;">🤖</div>
+              <div class="g-card-title" style="font-size:1.15rem;">Start Practising Now</div>
+              <p class="g-muted" style="text-align:center;">Chat, read scripts aloud, and get real-time feedback from our AI tutor.</p>
+              <a class="btn btn-primary" [routerLink]="['/front/ai-practice']" style="font-size:1rem;padding:0.6rem 1.5rem;">
+                Open AI Practice
+              </a>
+            </div>
+          </article>
+        </div>
+      </section>
+    }
+
+    @if (tab() === 'statistics') {
+      <section class="g-section">
+        <h1 class="g-title">Statistics</h1>
+        <p class="g-lead">Your stats, rankings, and progress across all activities.</p>
+
+        <!-- ─── Leaderboard ─── -->
+        <div class="card g-card">
+          <div class="card-body">
+            <div class="g-card-title" style="margin-bottom:0.75rem;">Leaderboard — All Users</div>
+            <div class="lb-head">
+              <div>Rank</div>
+              <div>User</div>
+              <div class="right">Level</div>
+              <div class="right">XP</div>
+            </div>
+
+            <div class="lb">
+              @for (row of lb.ranked(); track row.userId) {
+                <div class="lb-row" [class.you]="row.userId === currentUserId()">
+                  <div class="rank">{{ $index + 1 }}</div>
+                  <div class="name">{{ row.name }}</div>
+                  <div class="right">{{ row.level }}</div>
+                  <div class="right">{{ row.xp }}</div>
+                </div>
+              }
+              @if (lb.ranked().length === 0) {
+                <p class="g-muted" style="text-align:center;padding:1rem;">No users yet. Play a game or chat with the AI to appear here!</p>
+              }
+            </div>
+
+            @if (lb.myRank() > 0) {
+              <div class="g-muted" style="margin-top: 0.75rem;">Your rank: {{ lb.myRank() }}</div>
+            }
+          </div>
+        </div>
+      </section>
+
+      <!-- ─── Your Statistics ─── -->
+      <section class="g-section stats-section">
+        <div class="g-section-head">
+          <h2 class="g-h2">Your Statistics</h2>
+          <span class="g-muted">Track your progress across all activities.</span>
+        </div>
+
+        <!-- Row 1 — Key metrics -->
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-icon">🎮</div>
+            <div class="stat-value">{{ stats().totalGamesPlayed }}</div>
+            <div class="stat-label">Games Played</div>
+            <div class="stat-extra">{{ stats().gamesCompletedToday }} today</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">⚡</div>
+            <div class="stat-value">{{ stats().totalXp }}</div>
+            <div class="stat-label">Total XP</div>
+            <div class="stat-extra">+{{ stats().xpToday }} today · +{{ stats().xpThisWeek }} this week</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">🤖</div>
+            <div class="stat-value">{{ stats().totalAiMinutes }}<span class="stat-unit">min</span></div>
+            <div class="stat-label">AI Talking Time</div>
+            <div class="stat-extra">{{ stats().aiSessionsCount }} sessions</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">🏅</div>
+            <div class="stat-value">{{ stats().badgesUnlocked }}<span class="stat-unit">/ {{ stats().badgesTotal }}</span></div>
+            <div class="stat-label">Badges Unlocked</div>
+            <div class="stat-extra">{{ stats().badgesTotal - stats().badgesUnlocked }} remaining</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">🧑‍🎨</div>
+            <div class="stat-value">{{ stats().avatarsUnlocked }}</div>
+            <div class="stat-label">Avatars Unlocked</div>
+            <div class="stat-extra">Customise your profile look</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">🏆</div>
+            <div class="stat-value">{{ stats().challengesCompleted }}<span class="stat-unit">/ {{ stats().challengesTotal }}</span></div>
+            <div class="stat-label">Challenges Done</div>
+            <div class="stat-extra">{{ stats().tasksCompleted }} tasks completed</div>
+          </div>
+        </div>
+
+        <!-- Row 2 — Speed & Streak -->
+        <div class="grid grid-3" style="margin-top:1rem;">
+          <article class="card g-card">
+            <div class="card-body">
+              <div class="g-kicker">Fastest Game</div>
+              <div class="g-metric">
+                @if (stats().fastestGameSec > 0) {
+                  {{ stats().fastestGameSec }}s
+                } @else {
+                  —
+                }
+              </div>
+              <div class="g-sub">Your personal best completion speed.</div>
+            </div>
+          </article>
+
+          <article class="card g-card">
+            <div class="card-body">
+              <div class="g-kicker">Avg Game Time</div>
+              <div class="g-metric">
+                @if (stats().avgGameCompletionSec > 0) {
+                  {{ stats().avgGameCompletionSec }}s
+                } @else {
+                  —
+                }
+              </div>
+              <div class="g-sub">Average time to finish a game.</div>
+            </div>
+          </article>
+
+          <article class="card g-card">
+            <div class="card-body">
+              <div class="g-kicker">Daily Streak</div>
+              <div class="g-metric">{{ stats().streakDays }} days</div>
+              <div class="g-sub">Keep learning every day!</div>
+            </div>
+          </article>
+        </div>
+
+        <!-- Row 3 — XP Chart (last 14 days) -->
+        <div class="card g-card" style="margin-top:1rem;">
+          <div class="card-body">
+            <div class="g-card-title">XP Over the Last 14 Days</div>
+            <div class="xp-chart">
+              @for (day of stats().dailyXpHistory; track day.date) {
+                <div class="xp-bar-col">
+                  <div class="xp-bar-track">
+                    <div class="xp-bar-fill" [style.height.%]="stats().xpThisWeek > 0 ? Math.min(100, (day.xp / stats().xpThisWeek) * 100 * 2) : 0"></div>
+                  </div>
+                  <div class="xp-bar-label">{{ day.date.slice(5) }}</div>
+                  <div class="xp-bar-value">{{ day.xp }}</div>
+                </div>
+              }
+              @if (stats().dailyXpHistory.length === 0) {
+                <p class="g-muted" style="grid-column:1/-1;text-align:center;">No XP data yet. Start playing to see your chart!</p>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 4 — Game categories breakdown -->
+        @if (stats().gameCategories.length > 0) {
+          <div class="card g-card" style="margin-top:1rem;">
+            <div class="card-body">
+              <div class="g-card-title">Games by Category</div>
+              <div class="cat-list">
+                @for (cat of stats().gameCategories; track cat.category) {
+                  <div class="cat-row">
+                    <span class="cat-name">{{ cat.category }}</span>
+                    <div class="bar" style="flex:1;margin:0;">
+                      <div class="bar-fill" [style.width.%]="(cat.count / stats().totalGamesPlayed) * 100"></div>
+                    </div>
+                    <span class="cat-count">{{ cat.count }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Member since -->
+        @if (stats().memberSinceDays > 0) {
+          <div class="g-muted" style="text-align:center;margin-top:1rem;">
+            Member for {{ stats().memberSinceDays }} days · Level {{ stats().level }}
+          </div>
+        }
+      </section>
+    }
+
+    <footer class="g-footer">
+      <a class="g-footer-link" href="#" (click)="$event.preventDefault()">Help</a>
+      <a class="g-footer-link" href="#" (click)="$event.preventDefault()">Settings</a>
+      <a class="g-footer-link" [routerLink]="['/front']" fragment="contact">Contact</a>
+    </footer>
+  </div>
+
+  <!-- Avatar selector modal (top-level) -->
+  <app-modal [open]="avatarModalOpen()" title="Choose Avatar" (closed)="closeAvatarModal()">
+    <div style="padding:1rem;max-width:760px;">
+      <app-avatar-selector></app-avatar-selector>
+    </div>
+  </app-modal>
+
+  <app-modal [open]="selectedAchievementId() !== null" [title]="selectedAchievement()?.name ?? 'Achievement'" (closed)="closeAchievement()">
+    @if (selectedAchievement(); as a) {
+      <div class="ach-modal">
+        <p class="g-muted">{{ a.description }}</p>
+        <div class="bar" role="progressbar" [attr.aria-valuenow]="a.current" aria-valuemin="0" [attr.aria-valuemax]="a.goal">
+          <div class="bar-fill" [style.width.%]="(a.current / a.goal) * 100"></div>
+        </div>
+        <div class="g-row" style="margin-top: 0.5rem;">
+          <span class="pill">{{ a.current }}/{{ a.goal }}</span>
+          <span class="pill">Keep going</span>
+        </div>
+      </div>
+    }
+  </app-modal>
+</div>

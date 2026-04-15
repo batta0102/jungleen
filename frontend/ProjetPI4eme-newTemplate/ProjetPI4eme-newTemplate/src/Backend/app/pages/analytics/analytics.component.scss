@@ -1,0 +1,97 @@
+.stat-card {
+  border: 1px solid var(--border, #e5e7eb);
+  background: #fff;
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+
+.stat-card h3 {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.panel {
+  border: 1px solid var(--border, #e5e7eb);
+  background: #fff;
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+
+.panel h2 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+.bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.bar-row {
+  display: grid;
+  grid-template-columns: 180px 1fr 50px;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.label {
+  font-size: 0.875rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bar-track {
+  height: 0.75rem;
+  background: #eef2f7;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background: #0f766e;
+}
+
+.num {
+  font-size: 0.875rem;
+  text-align: right;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 0.5rem;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.875rem;
+}
+
+.split-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.small {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.input {
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+}

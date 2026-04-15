@@ -1,0 +1,280 @@
+<main class="mx-auto max-w-7xl px-6 py-8">
+  <header class="mb-8 flex items-start justify-between">
+    <div>
+      <h1 class="font-serif text-5xl font-semibold text-text">Events</h1>
+      <p class="mt-2 text-secondary">Manage events, venues, and track analytics.</p>
+    </div>
+    <button (click)="openCreateEvent()" class="inline-flex items-center gap-3 bg-primary text-white px-5 py-3 rounded-lg shadow-md hover:bg-opacity-90">
+      <span class="text-xl">+</span>
+      Add Event
+    </button>
+  </header>
+
+  <div *ngIf="error()" class="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+    {{ error() }}
+  </div>
+
+  <div class="border-b border-border pb-4 mb-6">
+    <nav class="flex gap-8 text-sm text-secondary">
+      <a *ngFor="let tab of tabs" 
+         (click)="selectTab(tab.id)"
+         [class.border-b-2]="activeTab() === tab.id"
+         [class.border-primary]="activeTab() === tab.id"
+         [class.text-primary]="activeTab() === tab.id"
+         [class.font-semibold]="activeTab() === tab.id"
+         class="pb-2 cursor-pointer hover:text-text">
+        {{ tab.label }}
+      </a>
+    </nav>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="mb-8 grid gap-6 md:grid-cols-4">
+    <div class="rounded-xl border border-border bg-white p-6 shadow-sm">
+      <div class="text-sm text-secondary">TOTAL EVENTS</div>
+      <div class="mt-1 font-serif text-4xl font-semibold text-text">{{ totalEvents() }}</div>
+    </div>
+    <div class="rounded-xl border border-border bg-white p-6 shadow-sm">
+      <div class="text-sm text-secondary">ONLINE</div>
+      <div class="mt-1 font-serif text-4xl font-semibold text-text">{{ onlineEvents() }}</div>
+    </div>
+    <div class="rounded-xl border border-border bg-white p-6 shadow-sm">
+      <div class="text-sm text-secondary">ON-SITE</div>
+      <div class="mt-1 font-serif text-4xl font-semibold text-text">{{ onsiteEvents() }}</div>
+    </div>
+    <div class="rounded-xl border border-border bg-white p-6 shadow-sm">
+      <div class="text-sm text-secondary">VENUES</div>
+      <div class="mt-1 font-serif text-4xl font-semibold text-text">{{ totalVenues() }}</div>
+    </div>
+  </div>
+
+  <!-- Events Tab -->
+  <div *ngIf="activeTab() === 'events'">
+    <!-- Calendar Section -->
+    <div class="mb-8">
+      <h2 class="font-serif text-2xl font-semibold text-text mb-4">Calendar</h2>
+      <app-calendar
+        [markers]="markers()"
+        [selectedDate]="selectedDate()"
+        (dateSelected)="onDateSelected($event)"
+      ></app-calendar>
+      <div class="mt-3 text-sm text-secondary">
+        <span *ngIf="selectedDate()">Filtered by: <span class="font-medium text-text">{{ selectedDate() }}</span></span>
+        <span *ngIf="!selectedDate()">Click a date to filter events.</span>
+      </div>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-3 items-center mb-6">
+      <div class="md:col-span-2">
+        <div class="relative w-full">
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-secondary">🔍</span>
+          <input 
+            [(ngModel)]="searchQuery"
+            placeholder="Search events by title, description..." 
+            class="w-full pl-12 pr-4 py-3 rounded-lg border border-border placeholder-secondary" 
+          />
+        </div>
+      </div>
+      <div class="flex gap-4 justify-end">
+        <select [(ngModel)]="typeFilter" class="px-4 py-3 rounded-lg border border-border bg-white">
+          <option value="all">All Types</option>
+          <option value="online">Online</option>
+          <option value="onsite">Onsite</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Events Table -->
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-border">
+        <thead class="bg-light">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">TITLE</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">TYPE</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">START DATE</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">VENUE</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-border">
+          <tr *ngFor="let event of pagedEvents()" class="hover:bg-light">
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm font-medium text-text">{{ event.title }}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span 
+                *ngIf="isOnlineEvent(event)"
+                class="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                Online
+              </span>
+              <span 
+                *ngIf="isOnsiteEvent(event)"
+                class="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800">
+                On-Site
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-secondary">
+              {{ event.startDate | date:'short' }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-secondary">
+              <span *ngIf="isOnsiteEvent(event) && event.venueName">{{ event.venueName }}</span>
+              <span *ngIf="isOnlineEvent(event)">-</span>
+              <span *ngIf="isOnsiteEvent(event) && !event.venueName">-</span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+              <button (click)="openEditEvent(event)" class="text-primary hover:underline mr-4">Update</button>
+              <button (click)="downloadAttendeesCsv(event)" class="text-primary hover:underline mr-4">Export</button>
+              <button (click)="deleteEvent(event)" class="text-red-600 hover:underline">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <app-pagination
+        [currentPage]="eventsPage()"
+        [totalPages]="eventsPageCount()"
+        [totalItems]="filteredEvents().length"
+        (pageChange)="setEventsPage($event)"
+      ></app-pagination>
+
+      <div *ngIf="filteredEvents().length === 0" class="text-center py-12 text-secondary">
+        No events found.
+      </div>
+    </div>
+  </div>
+
+  <!-- Venues Tab -->
+  <div *ngIf="activeTab() === 'venues'">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="font-serif text-2xl font-semibold text-text">Venues</h2>
+      <button (click)="openCreateVenue()" class="inline-flex items-center gap-3 border border-border bg-white text-text px-5 py-3 rounded-lg shadow-sm hover:bg-light">
+        <span class="text-xl">+</span>
+        New Venue
+      </button>
+    </div>
+
+    <!-- Venues Table -->
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-border">
+        <thead class="bg-light">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">NAME</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">ADDRESS</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">CITY</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">CAPACITY</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-border">
+          <tr *ngFor="let venue of pagedVenues()" class="hover:bg-light">
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm font-medium text-text">{{ venue.name }}</div>
+            </td>
+            <td class="px-6 py-4 text-sm text-secondary">
+              {{ venue.address }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-secondary">
+              {{ venue.city || '-' }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-secondary">
+              {{ venue.capacity || '-' }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+              <button (click)="openEditVenue(venue)" class="text-primary hover:underline mr-4">Update</button>
+              <button (click)="deleteVenue(venue)" class="text-red-600 hover:underline">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <app-pagination
+        [currentPage]="venuesPage()"
+        [totalPages]="venuesPageCount()"
+        [totalItems]="venues().length"
+        (pageChange)="setVenuesPage($event)"
+      ></app-pagination>
+
+      <div *ngIf="venues().length === 0" class="text-center py-12 text-secondary">
+        No venues yet.
+      </div>
+    </div>
+  </div>
+
+  <!-- Analytics Tab -->
+  <div *ngIf="activeTab() === 'analytics'">
+    <h2 class="font-serif text-2xl font-semibold text-text mb-6">Analytics</h2>
+    
+    <div class="grid gap-6 md:grid-cols-2 mb-8">
+      <div class="rounded-xl border border-border bg-white p-6 shadow-sm">
+        <h3 class="text-lg font-semibold text-text mb-4">Events by Type</h3>
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-secondary">Online Events</span>
+            <span class="font-semibold text-text">{{ onlineEvents() }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-secondary">Onsite Events</span>
+            <span class="font-semibold text-text">{{ onsiteEvents() }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-xl border border-border bg-white p-6 shadow-sm">
+        <h3 class="text-lg font-semibold text-text mb-4">Overview</h3>
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-secondary">Total Events</span>
+            <span class="font-semibold text-text">{{ totalEvents() }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-secondary">Total Venues</span>
+            <span class="font-semibold text-text">{{ totalVenues() }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-xl border border-border bg-white p-6 shadow-sm">
+      <h3 class="text-lg font-semibold text-text mb-4">Recent Events</h3>
+      <div class="space-y-3">
+        <div *ngFor="let event of events().slice(0, 5)" class="flex items-center justify-between py-2 border-b border-border last:border-b-0">
+          <div>
+            <div class="text-sm font-medium text-text">{{ event.title }}</div>
+            <div class="text-xs text-secondary">{{ event.startDate | date:'short' }}</div>
+          </div>
+          <span 
+            *ngIf="isOnlineEvent(event)"
+            class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+            Online
+          </span>
+          <span 
+            *ngIf="isOnsiteEvent(event)"
+            class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800">
+            On-Site
+          </span>
+        </div>
+        <div *ngIf="events().length === 0" class="text-center py-4 text-secondary">
+          No events available.
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<app-create-event-modal 
+  [isOpen]="isEventModalOpen()"
+  [event]="editingEvent()"
+  [venues]="venues()"
+  (onClose)="closeEventModal()"
+  (onSubmit)="handleEventSubmit($event)">
+</app-create-event-modal>
+
+<app-create-venue-modal
+  [isOpen]="isVenueModalOpen()"
+  [title]="editingVenue() ? 'Edit Venue' : 'New Venue'"
+  [submitLabel]="editingVenue() ? 'Update' : 'Create'"
+  [initialData]="editingVenueFormData()"
+  (onClose)="closeVenueModal()"
+  (onSubmit)="handleVenueSubmit($event)"
+></app-create-venue-modal>

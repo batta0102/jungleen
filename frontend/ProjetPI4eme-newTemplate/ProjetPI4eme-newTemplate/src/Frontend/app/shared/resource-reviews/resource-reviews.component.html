@@ -1,0 +1,86 @@
+<section class="resource-reviews">
+  <div class="resource-list" *ngIf="resources().length > 0; else emptyState">
+    <article class="resource-card" *ngFor="let resource of resources()">
+      <header class="resource-header">
+        <h2 class="resource-title">{{ resource.title }}</h2>
+        <span class="resource-type">{{ resource.type }}</span>
+      </header>
+      <p class="resource-description">{{ resource.description }}</p>
+
+      <div class="reviews">
+        <h3 class="reviews-title">Reviews</h3>
+        <div class="review-list" *ngIf="getReviews(resource.resourceId).length > 0; else noReviews">
+          <div class="review-item" *ngFor="let review of getReviews(resource.resourceId)">
+            <div class="review-header">
+              <span class="review-stars">{{ formatStars(review.rating) }}</span>
+              <button 
+                class="edit-btn" 
+                type="button"
+                (click)="startEdit(resource.resourceId, review)"
+                [disabled]="getEditingReviewId(resource.resourceId) !== null"
+                title="Edit review"
+              >
+                ✏️
+              </button>
+            </div>
+            <p class="review-comment">{{ review.comment }}</p>
+          </div>
+        </div>
+        <ng-template #noReviews>
+          <p class="reviews-empty">No reviews yet. Be the first to leave one.</p>
+        </ng-template>
+      </div>
+
+      <form class="review-form" (ngSubmit)="addReview(resource.resourceId)">
+        <div class="form-header">
+          <label class="form-label" for="comment-{{ resource.resourceId }}">
+            {{ getEditingReviewId(resource.resourceId) ? 'Modifier votre avis' : 'Ajouter un avis' }}
+          </label>
+          <button 
+            *ngIf="getEditingReviewId(resource.resourceId)"
+            class="cancel-btn"
+            type="button"
+            (click)="cancelEdit(resource.resourceId)"
+          >
+            Annuler
+          </button>
+        </div>
+        <textarea
+          class="form-textarea"
+          id="comment-{{ resource.resourceId }}"
+          [ngModel]="getComment(resource.resourceId)"
+          (ngModelChange)="setComment(resource.resourceId, $event)"
+          name="comment-{{ resource.resourceId }}"
+          rows="3"
+          placeholder="Partagez votre avis..."
+        ></textarea>
+
+        <div class="star-input" (mouseleave)="clearHoverRating(resource.resourceId)">
+          <span class="form-label">Note</span>
+          <div class="stars">
+            <button
+              class="star"
+              type="button"
+              *ngFor="let star of stars"
+              [class.filled]="star <= getDisplayRating(resource.resourceId)"
+              (mouseenter)="setHoverRating(resource.resourceId, star)"
+              (click)="setRating(resource.resourceId, star)"
+              aria-label="{{ star }} stars"
+            >
+              &#9733;
+            </button>
+          </div>
+          <span class="rating-label">{{ getRating(resource.resourceId) }}/6</span>
+        </div>
+
+        <button class="submit-button" type="submit" [disabled]="!canSubmit(resource.resourceId)">
+          {{ getEditingReviewId(resource.resourceId) ? 'Mettre à jour' : 'Ajouter Review' }}
+        </button>
+      </form>
+    </article>
+  </div>
+
+  <ng-template #emptyState>
+    <p class="reviews-empty">No resources available.</p>
+  </ng-template>
+</section>

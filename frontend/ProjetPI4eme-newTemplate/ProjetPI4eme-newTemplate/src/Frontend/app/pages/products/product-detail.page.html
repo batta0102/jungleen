@@ -1,0 +1,135 @@
+<div class="product-detail-container">
+  <!-- Loading State -->
+  @if (isLoading()) {
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+      <p>Loading product details...</p>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (error()) {
+    <div class="error-message">
+      <i class="fas fa-exclamation-circle"></i>
+      <p>{{ error() }}</p>
+      <button class="btn-primary" (click)="goBack()">Back to Products</button>
+    </div>
+  }
+
+  <!-- Product Content -->
+  @if (product() && !isLoading()) {
+    <div class="product-detail">
+      <!-- Breadcrumb -->
+      <nav class="breadcrumb">
+        <a routerLink="/products">Products</a>
+        <span class="separator">/</span>
+        <span class="current">{{ product()?.name }}</span>
+      </nav>
+
+      <!-- Main Product Section -->
+      <div class="product-main">
+        <!-- Product Image -->
+        <div class="product-image-section">
+          <div class="image-container">
+            <img 
+              [src]="getImageUrl(product()?.imageUrl)" 
+              [alt]="product()?.name"
+              class="product-image"
+              (error)="$event.target.src='assets/images/product-placeholder.png'"
+            >
+          </div>
+        </div>
+
+        <!-- Product Info -->
+        <div class="product-info-section">
+          <div class="category-badge">{{ product()?.category }}</div>
+          
+          <h1 class="product-title">{{ product()?.name }}</h1>
+          
+          <p class="product-description">{{ product()?.description }}</p>
+
+          <!-- Price -->
+          @if (product()?.price) {
+            <div class="product-price">
+              <span class="price-value">{{ product()?.price | currency:'USD' }}</span>
+            </div>
+          }
+
+          <!-- Stock Status -->
+          <div class="stock-status" [class]="getStockClass()">
+            <i class="fas" [class.fa-check-circle]="isInStock()" [class.fa-times-circle]="!isInStock()"></i>
+            <span>{{ getStockStatus() }}</span>
+          </div>
+
+          <!-- Quantity Selector -->
+          @if (isInStock()) {
+            <div class="quantity-section">
+              <label>Quantity:</label>
+              <div class="quantity-selector">
+                <button 
+                  class="qty-btn" 
+                  (click)="decrementQuantity()"
+                  [disabled]="quantity() <= 1"
+                >
+                  <i class="fas fa-minus"></i>
+                </button>
+                <span class="qty-value">{{ quantity() }}</span>
+                <button 
+                  class="qty-btn" 
+                  (click)="incrementQuantity()"
+                  [disabled]="quantity() >= (product()?.stock ?? 0)"
+                >
+                  <i class="fas fa-plus"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Add to Cart Button -->
+            <button class="btn-add-to-cart" (click)="addToCart()">
+              <i class="fas fa-shopping-cart"></i>
+              Add to Cart
+            </button>
+          } @else {
+            <button class="btn-out-of-stock" disabled>
+              <i class="fas fa-ban"></i>
+              Out of Stock
+            </button>
+          }
+
+          <!-- Back Button -->
+          <button class="btn-back" (click)="goBack()">
+            <i class="fas fa-arrow-left"></i>
+            Back to Products
+          </button>
+        </div>
+      </div>
+
+      <!-- Similar Products Section -->
+      @if (similarProducts().length > 0) {
+        <section class="similar-products">
+          <h2 class="section-title">Similar Products</h2>
+          <div class="products-grid">
+            @for (product of similarProducts(); track product.idProduct) {
+              <div class="product-card" (click)="viewSimilarProduct(product.idProduct)">
+                <div class="card-image">
+                  <img 
+                    [src]="getImageUrl(product.imageUrl)" 
+                    [alt]="product.name"
+                    (error)="$event.target.src='assets/images/product-placeholder.png'"
+                  >
+                </div>
+                <div class="card-content">
+                  <span class="card-category">{{ product.category }}</span>
+                  <h3 class="card-title">{{ product.name }}</h3>
+                  @if (product.price) {
+                    <span class="card-price">{{ product.price | currency:'USD' }}</span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+      }
+    </div>
+  }
+</div>

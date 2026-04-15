@@ -1,0 +1,114 @@
+<div class="form-container">
+  <div class="form-header">
+    <h1>{{ isEditMode() ? 'Edit Resource' : 'Create New Resource' }}</h1>
+  </div>
+
+  @if (loading()) {
+    <div class="loading">
+      <p>Loading...</p>
+    </div>
+  }
+
+  @if (error()) {
+    <div class="alert alert-danger">
+      <strong>Error:</strong> {{ error() }}
+    </div>
+  }
+
+  @if (success()) {
+    <div class="alert alert-success">
+      <strong>Success!</strong> {{ success() }}
+    </div>
+  }
+
+  @if (!loading()) {
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form-grid">
+      <!-- Title Field -->
+      <div class="form-group">
+        <label for="title" class="form-label">
+          Title <span class="required">*</span>
+        </label>
+        <input
+          type="text"
+          id="title"
+          formControlName="title"
+          class="form-control"
+          [class.is-invalid]="isFieldInvalid('title')"
+          placeholder="Enter resource title"
+        />
+        @if (isFieldInvalid('title')) {
+          <div class="form-error">
+            {{ getFieldError('title') }}
+          </div>
+        }
+      </div>
+
+      <!-- Type Field -->
+      <div class="form-group">
+        <label for="type" class="form-label">
+          Type <span class="required">*</span>
+        </label>
+        <select
+          id="type"
+          formControlName="type"
+          class="form-control"
+          [class.is-invalid]="isFieldInvalid('type')"
+        >
+          <option value="">Select resource type</option>
+          @for (type of resourceTypes; track type) {
+            <option [value]="type">{{ type }}</option>
+          }
+        </select>
+        @if (isFieldInvalid('type')) {
+          <div class="form-error">
+            {{ getFieldError('type') }}
+          </div>
+        }
+      </div>
+
+      <!-- Description Field -->
+      <div class="form-group full-width">
+        <label for="description" class="form-label">
+          Description <span class="required">*</span>
+        </label>
+        <textarea
+          id="description"
+          formControlName="description"
+          class="form-control"
+          [class.is-invalid]="isFieldInvalid('description')"
+          rows="4"
+          placeholder="Enter resource description"
+        ></textarea>
+        @if (isFieldInvalid('description')) {
+          <div class="form-error">
+            {{ getFieldError('description') }}
+          </div>
+        }
+      </div>
+
+      <!-- File URL Field -->
+      <div class="form-group full-width">
+        <label for="fileUrl" class="form-label">
+          File URL <span class="text-muted">(optional)</span>
+        </label>
+        <input
+          type="url"
+          id="fileUrl"
+          formControlName="fileUrl"
+          class="form-control"
+          placeholder="https://example.com/file.pdf"
+        />
+      </div>
+
+      <!-- Form Actions -->
+      <div class="form-actions full-width">
+        <button type="submit" class="btn btn-primary" [disabled]="form.invalid || loading()">
+          {{ isEditMode() ? 'Update Resource' : 'Create Resource' }}
+        </button>
+        <button type="button" (click)="cancel()" class="btn btn-secondary">
+          Cancel
+        </button>
+      </div>
+    </form>
+  }
+</div>

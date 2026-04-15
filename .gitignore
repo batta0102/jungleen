@@ -1,0 +1,67 @@
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDEs / Editors
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+*.swp
+*.swo
+
+# Java / Maven / Gradle
+target/
+**/target/
+build/
+**/build/
+out/
+**/out/
+*.class
+*.jar
+*.war
+*.ear
+
+# Maven wrapper / Gradle cache
+.mvn/wrapper/maven-wrapper.jar
+.gradle/
+
+# Angular / Node
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+.angular/
+**/.angular/
+coverage/
+**/coverage/
+.cache/
+.npm/
+*.tsbuildinfo
+
+# Logs
+*.log
+logs/
+*.tmp
+*.bak
+*.old
+
+# Environment / Secrets
+.env
+.env.*
+*.local
+application-local.properties
+application-dev.properties
+
+# Generated / runtime data
+tmp/
+temp/
+*.pid
+hs_err_pid*
+replay_pid*
+*.h2.db
+*.mv.db
+*.sqlite
+*.sqlite3

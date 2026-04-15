@@ -1,0 +1,126 @@
+<main class="mx-auto max-w-7xl px-6 py-8">
+  <header class="mb-8 flex items-center justify-between">
+    <div>
+      <h1 class="font-serif text-4xl font-semibold text-text">AI Event Data Analyst</h1>
+      <p class="mt-2 text-secondary">Analytics and engagement prediction for events.</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <button (click)="refresh()" class="px-4 py-2 rounded-lg border border-border bg-white hover:bg-light">Refresh</button>
+      <button (click)="downloadReportCsv()" class="px-4 py-2 rounded-lg bg-primary text-white hover:opacity-90">Download Report CSV</button>
+    </div>
+  </header>
+
+  <div *ngIf="error()" class="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+    {{ error() }}
+  </div>
+
+  <section class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 mb-10">
+    <article class="stat-card">
+      <h3>Total Events</h3>
+      <p class="value">{{ participants()?.totalEvents ?? 0 }}</p>
+    </article>
+    <article class="stat-card">
+      <h3>Total Participants</h3>
+      <p class="value">{{ participants()?.totalParticipants ?? 0 }}</p>
+    </article>
+    <article class="stat-card">
+      <h3>Avg/Event</h3>
+      <p class="value">{{ participants()?.averageParticipantsPerEvent ?? 0 }}</p>
+    </article>
+    <article class="stat-card">
+      <h3>Revenue (TND)</h3>
+      <p class="value">{{ report()?.summary?.estimatedRevenue ?? 0 }}</p>
+    </article>
+  </section>
+
+  <section class="grid grid-cols-1 gap-6 lg:grid-cols-2 mb-10">
+    <article class="panel">
+      <h2>Event Popularity (Bar Chart)</h2>
+      <div class="bars">
+        <div class="bar-row" *ngFor="let row of (participants()?.events ?? []).slice(0,8)">
+          <span class="label">{{ row.eventTitle }}</span>
+          <div class="bar-track"><div class="bar-fill" [style.width]="participantsBarWidth(row.participants)"></div></div>
+          <span class="num">{{ row.participants }}</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="panel">
+      <h2>Venue Utilization</h2>
+      <table class="table">
+        <thead>
+          <tr><th>Venue</th><th>Booked Hrs</th><th>Utilization %</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let v of (venueUtilization()?.venues ?? [])">
+            <td>{{ v.venueName }}</td>
+            <td>{{ v.bookedHours }}</td>
+            <td>{{ v.utilizationRate }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </article>
+  </section>
+
+  <section class="grid grid-cols-1 gap-6 lg:grid-cols-2 mb-10">
+    <article class="panel">
+      <h2>Participation Trends (Line Data)</h2>
+      <table class="table">
+        <thead>
+          <tr><th>Period</th><th>Participants</th><th>Events</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let t of (trends()?.monthlyTrends ?? [])">
+            <td>{{ t.period }}</td>
+            <td>{{ t.participants }}</td>
+            <td>{{ t.eventCount }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </article>
+
+    <article class="panel">
+      <h2>RSVP vs Paid</h2>
+      <div class="split-grid">
+        <div>
+          <p class="small">RSVP Participants</p>
+          <p class="value">{{ participants()?.rsvpVsPaid?.rsvpParticipants ?? 0 }}</p>
+        </div>
+        <div>
+          <p class="small">Paid Participants</p>
+          <p class="value">{{ participants()?.rsvpVsPaid?.paidParticipants ?? 0 }}</p>
+        </div>
+      </div>
+
+      <h3 class="mt-6">Engagement by Type</h3>
+      <table class="table">
+        <thead>
+          <tr><th>Type</th><th>Total</th><th>Avg</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let e of (engagement()?.engagementByType ?? [])">
+            <td>{{ e.eventType }}</td>
+            <td>{{ e.totalParticipants }}</td>
+            <td>{{ e.avgParticipants }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </article>
+  </section>
+
+  <section class="panel mb-10">
+    <h2>AI Attendance Prediction</h2>
+    <div class="flex items-center gap-3 mt-3">
+      <select class="input" [ngModel]="predictionEventId()" (ngModelChange)="predictionEventId.set($event ? +$event : null)">
+        <option [ngValue]="null">Select Event</option>
+        <option *ngFor="let evt of availablePredictionEvents()" [ngValue]="evt.id">{{ evt.title }}</option>
+      </select>
+      <button (click)="predict()" class="px-4 py-2 rounded-lg bg-primary text-white hover:opacity-90">Predict</button>
+    </div>
+    <div class="mt-4" *ngIf="prediction() as p">
+      <p><strong>Event:</strong> {{ getEventTitle(p.eventId) }}</p>
+      <p><strong>Predicted Participants:</strong> {{ p.predictedParticipants }}</p>
+      <p><strong>Confidence Score:</strong> {{ p.confidenceScore }}</p>
+    </div>
+  </section>
+</main>

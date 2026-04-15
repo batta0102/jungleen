@@ -1,0 +1,118 @@
+<div class="quiz-attempt-container">
+  <!-- Timer Bar -->
+  <div class="timer-bar" [class.warning]="isTimeWarning()" [class.critical]="isTimeCritical()">
+    <div class="timer-display">
+      <span>⏱️ {{ formatTime(timeRemaining()) }}</span>
+    </div>
+    <div class="timer-progress-bar" [style.width.%]="timePercentage()"></div>
+  </div>
+
+  <div class="quiz-layout">
+    <!-- Main Content -->
+    <main class="quiz-main">
+      <h2 class="quiz-title">{{ quiz().titre }}</h2>
+
+      @if (currentQuestion()) {
+        <section class="question-section">
+          <div class="question-counter">
+            Question {{ currentQuestionIndex() + 1 }} of {{ questionStates().length }}
+          </div>
+
+          <h3 class="question-text">{{ currentQuestion()!.content }}</h3>
+
+          <!-- Answer Choices -->
+          <div class="choices">
+            @if (currentQuestion()!.choices.length > 0) {
+              @for (choice of currentQuestion()!.choices; track choice.id) {
+                <div
+                  class="choice-wrapper"
+                  [class.selected]="isChoiceSelected(choice.id)"
+                  (click)="toggleChoice(choice.id)"
+                >
+                  <input
+                    [type]="quiz().type === 'QCM_MULTI' ? 'checkbox' : 'radio'"
+                    [id]="'choice-' + choice.id"
+                    [checked]="isChoiceSelected(choice.id)"
+                    [name]="'question-' + currentQuestion()!.id"
+                    (change)="toggleChoice(choice.id)"
+                    class="choice-checkbox"
+                  />
+                  <label [for]="'choice-' + choice.id" class="choice-label">
+                    {{ choice.contenu }}
+                  </label>
+                </div>
+              }
+            } @else {
+              <div class="error-box">
+                <strong>❌ Error:</strong> No answer choices available for this question. 
+                <br />Check the quiz content or reload the page.
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- Navigation -->
+      <div class="navigation">
+        <button
+          class="btn btn-secondary"
+          [disabled]="!canGoPrevious()"
+          (click)="goToPrevious()"
+        >
+          ← Previous
+        </button>
+
+        <div class="spacer"></div>
+
+        @if (canGoNext()) {
+          <button class="btn btn-secondary" (click)="goToNext()">
+            Next →
+          </button>
+        } @else {
+          <button
+            class="btn btn-primary"
+            (click)="openConfirmSubmit()"
+          >
+            Submit Quiz
+          </button>
+        }
+      </div>
+    </main>
+
+    <!-- Question Navigator -->
+    <aside class="question-nav">
+      <h4>Questions</h4>
+      <p class="nav-progress">{{ answeredCount() }}/{{ questionStates().length }} answered</p>
+
+      <div class="nav-buttons">
+        @for (q of questionStates(); track q.id; let idx = $index) {
+          <button
+            [class.current]="idx === currentQuestionIndex()"
+            [class.answered]="q.answered"
+            (click)="goToQuestion(idx)"
+          >
+            {{ idx + 1 }}
+          </button>
+        }
+      </div>
+    </aside>
+  </div>
+
+  <!-- Confirmation Dialog -->
+  @if (showConfirmSubmit()) {
+    <div class="modal-backdrop">
+      <div class="modal">
+        <h3>Submit Quiz?</h3>
+        <p>You are about to submit. You cannot change your answers after.</p>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" (click)="cancelSubmit()">
+            Cancel
+          </button>
+          <button class="btn btn-primary" (click)="submitAttempt()">
+            Submit
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

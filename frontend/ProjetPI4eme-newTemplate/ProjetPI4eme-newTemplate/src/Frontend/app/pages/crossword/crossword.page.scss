@@ -1,0 +1,321 @@
+/* ── Crossword Page ── */
+.crossword-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+/* Header */
+.cw-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.cw-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+.cw-pills {
+  display: flex;
+  gap: 0.5rem;
+}
+.pill {
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  border: 1.5px solid #cbd5e1;
+  background: #fff;
+  color: #475569;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  &:hover { border-color: #6366f1; color: #6366f1; }
+  &.active { background: #6366f1; color: #fff; border-color: #6366f1; }
+}
+
+.cw-loading { color: #64748b; font-size: 0.875rem; }
+.cw-error { color: #dc2626; font-size: 0.875rem; margin-bottom: 1rem; }
+
+/* Layout: grid left, clues right */
+.cw-layout {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: auto 320px;
+  align-items: start;
+
+  @media (max-width: 840px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Grid ── */
+.cw-grid-section {
+  overflow-x: auto;
+}
+.cw-grid {
+  display: grid;
+  gap: 2px;
+  background: #1e293b;
+  padding: 3px;
+  border-radius: 8px;
+  width: fit-content;
+}
+
+.cw-cell {
+  width: 40px;
+  height: 40px;
+  position: relative;
+}
+
+.cw-block {
+  background: #1e293b;
+  border-radius: 2px;
+}
+
+.cw-letter {
+  background: #ffffff;
+  border-radius: 2px;
+  transition: background 0.2s;
+
+  &.highlighted { background: #e0e7ff; }
+  &.correct { background: #bbf7d0; }
+  &.incorrect { background: #fecaca; }
+}
+
+.cw-number {
+  position: absolute;
+  top: 1px;
+  left: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  color: #334155;
+  pointer-events: none;
+  z-index: 1;
+  line-height: 1;
+}
+
+.cw-input {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+  text-transform: uppercase;
+  caret-color: #6366f1;
+  outline: none;
+  padding: 0;
+
+  &:focus {
+    box-shadow: inset 0 0 0 2px #6366f1;
+    border-radius: 2px;
+  }
+}
+
+/* ── Sidebar ── */
+.cw-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.cw-info-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.cw-info-title { font-size: 1.125rem; font-weight: 600; color: #1e293b; }
+.cw-info-meta { font-size: 0.8rem; color: #64748b; margin-top: 0.25rem; }
+
+.cw-clues-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.cw-clues-heading {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cw-clue {
+  display: flex;
+  gap: 0.4rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-size: 0.875rem;
+  color: #334155;
+
+  &:hover { background: #f1f5f9; }
+  &.active { background: #e0e7ff; color: #4338ca; font-weight: 500; }
+}
+.cw-clue-num { font-weight: 700; min-width: 1.5rem; }
+.cw-clue-hint { flex: 1; }
+
+/* Submit & result */
+.cw-submit {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 10px;
+  background: #6366f1;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  &:hover { background: #4f46e5; }
+}
+
+.cw-result {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 1rem;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+
+  &.all-correct {
+    border-color: #22c55e;
+    background: #f0fdf4;
+  }
+}
+.cw-result-score { font-size: 1rem; font-weight: 600; color: #1e293b; }
+.cw-result-win { margin-top: 0.5rem; color: #16a34a; font-weight: 700; font-size: 1.125rem; }
+
+/* ── Timer Bar ── */
+.cw-timer-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 1rem;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  margin-bottom: 1.25rem;
+}
+.cw-timer-icon { font-size: 1.25rem; }
+.cw-timer-text {
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  min-width: 3.2rem;
+  color: #1e293b;
+}
+.cw-timer-track {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+.cw-timer-fill {
+  height: 100%;
+  background: #6366f1;
+  border-radius: 999px;
+  transition: width 1s linear;
+}
+.cw-timer-bar.urgent {
+  border-color: #fca5a5;
+  background: #fef2f2;
+  .cw-timer-text { color: #dc2626; }
+  .cw-timer-fill { background: #ef4444; }
+}
+
+/* ── XP Popup Overlay ── */
+.xp-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.xp-popup {
+  background: #fff;
+  border-radius: 20px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  max-width: 380px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.xp-popup-icon {
+  font-size: 3.5rem;
+  margin-bottom: 0.5rem;
+}
+.xp-popup-icon.xp-all-correct {
+  animation: bounce 0.6s ease;
+}
+
+.xp-popup-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0 0 0.25rem;
+}
+.xp-popup-score {
+  font-size: 0.95rem;
+  color: #64748b;
+  margin-bottom: 0.75rem;
+}
+.xp-popup-xp {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #6366f1;
+  margin-bottom: 0.25rem;
+}
+.xp-popup-sub {
+  font-size: 0.9rem;
+  color: #64748b;
+  margin-bottom: 1.5rem;
+}
+.xp-popup-btn {
+  width: 100%;
+  padding: 0.8rem;
+  border: none;
+  border-radius: 12px;
+  background: #6366f1;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+  &:hover { background: #4f46e5; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes popIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-18px); }
+  60% { transform: translateY(-8px); }
+}

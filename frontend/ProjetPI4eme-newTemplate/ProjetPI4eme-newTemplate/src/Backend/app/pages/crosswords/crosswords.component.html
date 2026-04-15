@@ -1,0 +1,218 @@
+<!-- ═══ Crossword List ═══ -->
+@if (!showForm()) {
+  <div class="cw-page">
+    <header class="cw-header">
+      <div>
+        <h1 class="cw-title">Crossword Puzzles</h1>
+        <p class="cw-subtitle">{{ games().length }} puzzle{{ games().length !== 1 ? 's' : '' }} created</p>
+      </div>
+      <button class="cw-btn cw-btn--primary" (click)="openCreate()">
+        <span class="cw-btn__icon">+</span> New Crossword
+      </button>
+    </header>
+
+    @if (games().length === 0) {
+      <div class="cw-empty">
+        <div class="cw-empty__icon">🧩</div>
+        <h3>No crosswords yet</h3>
+        <p>Create your first crossword puzzle with the visual builder.</p>
+        <button class="cw-btn cw-btn--primary" (click)="openCreate()">Create Crossword</button>
+      </div>
+    } @else {
+      <div class="cw-grid-list">
+        @for (g of games(); track g.id) {
+          <div class="cw-card">
+            <div class="cw-card__header">
+              <span class="cw-badge" [class.cw-badge--easy]="g.difficulty === 'Beginner'"
+                    [class.cw-badge--medium]="g.difficulty === 'Medium'"
+                    [class.cw-badge--hard]="g.difficulty === 'Hard'">{{ g.difficulty }}</span>
+              <span class="cw-xp">{{ g.xpReward }} XP</span>
+            </div>
+            <h3 class="cw-card__title">{{ g.title }}</h3>
+            <div class="cw-card__meta">
+              <span>{{ g.width }}×{{ g.height }} grid</span>
+              <span>{{ g.clues.length || 0 }} clues</span>
+            </div>
+            <div class="cw-card__actions">
+              <button class="cw-btn cw-btn--sm" (click)="startEdit(g)">Edit</button>
+              <button class="cw-btn cw-btn--sm cw-btn--danger" (click)="delete(g.id)">Delete</button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+}
+
+<!-- ═══ Crossword Builder ═══ -->
+@if (showForm()) {
+  <div class="cw-builder">
+    <header class="cw-builder__header">
+      <button class="cw-btn cw-btn--ghost" (click)="closeForm()">← Back</button>
+      <h2>{{ isEditing() ? 'Edit' : 'Create' }} Crossword</h2>
+      <button class="cw-btn cw-btn--primary" (click)="save()" [disabled]="saving()">
+        {{ saving() ? 'Saving...' : 'Save Crossword' }}
+      </button>
+    </header>
+
+    @if (errorMessage()) {
+      <div class="cw-error">{{ errorMessage() }}</div>
+    }
+
+    <!-- ── Settings Row ── -->
+    <section class="cw-settings">
+      <label class="cw-field">
+        <span class="cw-field__label">Title</span>
+        <input [value]="title()" (input)="title.set($any($event.target).value)"
+               placeholder="e.g. Fruit Crossword" class="cw-input" />
+      </label>
+      <label class="cw-field">
+        <span class="cw-field__label">Difficulty</span>
+        <select [value]="difficulty()" (change)="difficulty.set($any($event.target).value)" class="cw-input">
+          <option value="Beginner">Beginner</option>
+          <option value="Medium">Medium</option>
+          <option value="Hard">Hard</option>
+        </select>
+      </label>
+      <label class="cw-field cw-field--sm">
+        <span class="cw-field__label">XP Reward</span>
+        <input type="number" [value]="xpReward()" (input)="xpReward.set(+$any($event.target).value)"
+               class="cw-input" min="0" />
+      </label>
+      <label class="cw-field cw-field--sm">
+        <span class="cw-field__label">Width</span>
+        <input type="number" [value]="gridWidth()" min="3" max="25"
+               (change)="gridWidth.set(+$any($event.target).value); resizeGrid()"
+               class="cw-input" />
+      </label>
+      <label class="cw-field cw-field--sm">
+        <span class="cw-field__label">Height</span>
+        <input type="number" [value]="gridHeight()" min="3" max="25"
+               (change)="gridHeight.set(+$any($event.target).value); resizeGrid()"
+               class="cw-input" />
+      </label>
+    </section>
+
+    <div class="cw-workspace">
+      <!-- ── Visual Grid ── -->
+      <section class="cw-grid-section">
+        <h3 class="cw-section-title">Grid <small>(click cells to toggle blocks)</small></h3>
+        <div class="cw-grid-wrap">
+          <table class="cw-grid" role="grid">
+            @for (row of grid(); track $index; let ri = $index) {
+              <tr>
+                @for (cell of row; track $index; let ci = $index) {
+                  <td class="cw-cell"
+                      [class.cw-cell--blocked]="cell.blocked"
+                      [class.cw-cell--filled]="!cell.blocked && cell.letter"
+                      (click)="toggleCell(ri, ci)">
+                    @if (cell.number) {
+                      <span class="cw-cell__num">{{ cell.number }}</span>
+                    }
+                    @if (!cell.blocked && cell.letter) {
+                      <span class="cw-cell__letter">{{ cell.letter }}</span>
+                    }
+                  </td>
+                }
+              </tr>
+            }
+          </table>
+        </div>
+      </section>
+
+      <!-- ── Clues Panel ── -->
+      <section class="cw-clues-section">
+        <div class="cw-clues-header">
+          <h3 class="cw-section-title">Clues ({{ clues().length }})</h3>
+          <button class="cw-btn cw-btn--sm cw-btn--primary" (click)="openAddClue()">+ Add Clue</button>
+        </div>
+
+        <!-- Add/Edit Clue Form -->
+        @if (showClueForm()) {
+          <div class="cw-clue-form">
+            <h4>{{ editingClueIndex() !== null ? 'Edit' : 'Add' }} Clue</h4>
+            <div class="cw-clue-form__grid">
+              <label class="cw-field">
+                <span class="cw-field__label">Direction</span>
+                <select [value]="clueDirection()" (change)="clueDirection.set($any($event.target).value)" class="cw-input">
+                  <option value="across">Across →</option>
+                  <option value="down">Down ↓</option>
+                </select>
+              </label>
+              <label class="cw-field cw-field--sm">
+                <span class="cw-field__label">Row (0-based)</span>
+                <input type="number" [value]="clueRow()" (input)="clueRow.set(+$any($event.target).value)"
+                       class="cw-input" min="0" [max]="gridHeight() - 1" />
+              </label>
+              <label class="cw-field cw-field--sm">
+                <span class="cw-field__label">Col (0-based)</span>
+                <input type="number" [value]="clueCol()" (input)="clueCol.set(+$any($event.target).value)"
+                       class="cw-input" min="0" [max]="gridWidth() - 1" />
+              </label>
+            </div>
+            <label class="cw-field">
+              <span class="cw-field__label">Answer</span>
+              <input [value]="clueAnswer()" (input)="clueAnswer.set($any($event.target).value)"
+                     placeholder="e.g. APPLE" class="cw-input" style="text-transform:uppercase" />
+            </label>
+            <label class="cw-field">
+              <span class="cw-field__label">Hint</span>
+              <input [value]="clueHint()" (input)="clueHint.set($any($event.target).value)"
+                     placeholder="e.g. A common red fruit" class="cw-input" />
+            </label>
+            <div class="cw-clue-form__actions">
+              <button class="cw-btn cw-btn--primary cw-btn--sm" (click)="saveClue()">
+                {{ editingClueIndex() !== null ? 'Update' : 'Add' }} Clue
+              </button>
+              <button class="cw-btn cw-btn--sm" (click)="showClueForm.set(false)">Cancel</button>
+            </div>
+          </div>
+        }
+
+        <!-- Across Clues -->
+        @if (acrossClues().length > 0) {
+          <div class="cw-clue-group">
+            <h4 class="cw-clue-group__title">Across →</h4>
+            @for (cl of acrossClues(); track cl.id; let i = $index) {
+              <div class="cw-clue-item">
+                <span class="cw-clue-item__num">{{ cl.number }}.</span>
+                <div class="cw-clue-item__body">
+                  <span class="cw-clue-item__hint">{{ cl.hint }}</span>
+                  <span class="cw-clue-item__answer">{{ cl.answer }}</span>
+                </div>
+                <div class="cw-clue-item__actions">
+                  <button class="cw-icon-btn" (click)="editClue(clues().indexOf(cl))" title="Edit">✏️</button>
+                  <button class="cw-icon-btn" (click)="removeClue(clues().indexOf(cl))" title="Remove">🗑️</button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Down Clues -->
+        @if (downClues().length > 0) {
+          <div class="cw-clue-group">
+            <h4 class="cw-clue-group__title">Down ↓</h4>
+            @for (cl of downClues(); track cl.id; let i = $index) {
+              <div class="cw-clue-item">
+                <span class="cw-clue-item__num">{{ cl.number }}.</span>
+                <div class="cw-clue-item__body">
+                  <span class="cw-clue-item__hint">{{ cl.hint }}</span>
+                  <span class="cw-clue-item__answer">{{ cl.answer }}</span>
+                </div>
+                <div class="cw-clue-item__actions">
+                  <button class="cw-icon-btn" (click)="editClue(clues().indexOf(cl))" title="Edit">✏️</button>
+                  <button class="cw-icon-btn" (click)="removeClue(clues().indexOf(cl))" title="Remove">🗑️</button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        @if (clues().length === 0 && !showClueForm()) {
+          <p class="cw-clues-empty">No clues yet. Click "+ Add Clue" to start.</p>
+        }
+      </section>
+    </div>
+  </div>
+}

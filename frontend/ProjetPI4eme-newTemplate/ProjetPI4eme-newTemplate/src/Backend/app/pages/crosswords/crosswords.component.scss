@@ -1,0 +1,192 @@
+/* ═══ Variables ═══ */
+$bg: var(--jie-bg, #f7ede2);
+$surface: var(--jie-surface, #fff);
+$teal: var(--jie-teal, #2d5757);
+$border: var(--jie-border, #e0d5ca);
+$radius: var(--jie-radius, 14px);
+$muted: #8a7f75;
+
+:host { display: block; padding: 2rem; }
+
+/* ═══ Page (list view) ═══ */
+.cw-page { max-width: 1100px; margin: 0 auto; }
+
+.cw-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;
+}
+.cw-title { font-size: 1.6rem; font-weight: 700; color: $teal; margin: 0; }
+.cw-subtitle { font-size: .85rem; color: $muted; margin-top: 2px; }
+
+/* ── Empty state ── */
+.cw-empty {
+  text-align: center; padding: 4rem 2rem;
+  background: $surface; border: 2px dashed $border; border-radius: $radius;
+  &__icon { font-size: 3rem; margin-bottom: 1rem; }
+  h3 { font-size: 1.2rem; color: $teal; margin: 0 0 .5rem; }
+  p { color: $muted; margin: 0 0 1.5rem; }
+}
+
+/* ── Grid of cards ── */
+.cw-grid-list {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.2rem;
+}
+.cw-card {
+  background: $surface; border: 1px solid $border; border-radius: $radius;
+  padding: 1.2rem; display: flex; flex-direction: column; gap: .6rem;
+  transition: box-shadow .2s;
+  &:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); }
+  &__header { display: flex; align-items: center; justify-content: space-between; }
+  &__title { font-size: 1.05rem; font-weight: 600; color: $teal; margin: 0; }
+  &__meta { display: flex; gap: 1rem; font-size: .82rem; color: $muted; }
+  &__actions { display: flex; gap: .5rem; margin-top: auto; padding-top: .5rem; }
+}
+
+/* ── Badges ── */
+.cw-badge {
+  font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .5px;
+  padding: 3px 10px; border-radius: 20px;
+  &--easy { background: #d4edda; color: #155724; }
+  &--medium { background: #fff3cd; color: #856404; }
+  &--hard { background: #f8d7da; color: #721c24; }
+}
+.cw-xp { font-size: .82rem; font-weight: 600; color: #d4a017; }
+
+/* ═══ Builder ═══ */
+.cw-builder { max-width: 1200px; margin: 0 auto; }
+
+.cw-builder__header {
+  display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  h2 { flex: 1; font-size: 1.3rem; font-weight: 700; color: $teal; margin: 0; }
+}
+
+/* ── Error banner ── */
+.cw-error {
+  padding: .75rem 1rem; margin-bottom: 1rem;
+  background: #fdecea; color: #b71c1c; border: 1px solid #f5c6cb;
+  border-radius: 8px; font-size: .88rem;
+}
+
+/* ── Settings row ── */
+.cw-settings {
+  display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;
+  padding: 1.2rem; background: $surface; border: 1px solid $border; border-radius: $radius;
+}
+
+/* ── Workspace (grid + clues side-by-side) ── */
+.cw-workspace {
+  display: grid; grid-template-columns: 1fr 380px; gap: 1.5rem;
+  @media (max-width: 900px) { grid-template-columns: 1fr; }
+}
+
+/* ── Fields ── */
+.cw-field {
+  display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 140px;
+  &--sm { flex: 0 0 90px; min-width: 80px; }
+  &__label { font-size: .78rem; font-weight: 600; color: $muted; text-transform: uppercase; letter-spacing: .3px; }
+}
+.cw-input {
+  padding: 8px 12px; border: 1px solid $border; border-radius: 8px;
+  font-size: .9rem; background: $surface; color: #333;
+  outline: none; transition: border-color .15s;
+  &:focus { border-color: $teal; }
+}
+
+/* ═══ Visual Grid ═══ */
+.cw-grid-section {
+  background: $surface; border: 1px solid $border; border-radius: $radius;
+  padding: 1.2rem;
+}
+.cw-section-title {
+  font-size: 1rem; font-weight: 600; color: $teal; margin: 0 0 1rem;
+  small { font-weight: 400; color: $muted; font-size: .8rem; }
+}
+.cw-grid-wrap { overflow: auto; }
+
+.cw-grid {
+  border-collapse: collapse; margin: 0 auto;
+}
+.cw-cell {
+  width: 34px; height: 34px; min-width: 34px; min-height: 34px;
+  border: 1px solid #bbb; text-align: center; vertical-align: middle;
+  position: relative; cursor: pointer; user-select: none;
+  background: #fff; transition: background .1s;
+  &:hover { background: #eef6f6; }
+  &--blocked { background: $teal !important; border-color: darken(#2d5757, 8%); }
+  &--filled { background: #fffde7; }
+  &__num {
+    position: absolute; top: 1px; left: 2px;
+    font-size: 9px; font-weight: 700; color: $teal; line-height: 1;
+  }
+  &__letter {
+    font-size: 14px; font-weight: 600; color: #333; text-transform: uppercase;
+  }
+}
+
+/* ═══ Clues Panel ═══ */
+.cw-clues-section {
+  background: $surface; border: 1px solid $border; border-radius: $radius;
+  padding: 1.2rem; display: flex; flex-direction: column; gap: 1rem;
+}
+.cw-clues-header {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.cw-clues-empty { text-align: center; color: $muted; font-size: .88rem; padding: 2rem 0; }
+
+/* ── Clue Form ── */
+.cw-clue-form {
+  background: lighten(#f7ede2, 3%); border: 1px solid $border;
+  border-radius: 10px; padding: 1rem; display: flex; flex-direction: column; gap: .75rem;
+  h4 { margin: 0; font-size: .95rem; color: $teal; }
+  &__grid { display: flex; gap: .75rem; flex-wrap: wrap; }
+  &__actions { display: flex; gap: .5rem; }
+}
+
+/* ── Clue Groups ── */
+.cw-clue-group {
+  &__title {
+    font-size: .85rem; font-weight: 700; color: $teal;
+    text-transform: uppercase; letter-spacing: .5px;
+    margin: 0 0 .5rem; padding-bottom: .4rem;
+    border-bottom: 2px solid $border;
+  }
+}
+.cw-clue-item {
+  display: flex; align-items: flex-start; gap: .5rem;
+  padding: .5rem 0; border-bottom: 1px solid rgba(0,0,0,.06);
+  &__num { font-weight: 700; color: $teal; min-width: 24px; font-size: .9rem; }
+  &__body { flex: 1; }
+  &__hint { display: block; font-size: .88rem; color: #333; }
+  &__answer {
+    display: inline-block; margin-top: 2px;
+    font-size: .75rem; font-weight: 600; color: $muted;
+    background: rgba(0,0,0,.05); padding: 1px 8px; border-radius: 4px;
+    text-transform: uppercase; letter-spacing: .5px;
+  }
+  &__actions { display: flex; gap: 4px; }
+}
+
+/* ═══ Buttons ═══ */
+.cw-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 18px; border: 1px solid $border; border-radius: 8px;
+  font-size: .88rem; font-weight: 500; cursor: pointer; background: $surface;
+  color: #333; transition: all .15s;
+  &:hover { background: darken(#fff, 3%); }
+  &--primary { background: $teal; color: #fff; border-color: $teal; }
+  &--primary:hover { background: darken(#2d5757, 8%); }
+  &--primary:disabled { opacity: .5; cursor: not-allowed; }
+  &--danger { color: #c0392b; border-color: #e6b8b3; }
+  &--danger:hover { background: #fdecea; }
+  &--ghost { background: transparent; border: none; color: $teal; font-weight: 600; padding: 8px 10px; }
+  &--ghost:hover { background: rgba(0,0,0,.05); }
+  &--sm { padding: 5px 12px; font-size: .82rem; }
+  &__icon { font-size: 1.1rem; line-height: 1; }
+}
+.cw-icon-btn {
+  background: none; border: none; cursor: pointer; padding: 2px 4px;
+  font-size: .85rem; opacity: .6; transition: opacity .15s;
+  &:hover { opacity: 1; }
+}

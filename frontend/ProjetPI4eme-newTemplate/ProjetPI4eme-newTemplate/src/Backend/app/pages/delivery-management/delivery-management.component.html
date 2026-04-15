@@ -1,0 +1,232 @@
+<div class="delivery-management">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1>Delivery Management</h1>
+      <p>Manage and track all shipments</p>
+    </div>
+    <button class="btn-refresh" (click)="refresh()">
+      <i class="fas fa-sync-alt"></i>
+      Refresh
+    </button>
+  </div>
+
+  <!-- Stats Cards -->
+  @if (stats()) {
+    <div class="stats-grid">
+      <div class="stat-card total">
+        <div class="stat-icon"><i class="fas fa-box"></i></div>
+        <div class="stat-info">
+          <span class="stat-value">{{ stats()?.total || 0 }}</span>
+          <span class="stat-label">Total Deliveries</span>
+        </div>
+      </div>
+      <div class="stat-card pending">
+        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+        <div class="stat-info">
+          <span class="stat-value">{{ stats()?.pending || 0 }}</span>
+          <span class="stat-label">Pending</span>
+        </div>
+      </div>
+      <div class="stat-card transit">
+        <div class="stat-icon"><i class="fas fa-truck"></i></div>
+        <div class="stat-info">
+          <span class="stat-value">{{ stats()?.inTransit || 0 }}</span>
+          <span class="stat-label">In Transit</span>
+        </div>
+      </div>
+      <div class="stat-card delivered">
+        <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+        <div class="stat-info">
+          <span class="stat-value">{{ stats()?.delivered || 0 }}</span>
+          <span class="stat-label">Delivered</span>
+        </div>
+      </div>
+      <div class="stat-card failed">
+        <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+        <div class="stat-info">
+          <span class="stat-value">{{ stats()?.failed || 0 }}</span>
+          <span class="stat-label">Failed/Returned</span>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Filters -->
+  <div class="filters-bar">
+    <div class="search-box">
+      <i class="fas fa-search"></i>
+      <input 
+        type="text" 
+        placeholder="Search by name, tracking, address..." 
+        [value]="searchTerm()"
+        (input)="onSearchChange($event.target.value)"
+      >
+    </div>
+    <div class="status-filter">
+      <select [value]="statusFilter()" (change)="onStatusFilterChange($any($event.target).value)">
+        <option value="ALL">All Statuses</option>
+        @for (status of statuses; track status) {
+          <option [value]="status">{{ statusLabels[status] }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading deliveries...</p>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (error()) {
+    <div class="error-state">
+      <i class="fas fa-exclamation-circle"></i>
+      <p>{{ error() }}</p>
+      <button class="btn-retry" (click)="loadDeliveries()">Retry</button>
+    </div>
+  }
+
+  <!-- Deliveries Table -->
+  @if (!isLoading() && !error()) {
+    <div class="table-container">
+      @if (filteredDeliveries().length === 0) {
+        <div class="empty-state">
+          <i class="fas fa-inbox"></i>
+          <p>No deliveries found</p>
+        </div>
+      } @else {
+        <table class="deliveries-table">
+          <thead>
+            <tr>
+              <th>Order #</th>
+              <th>Customer</th>
+              <th>Address</th>
+              <th>Tracking</th>
+              <th>Status</th>
+              <th>Est. Delivery</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (delivery of pagedDeliveries(); track delivery.idDelivery) {
+              <tr>
+                <td class="order-id">#{{ delivery.orderId }}</td>
+                <td class="customer">
+                  <span class="customer-name">{{ delivery.customerName || 'N/A' }}</span>
+                  @if (delivery.customerEmail) {
+                    <span class="customer-email">{{ delivery.customerEmail }}</span>
+                  }
+                </td>
+                <td class="address">
+                  <span class="address-line">{{ delivery.address }}</span>
+                  <span class="city-line">{{ delivery.city }}, {{ delivery.postalCode }}</span>
+                </td>
+                <td class="tracking">
+                  @if (delivery.trackingNumber) {
+                    <span class="tracking-number">{{ delivery.trackingNumber }}</span>
+                    @if (delivery.carrier) {
+                      <span class="carrier">{{ delivery.carrier }}</span>
+                    }
+                  } @else {
+                    <span class="no-tracking">Not assigned</span>
+                  }
+                </td>
+                <td>
+                  <span class="status-badge" [class]="getStatusClass(delivery.status)">
+                    {{ statusLabels[delivery.status] }}
+                  </span>
+                </td>
+                <td class="date">{{ formatDate(delivery.estimatedDeliveryDate) }}</td>
+                <td class="actions">
+                  <button class="btn-action edit" (click)="openEditModal(delivery)" title="Edit">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="btn-action delete" (click)="deleteDelivery(delivery)" title="Delete">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+
+        <app-pagination
+          [currentPage]="page()"
+          [totalPages]="pageCount()"
+          [totalItems]="filteredDeliveries().length"
+          (pageChange)="setPage($event)"
+        />
+      }
+    </div>
+  }
+
+  <!-- Edit Modal -->
+  @if (isEditModalOpen()) {
+    <div class="modal-overlay" (click)="closeEditModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Edit Delivery #{{ editingDelivery()?.orderId }}</h2>
+          <button class="btn-close" (click)="closeEditModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Status</label>
+            <select [(ngModel)]="editForm.status">
+              @for (status of statuses; track status) {
+                <option [value]="status">{{ statusLabels[status] }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Tracking Number</label>
+              <input type="text" [(ngModel)]="editForm.trackingNumber" placeholder="Enter tracking number">
+            </div>
+            <div class="form-group">
+              <label>Carrier</label>
+              <input type="text" [(ngModel)]="editForm.carrier" placeholder="e.g., FedEx, UPS">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Address</label>
+            <input type="text" [(ngModel)]="editForm.address" placeholder="Street address">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>City</label>
+              <input type="text" [(ngModel)]="editForm.city" placeholder="City">
+            </div>
+            <div class="form-group">
+              <label>Postal Code</label>
+              <input type="text" [(ngModel)]="editForm.postalCode" placeholder="Postal code">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Country</label>
+              <input type="text" [(ngModel)]="editForm.country" placeholder="Country">
+            </div>
+            <div class="form-group">
+              <label>Phone</label>
+              <input type="text" [(ngModel)]="editForm.phoneNumber" placeholder="Phone number">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Notes</label>
+            <textarea [(ngModel)]="editForm.notes" rows="3" placeholder="Delivery notes..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" (click)="closeEditModal()">Cancel</button>
+          <button class="btn-save" (click)="saveDelivery()">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

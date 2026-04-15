@@ -1,0 +1,111 @@
+<main class="crossword-page">
+  <header class="cw-header">
+    <h1 class="cw-title">{{ gameTitle() }}</h1>
+    <div class="cw-pills">
+      <button class="pill" [class.active]="difficulty() === 'Beginner'" (click)="setDifficulty('Beginner')">Beginner</button>
+      <button class="pill" [class.active]="difficulty() === 'Medium'" (click)="setDifficulty('Medium')">Medium</button>
+      <button class="pill" [class.active]="difficulty() === 'Hard'" (click)="setDifficulty('Hard')">Hard</button>
+    </div>
+  </header>
+
+  <!-- Timer bar -->
+  <div *ngIf="timerDuration() > 0" class="cw-timer-bar" [class.urgent]="timerRemaining() <= 10">
+    <div class="cw-timer-icon">⏱</div>
+    <div class="cw-timer-text">{{ formatTime(timerRemaining()) }}</div>
+    <div class="cw-timer-track">
+      <div class="cw-timer-fill" [style.width.%]="timerDuration() > 0 ? (timerRemaining() / timerDuration()) * 100 : 0"></div>
+    </div>
+  </div>
+
+  <div *ngIf="loading()" class="cw-loading">Loading crossword...</div>
+  <div *ngIf="error()" class="cw-error">{{ error() }}</div>
+
+  <div *ngIf="game() as g" class="cw-layout">
+    <!-- Grid -->
+    <section class="cw-grid-section">
+      <div class="cw-grid" [style.grid-template-columns]="'repeat(' + gridWidth + ', 40px)'">
+        <ng-container *ngFor="let row of cells; let r = index">
+          <ng-container *ngFor="let cell of row; let c = index">
+            <!-- Block cell -->
+            <div *ngIf="cell.isBlock" class="cw-cell cw-block"></div>
+
+            <!-- Letter cell -->
+            <div *ngIf="!cell.isBlock"
+                 class="cw-cell cw-letter"
+                 [class.highlighted]="isCellHighlighted(cell)"
+                 [class.correct]="cell.correct === true"
+                 [class.incorrect]="cell.correct === false">
+              <span *ngIf="cell.clueNumber" class="cw-number">{{ cell.clueNumber }}</span>
+              <input #cellInput
+                     type="text"
+                     maxlength="1"
+                     autocomplete="off"
+                     class="cw-input"
+                     [value]="cell.letter"
+                     (input)="onCellInput($event, r, c)"
+                     (keydown)="onCellKeydown($event, r, c)"
+                     (focus)="onCellFocus(cell)" />
+            </div>
+          </ng-container>
+        </ng-container>
+      </div>
+    </section>
+
+    <!-- Clues sidebar -->
+    <aside class="cw-sidebar">
+      <div class="cw-info-card">
+        <h2 class="cw-info-title">{{ g.title }}</h2>
+        <div class="cw-info-meta">{{ g.difficulty }} &middot; {{ g.xpReward }} XP</div>
+      </div>
+
+      <div class="cw-clues-card" *ngIf="acrossClues.length">
+        <h3 class="cw-clues-heading">Across</h3>
+        <div *ngFor="let clue of acrossClues"
+             class="cw-clue"
+             [class.active]="selectedClueId === clue.id"
+             (click)="selectClue(clue)">
+          <span class="cw-clue-num">{{ clue.number }}.</span>
+          <span class="cw-clue-hint">{{ clue.hint }}</span>
+        </div>
+      </div>
+
+      <div class="cw-clues-card" *ngIf="downClues.length">
+        <h3 class="cw-clues-heading">Down</h3>
+        <div *ngFor="let clue of downClues"
+             class="cw-clue"
+             [class.active]="selectedClueId === clue.id"
+             (click)="selectClue(clue)">
+          <span class="cw-clue-num">{{ clue.number }}.</span>
+          <span class="cw-clue-hint">{{ clue.hint }}</span>
+        </div>
+      </div>
+
+      <button class="cw-submit" (click)="submit()">Check Answers</button>
+
+      <div *ngIf="result() as res" class="cw-result" [class.all-correct]="res.allCorrect">
+        <div class="cw-result-score">{{ res.correct }} / {{ res.total }} correct</div>
+        <div *ngIf="res.allCorrect" class="cw-result-win">All correct! Well done!</div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- XP Popup Overlay -->
+  <div *ngIf="showXpPopup()" class="xp-overlay" (click)="goBackToGamification()">
+    <div class="xp-popup" (click)="$event.stopPropagation()">
+      <div class="xp-popup-icon" [class.xp-all-correct]="result()?.allCorrect">
+        {{ result()?.allCorrect ? '🏆' : '⭐' }}
+      </div>
+      <h2 class="xp-popup-title">
+        {{ result()?.allCorrect ? 'Perfect Score!' : 'Game Complete!' }}
+      </h2>
+      <div class="xp-popup-score">
+        {{ result()?.correct }} / {{ result()?.total }} correct
+      </div>
+      <div class="xp-popup-xp">+{{ earnedXp() }} XP</div>
+      <p class="xp-popup-sub">
+        {{ result()?.allCorrect ? 'Congratulations! You nailed it!' : 'Great effort! Keep practicing!' }}
+      </p>
+      <button class="xp-popup-btn" (click)="goBackToGamification()">Back to Gamification</button>
+    </div>
+  </div>
+</main>

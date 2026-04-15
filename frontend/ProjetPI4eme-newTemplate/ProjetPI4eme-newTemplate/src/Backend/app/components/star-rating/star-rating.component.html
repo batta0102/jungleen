@@ -1,0 +1,20 @@
+<div 
+  class="star-rating" 
+  [class.disabled]="disabled"
+  [class.readonly]="readonly"
+  (mouseleave)="clearHoverRating()"
+>
+  <button
+    *ngFor="let star of stars"
+    type="button"
+    class="star"
+    [class.filled]="star <= displayRating"
+    [class.empty]="star > displayRating"
+    (click)="setRating(star)"
+    (mouseenter)="setHoverRating(star)"
+    [disabled]="disabled"
+    [attr.aria-label]="star + ' stars'"
+  >
+    ★
+  </button>
+</div>

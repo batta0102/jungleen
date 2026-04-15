@@ -1,0 +1,13 @@
+@if (open()) {
+  <div class="backdrop" (mousedown)="onBackdropMouseDown($event)">
+    <div class="dialog" role="dialog" aria-modal="true" [attr.aria-label]="title()">
+      <div class="header">
+        <div class="title">{{ title() }}</div>
+        <button class="btn btn-ghost" type="button" (click)="close()" data-autofocus>Close</button>
+      </div>
+      <div class="body">
+        <ng-content />
+      </div>
+    </div>
+  </div>
+}

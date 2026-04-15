@@ -1,0 +1,80 @@
+@if (isOpen()) {
+  <div class="dialog-overlay" (click)="onCancel()">
+    <div class="dialog-container" (click)="$event.stopPropagation()">
+      <div class="dialog-header">
+        <h2 class="dialog-title">Create Order</h2>
+        <button class="dialog-close" type="button" (click)="onCancel()" aria-label="Close dialog">×</button>
+      </div>
+
+      <div class="dialog-body">
+        <!-- Product Name (Read-only) -->
+        <div class="form-group">
+          <label class="form-label">Product</label>
+          <div class="form-value">{{ product().name }}</div>
+        </div>
+
+        <!-- Total Amount (Read-only) -->
+        <div class="form-group">
+          <label class="form-label">Total Amount</label>
+          <div class="form-value">{{ product().price | currency }}</div>
+        </div>
+
+        <!-- Payment Method (Select) -->
+        <div class="form-group">
+          <label for="payment-method" class="form-label">Payment Method *</label>
+          <select
+            id="payment-method"
+            class="form-select"
+            [ngModel]="paymentMethod()"
+            (ngModelChange)="paymentMethod.set($event)"
+          >
+            <option value="CREDIT_CARD">Credit Card</option>
+            <option value="CASH">Cash</option>
+          </select>
+        </div>
+
+        <!-- Status (Hidden, default PENDING) -->
+        <!-- Status will be set to PENDING automatically -->
+
+        <!-- Error Message -->
+        @if (errorMessage()) {
+          <div class="alert alert-error">
+            <span class="alert-icon">⚠️</span>
+            <span>{{ errorMessage() }}</span>
+          </div>
+        }
+
+        <!-- Success Message -->
+        @if (successMessage()) {
+          <div class="alert alert-success">
+            <span class="alert-icon">✓</span>
+            <span>{{ successMessage() }}</span>
+          </div>
+        }
+      </div>
+
+      <div class="dialog-footer">
+        <button
+          class="btn btn-secondary"
+          type="button"
+          (click)="onCancel()"
+          [disabled]="isLoading()"
+        >
+          Cancel
+        </button>
+        <button
+          class="btn btn-primary"
+          type="button"
+          (click)="onSave()"
+          [disabled]="isLoading()"
+        >
+          @if (isLoading()) {
+            <span class="spinner-small"></span> Saving...
+          } @else {
+            Save
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

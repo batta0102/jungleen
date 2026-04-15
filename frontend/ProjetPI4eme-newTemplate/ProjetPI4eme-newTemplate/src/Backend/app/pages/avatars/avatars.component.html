@@ -1,0 +1,96 @@
+<main class="mx-auto max-w-4xl px-6 py-8">
+  <header class="mb-6 flex items-center justify-between">
+    <h1 class="text-2xl font-semibold">Avatars</h1>
+    <button (click)="openPopup()" class="btn btn-primary">New Avatar</button>
+  </header>
+
+  <!-- Create Popup -->
+  @if (showPopup()) {
+    <div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+      <div class="bg-white p-6 rounded shadow w-96">
+        <h2 class="text-lg font-medium mb-4">Add Avatar</h2>
+        <form (ngSubmit)="create()">
+          <input [value]="newAvatar().type" (input)="updateNewAvatar('type', $any($event.target).value)"
+                 name="type" placeholder="Type (e.g., Warrior, Mage)"
+                 class="w-full mb-2 p-2 border rounded" required />
+
+          <div class="mb-2">
+            <label class="block text-sm font-medium mb-1">Avatar Image</label>
+            <input type="file" accept="image/*"
+                   (change)="onFileSelected($event)"
+                   class="w-full p-2 border rounded" />
+            <p class="text-xs text-gray-500 mt-1">Upload an image file (JPG, PNG, etc.)</p>
+          </div>
+
+          @if (previewUrl()) {
+            <div class="mb-3 text-center">
+              <img [src]="previewUrl()" alt="Preview" class="max-w-32 max-h-32 mx-auto rounded border" />
+            </div>
+          }
+
+          <div class="flex justify-end gap-2">
+            <button type="button" (click)="closePopup()" class="btn">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="!newAvatar().type">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Edit popup -->
+  @if (editAvatar(); as ea) {
+    <div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+      <div class="bg-white p-6 rounded shadow w-96">
+        <h2 class="text-lg font-medium mb-4">Edit Avatar</h2>
+        <form (ngSubmit)="update()">
+          <input [value]="ea.type" (input)="updateEditAvatar('type', $any($event.target).value)"
+                 name="editType" placeholder="Type"
+                 class="w-full mb-2 p-2 border rounded" required />
+
+          <div class="mb-2">
+            <label class="block text-sm font-medium mb-1">Change Image (optional)</label>
+            <input type="file" accept="image/*"
+                   (change)="onEditFileSelected($event)"
+                   class="w-full p-2 border rounded" />
+          </div>
+
+          @if (editPreviewUrl() || ea.imageUrl) {
+            <div class="mb-3 text-center">
+              <img [src]="editPreviewUrl() || ea.imageUrl" alt="Preview" class="max-w-32 max-h-32 mx-auto rounded border" />
+            </div>
+          }
+
+          <div class="flex justify-end gap-2">
+            <button type="button" (click)="editAvatar.set(null)" class="btn">Cancel</button>
+            <button type="submit" class="btn btn-primary">Update</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <ul class="space-y-2">
+    @for (a of avatars(); track a.id) {
+      <li class="p-3 border rounded flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <img [src]="a.imageUrl || '/assets/default-avatar.png'" [alt]="a.type"
+               class="w-16 h-16 rounded object-cover border-2 border-gray-200" />
+          <div>
+            <div class="font-medium text-lg">{{ a.type }}</div>
+            <div class="text-sm text-muted">ID: {{ a.id }}</div>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <button (click)="startEdit(a)" class="text-blue-600 hover:underline">Edit</button>
+          <button (click)="delete(a.id!)" class="text-red-600 hover:underline">Delete</button>
+        </div>
+      </li>
+    }
+  </ul>
+
+  @if (avatars().length === 0) {
+    <div class="text-center py-8 text-gray-500">
+      No avatars yet. Click "New Avatar" to create one.
+    </div>
+  }
+</main>

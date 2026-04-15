@@ -1,0 +1,176 @@
+<div class="container">
+  <header class="events-header">
+    <div class="head-left">
+      <div class="crumb" aria-label="Breadcrumb">
+        <span class="muted">Dashboard</span>
+        <span class="muted">›</span>
+        <span>Events</span>
+      </div>
+      <h1 class="page-title">Upcoming Events</h1>
+      <p class="page-subtitle">Discover and register for upcoming workshops, webinars, and learning sessions</p>
+    </div>
+
+    <div class="head-right" aria-label="Search">
+      <div class="search">
+        <span class="search-icon" aria-hidden="true">⌕</span>
+        <input
+          class="search-input"
+          type="search"
+          placeholder="Search events by name or topic..."
+          [ngModel]="query()"
+          (ngModelChange)="query.set($event)"
+          aria-label="Search events"
+        />
+      </div>
+    </div>
+  </header>
+
+  <nav class="toolbar" aria-label="Filters">
+    <div class="pill-row">
+      @for (f of filters; track f.key) {
+        <button class="pill" type="button" [attr.aria-pressed]="filter() === f.key" (click)="setFilter(f.key)">
+          {{ f.label }}
+        </button>
+      }
+    </div>
+  </nav>
+
+  <section class="events-section" aria-label="Upcoming events">
+    <h2 class="section-heading">Featured Events</h2>
+
+    <div class="events-grid">
+      @for (row of pagedEventRows(); track trackEventId($index, row)) {
+        <article class="event-card">
+          <div class="card-image-wrapper">
+            @if (row.heroSrc) {
+              <img class="card-image" [src]="row.heroSrc" [alt]="row.event.name" />
+            }
+
+            <div class="card-badges">
+              <span class="badge topic-badge">{{ row.topic }}</span>
+              @if (row.mode === 'online') {
+                <span class="badge online-badge">Online</span>
+              }
+            </div>
+
+            <div class="availability-badge" [class.limited]="row.availability === 'Limited'" [class.sold]="row.availability === 'Sold out'">
+              {{ row.availability }}
+            </div>
+
+            <button class="card-overlay-btn" type="button" (click)="selectEvent(row.event.id)" aria-label="View event details">
+              <div class="overlay">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke="currentColor" stroke-width="2"/>
+                  <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke="currentColor" stroke-width="2"/>
+                </svg>
+              </div>
+            </button>
+          </div>
+          <div class="card-content">
+            <h3 class="event-name">{{ row.event.name }}</h3>
+
+            <div class="event-meta">
+              <div class="meta-item">
+                <span class="meta-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M7 3v2M17 3v2M4 8h16M6 6h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </span>
+                <span class="meta-text">{{ row.event.date }}</span>
+              </div>
+
+              <div class="meta-item">
+                <span class="meta-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M12 7v5l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                </span>
+                <span class="meta-text">{{ row.event.time }}</span>
+              </div>
+            </div>
+
+            <div class="event-location">
+              <span class="location-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11Z" stroke="currentColor" stroke-width="2"/>
+                  <path d="M12 10.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" stroke="currentColor" stroke-width="2"/>
+                </svg>
+              </span>
+              <span class="location-text">{{ row.event.location }}</span>
+            </div>
+
+            <div class="event-footer">
+              <span class="price-badge" [class.free]="row.event.priceType === 'free'">
+                {{ priceLabel(row.event.priceType, row.priceTnd) }}
+              </span>
+
+              @if (isBooked(row.event.id)) {
+                <span class="status-badge booked">✓ Registered</span>
+              } @else {
+                <button
+                  class="card-action-btn"
+                  type="button"
+                  (click)="selectEvent(row.event.id)"
+                  [class.disabled]="row.availability === 'Sold out'"
+                >
+                  {{ row.event.priceType === 'free' ? 'RSVP' : 'Book' }}
+                </button>
+              }
+            </div>
+          </div>
+        </article>
+      }
+
+      @if (eventRows().length === 0) {
+        <div class="empty-state">
+          <div class="empty-icon">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M9 9a3 3 0 000 6h3m-3 0a3 3 0 110-6h3m-3 6a3 3 0 110-6h3" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </div>
+          <h3>No events found</h3>
+          <p>Try a different filter or search query to find events.</p>
+          <button class="btn btn-secondary" type="button" (click)="query.set(''); setFilter('all')">
+            Clear Filters
+          </button>
+        </div>
+      }
+    </div>
+
+    <!-- Pagination -->
+    @if (eventRows().length > pageSize) {
+      <app-pagination
+        [currentPage]="page()"
+        [totalPages]="pageCount()"
+        [totalItems]="eventRows().length"
+        (pageChange)="setPage($event)"
+      />
+    }
+  </section>
+
+  <!-- Event Modal -->
+  @if (selectedRow(); as sel) {
+    <app-event-modal
+      [open]="showEventModal()"
+      [event]="sel.event"
+      [isBooked]="isBooked(sel.event.id)"
+      [isPaymentProcessing]="isPaymentProcessing()"
+      (rsvpClicked)="onRsvpClick(sel.event.id); closeEventModal()"
+      (payClicked)="onPayClick()"
+      (closed)="closeEventModal()"
+    />
+  }
+
+  <!-- Payment Modal -->
+  @if (selectedRow(); as sel) {
+    <app-payment-modal
+      [open]="showPaymentModal()"
+      [event]="sel.event"
+      [isProcessing]="isPaymentProcessing()"
+      (paymentComplete)="onPaymentComplete($event)"
+      (closed)="closePaymentModal()"
+    />
+  }
+</div>
+                <ol class="muted">

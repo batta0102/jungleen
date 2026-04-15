@@ -1,0 +1,75 @@
+<main class="mx-auto max-w-7xl px-6 py-8">
+  <header class="mb-8 flex items-start justify-between">
+    <div>
+      <h1 class="font-serif text-5xl font-semibold text-text">Language Clubs</h1>
+      <p class="mt-2 text-secondary">Learning communities and extracurricular activities.</p>
+    </div>
+    <button class="inline-flex items-center gap-3 bg-primary text-white px-5 py-3 rounded-lg shadow-md hover:bg-primary-hover">
+      <span class="text-xl">+</span>
+      Create Club
+    </button>
+  </header>
+
+  <div class="border-b border-border pb-4 mb-6">
+    <nav class="flex gap-8 text-sm text-secondary">
+      <a class="border-b-2 border-primary pb-2 text-primary font-semibold">Active Clubs</a>
+      <a class="pb-2 hover:text-text">Activities</a>
+      <a class="pb-2 hover:text-text">Members</a>
+    </nav>
+  </div>
+
+  <div class="grid grid-cols-1 gap-4 md:grid-cols-3 items-center mb-6">
+    <div class="md:col-span-2">
+      <div class="relative w-full">
+        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-secondary">🔍</span>
+        <input placeholder="Search clubs..." class="w-full pl-12 pr-4 py-3 rounded-lg border border-border placeholder-secondary" />
+      </div>
+    </div>
+    <div class="flex gap-4 justify-end">
+      <select class="px-4 py-3 rounded-lg border border-border bg-white">
+        <option>All Types</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+    <div class="lg:col-span-2">
+      <div class="space-y-6">
+        <app-club-card *ngFor="let club of clubs" [title]="club.title" [description]="club.description" [icon]="club.icon" [members]="club.members" [location]="club.location" [color]="club.color"></app-club-card>
+      </div>
+    </div>
+
+    <div class="space-y-6">
+      <!-- Upcoming Meetups -->
+      <div app-card>
+        <h3 class="font-serif text-lg font-semibold text-text mb-4">Upcoming Meetups</h3>
+        <div class="space-y-4">
+          <div *ngFor="let event of upcomingEvents" class="flex items-start justify-between">
+            <div>
+              <p class="text-sm font-medium text-text">{{ event.title }}</p>
+              <p class="text-xs text-secondary">{{ event.time }}</p>
+            </div>
+            <span class="text-xs text-secondary bg-light px-3 py-1 rounded-full">RSVP</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div app-card>
+        <h3 class="font-serif text-lg font-semibold text-text mb-4">Recent Activity</h3>
+        <div class="space-y-4">
+          <div *ngFor="let activity of recentActivities" class="flex items-start gap-3">
+            <span class="text-primary font-bold text-lg">•</span>
+            <div>
+              <p class="text-sm font-medium text-text">{{ activity.title }}</p>
+              <p class="text-xs text-secondary">{{ activity.desc }}</p>
+              <p class="text-xs text-secondary mt-1">{{ activity.time }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <app-empty-state *ngIf="clubs.length === 0" title="No clubs found" description="Be the first to create a club" emoji="🎭"></app-empty-state>
+</main>

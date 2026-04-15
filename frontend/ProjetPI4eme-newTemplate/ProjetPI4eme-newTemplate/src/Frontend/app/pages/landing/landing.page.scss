@@ -1,0 +1,445 @@
+/* Landing layout tuned to match the provided reference image */
+
+.hero {
+  position: relative;
+  padding: 1.2rem 0 1.6rem;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-bottom: 1px solid var(--jie-border);
+  background:
+    linear-gradient(90deg, color-mix(in srgb, black 62%, transparent), transparent 62%),
+    radial-gradient(1200px 450px at 60% 0%, color-mix(in srgb, var(--jie-teal) 28%, transparent), transparent 62%),
+    url('/englishimg1.jpg');
+  background-size: auto, auto, cover;
+  background-position: center, center, center;
+  background-repeat: no-repeat;
+  filter: saturate(1.05) contrast(1.02);
+}
+
+.hero-shell {
+  position: relative;
+  min-height: 320px;
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 1rem;
+  align-items: end;
+  padding: 1rem 0;
+}
+
+.hero-copy {
+  color: white;
+  padding: 0.25rem 0;
+}
+
+.hero-kicker {
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  opacity: 0.95;
+}
+
+.hero-title {
+  margin: 0.35rem 0 0;
+  font-size: clamp(2.1rem, 4.2vw, 3.1rem);
+  letter-spacing: -0.8px;
+}
+
+.hero-lead {
+  margin: 0.6rem 0 1rem;
+  opacity: 0.92;
+  font-size: 1.05rem;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.hero-actions .btn-ghost {
+  border-color: color-mix(in srgb, white 65%, transparent);
+  background: color-mix(in srgb, white 12%, transparent);
+  color: white;
+}
+
+.hero-actions .btn-ghost:hover {
+  background: color-mix(in srgb, white 18%, transparent);
+}
+
+.hero-aside {
+  overflow: hidden;
+}
+
+.hero-aside-media {
+  height: 160px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, black 14%, transparent), transparent 55%),
+    url('/englishimg2.png');
+  background-size: auto, cover;
+  background-position: center, center;
+  background-repeat: no-repeat;
+}
+
+.hero-aside-body {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.hero-aside-title {
+  font-weight: 800;
+}
+
+.hero-aside-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.kicker {
+  font-weight: 800;
+  margin-bottom: 0.25rem;
+}
+
+.about-split {
+  display: grid;
+  grid-template-columns: 1.25fr 0.75fr;
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.about-points {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.about-features-lead {
+  margin: 0.35rem 0 0;
+}
+
+.about-features {
+  margin-top: 1.1rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.about-feature {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.9rem;
+  border-radius: 12px;
+  border: 1px solid var(--jie-border);
+  background: color-mix(in srgb, var(--jie-bg) 55%, white);
+}
+
+.feature-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: var(--jie-teal);
+  color: white;
+  flex: 0 0 auto;
+}
+
+.feature-svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+  display: block;
+}
+
+.feature-title {
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.about-point {
+  padding: 0.75rem;
+  border-radius: 12px;
+  border: 1px solid var(--jie-border);
+  background: color-mix(in srgb, var(--jie-bg) 55%, white);
+}
+
+.about-media {
+  align-self: stretch;
+  overflow: hidden;
+}
+
+
+.about-media-top {
+  height: 100%;
+  min-height: 420px;
+  background: url('/jungleabout.png') center 75% / cover no-repeat;
+}
+
+.stats {
+  background: var(--jie-teal);
+  color: white;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  padding: 1.1rem 1rem;
+}
+
+.stat {
+  display: grid;
+  gap: 0.15rem;
+  text-align: center;
+}
+
+.stat-value {
+  font-weight: 900;
+  font-size: 1.6rem;
+  letter-spacing: -0.4px;
+}
+
+.stat-label {
+  opacity: 0.9;
+  font-size: 0.95rem;
+}
+
+.section-head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.scroll-row {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(280px, 1fr);
+  overflow-x: auto;
+  gap: 1rem;
+  padding-bottom: 0.5rem;
+  scroll-snap-type: x mandatory;
+}
+
+.scroll-item {
+  scroll-snap-align: start;
+}
+
+.scroll-wrap {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.scroll-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: 1px solid var(--jie-border);
+  background: color-mix(in srgb, var(--jie-bg) 40%, white);
+  color: var(--jie-text);
+  cursor: pointer;
+}
+
+.scroll-btn:hover {
+  background: color-mix(in srgb, var(--jie-bg) 25%, white);
+}
+
+.module-card {
+  overflow: hidden;
+}
+
+.module-thumb {
+  height: 120px;
+  background:
+    radial-gradient(240px 140px at 70% 30%, color-mix(in srgb, var(--jie-teal) 18%, transparent), transparent 60%),
+    linear-gradient(135deg, color-mix(in srgb, var(--jie-teal) 12%, var(--jie-bg)), white);
+}
+
+.module-thumb--clubs {
+  background:
+    radial-gradient(240px 140px at 30% 30%, color-mix(in srgb, var(--jie-teal) 18%, transparent), transparent 60%),
+    linear-gradient(135deg, color-mix(in srgb, var(--jie-teal) 8%, var(--jie-bg)), white);
+}
+
+.module-thumb--events {
+  background:
+    radial-gradient(240px 140px at 70% 35%, color-mix(in srgb, var(--jie-teal) 22%, transparent), transparent 60%),
+    linear-gradient(135deg, color-mix(in srgb, var(--jie-teal) 14%, var(--jie-bg)), white);
+}
+
+.item-title {
+  font-weight: 800;
+}
+
+.item-actions {
+  margin-top: 0.75rem;
+}
+
+.badges {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.badge {
+  border-radius: 999px;
+  padding: 0.25rem 0.6rem;
+  border: 1px solid var(--jie-border);
+  background: color-mix(in srgb, var(--jie-teal) 8%, transparent);
+  font-size: 0.9rem;
+}
+
+.quote {
+  margin: 0 0 0.75rem;
+  font-weight: 600;
+}
+
+.why-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.why-card {
+  transition: transform 120ms ease;
+}
+
+.why-card:hover {
+  transform: translateY(-2px);
+}
+
+.why-card--active {
+  background: var(--jie-teal);
+  color: white;
+  border-color: var(--jie-teal);
+}
+
+.why-card--active .muted {
+  color: color-mix(in srgb, white 80%, transparent);
+}
+
+.feedback-card {
+  position: relative;
+}
+
+.feedback-quote {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.85rem;
+  font-size: 2.2rem;
+  line-height: 1;
+  color: color-mix(in srgb, var(--jie-teal) 35%, transparent);
+}
+
+.grid-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.instructor-card {
+  overflow: hidden;
+}
+
+.instructor-photo {
+  height: 150px;
+  background:
+    radial-gradient(220px 140px at 30% 40%, color-mix(in srgb, var(--jie-teal) 18%, transparent), transparent 60%),
+    linear-gradient(135deg, color-mix(in srgb, var(--jie-teal) 10%, var(--jie-bg)), white);
+}
+
+.success {
+  padding: 0.75rem 0.9rem;
+  border-radius: 12px;
+  border: 1px solid var(--jie-border);
+  background: color-mix(in srgb, var(--jie-teal) 12%, white);
+  margin-bottom: 1rem;
+}
+
+.contact-split {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.contact-grid .field {
+  margin: 0;
+}
+
+.contact-media {
+  overflow: hidden;
+}
+
+.contact-media-inner {
+  height: 100%;
+  min-height: 340px;
+  background:
+    url('/contactusjungle.png') center 12% / cover no-repeat,
+    radial-gradient(260px 200px at 50% 38%, color-mix(in srgb, var(--jie-bg) 35%, white), transparent 60%),
+    radial-gradient(240px 170px at 65% 35%, color-mix(in srgb, var(--jie-teal) 18%, transparent), transparent 65%),
+    linear-gradient(135deg, color-mix(in srgb, var(--jie-teal) 8%, var(--jie-bg)), white);
+}
+
+@media (max-width: 900px) {
+  .hero-shell {
+    grid-template-columns: 1fr;
+    min-height: unset;
+  }
+
+  .about-split {
+    grid-template-columns: 1fr;
+  }
+
+  .about-features {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .why-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .grid-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .contact-split {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .section-head {
+    flex-direction: column;
+    align-items: start;
+  }
+
+  .scroll-wrap {
+    grid-template-columns: 1fr;
+  }
+
+  .scroll-btn {
+    display: none;
+  }
+
+  .contact-grid {
+    grid-template-columns: 1fr;
+  }
+}

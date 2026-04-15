@@ -1,0 +1,169 @@
+<div class="container">
+  <header class="lib-header" aria-label="Breadcrumb">
+    <div class="crumb">
+      <a routerLink="/front" class="breadcrumb-link">Home</a>
+      <span class="muted">›</span>
+      <a routerLink="/front/products" class="breadcrumb-link active">Products</a>
+    </div>
+  </header>
+
+  <div class="lib-layout">
+    <aside class="filters" aria-label="Filter products">
+      <div class="card filters-card">
+        <div class="card-body">
+          <div class="filters-title">Filter Products</div>
+
+          <details class="filter-group" open>
+            <summary class="filter-summary">
+              <span>Price Range</span>
+              <span class="chev" aria-hidden="true">⌃</span>
+            </summary>
+            <div class="filter-body">
+              <label class="check">
+                <input type="checkbox" checked disabled />
+                <span>All Prices</span>
+              </label>
+              <label class="check">
+                <input type="checkbox" disabled />
+                <span>Under $25</span>
+              </label>
+              <label class="check">
+                <input type="checkbox" disabled />
+                <span>$25 - $50</span>
+              </label>
+              <label class="check">
+                <input type="checkbox" disabled />
+                <span>Over $50</span>
+              </label>
+            </div>
+          </details>
+
+          <details class="filter-group" open>
+            <summary class="filter-summary">
+              <span>Availability</span>
+              <span class="chev" aria-hidden="true">⌃</span>
+            </summary>
+            <div class="filter-body">
+              <label class="check">
+                <input type="checkbox" checked disabled />
+                <span>In Stock</span>
+              </label>
+              <label class="check">
+                <input type="checkbox" disabled />
+                <span>Out of Stock</span>
+              </label>
+            </div>
+          </details>
+
+          <button class="btn btn-primary apply" type="button" disabled>Apply Filters</button>
+        </div>
+      </div>
+    </aside>
+
+    <section class="results" aria-label="Products">
+      <div class="topbar">
+        <div class="search" aria-label="Search products">
+          <span class="search-icon" aria-hidden="true">⌕</span>
+          <input
+            class="search-input"
+            type="search"
+            placeholder="Search products..."
+            [ngModel]="query()"
+            (ngModelChange)="query.set($event); page.set(1)"
+            aria-label="Search products"
+          />
+        </div>
+
+        <label class="sort" aria-label="Sort">
+          <span class="sort-label">Sort:</span>
+          <select class="sort-select" [ngModel]="sortMode()" (ngModelChange)="sortMode.set($event); page.set(1)">
+            @for (s of sorts; track s) {
+              <option [value]="s">{{ s }}</option>
+            }
+          </select>
+        </label>
+      </div>
+
+      @if (orderSuccessMessage()) {
+        <div class="alert-success-banner">
+          <span class="alert-icon">✓</span>
+          <span>{{ orderSuccessMessage() }}</span>
+        </div>
+      }
+
+      <div class="grid" style="gap: 1rem;">
+        <div class="cards">
+          @for (prod of pagedProducts(); track trackProductId($index, prod)) {
+            <article class="card prod-card">
+              <div class="prod-media">
+                <img class="prod-img" [ngSrc]="prod.imageUrl" width="320" height="170" alt="" />
+
+                @if (prod.price > 0) {
+                  <div class="price-badge">{{ prod.price | currency }}</div>
+                }
+              </div>
+
+              <div class="card-body prod-body">
+                <div class="prod-title">{{ prod.name }}</div>
+                <div class="muted prod-sub">{{ prod.category }}</div>
+                <p class="muted prod-desc">{{ prod.description }}</p>
+
+                <div class="prod-meta">
+                  <span class="meta-pill">Category: {{ prod.category }}</span>
+                  <span class="meta-pill" [class.restricted]="prod.stock === 0">
+                    {{ prod.stock > 0 ? 'In Stock' : 'Out of Stock' }}
+                  </span>
+                </div>
+
+                <div class="prod-foot">
+                  <div class="author">
+                    <span class="stars" [attr.aria-label]="starsLabel(prod.rating)">★ {{ prod.rating }}</span>
+                  </div>
+
+                  <div class="prod-actions">
+                    <button class="btn btn-primary" type="button" [disabled]="prod.stock === 0">
+                      {{ primaryActionLabel(prod) }}
+                    </button>
+                    <button class="btn" type="button">{{ secondaryActionLabel() }}</button>
+                    <button class="btn btn-secondary" type="button" (click)="openTakeOrderDialog(prod)">
+                      Take Order
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </article>
+          }
+
+          @if (pagedProducts().length === 0) {
+            <div class="card empty">
+              <div class="card-body">
+                <div class="section-title" style="margin-top: 0;">No products found</div>
+                <div class="muted">Try changing your search.</div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <nav class="pagination" aria-label="Pagination">
+        <button class="page-btn" type="button" (click)="prevPage()" [disabled]="page() <= 1" aria-label="Previous page">‹</button>
+        @for (p of pages(); track p) {
+          <button class="page-btn" type="button" [attr.aria-current]="p === page() ? 'page' : null" (click)="setPage(p)">
+            {{ p }}
+          </button>
+        }
+        <button class="page-btn" type="button" (click)="nextPage()" [disabled]="page() >= pageCount()" aria-label="Next page">›</button>
+      </nav>
+    </section>
+  </div>
+</div>
+
+<!-- Take Order Dialog -->
+@if (selectedProduct()) {
+  <app-take-order-dialog
+    [product]="selectedProduct()!"
+    [isOpen]="isOrderDialogOpen()"
+    (close)="closeTakeOrderDialog()"
+    (orderCreated)="onOrderCreated()"
+  />
+}

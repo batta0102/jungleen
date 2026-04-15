@@ -1,0 +1,134 @@
+<main class="mx-auto max-w-4xl px-6 py-8">
+  <header class="mb-6 flex items-center justify-between">
+    <h1 class="text-2xl font-semibold">Skins</h1>
+    <button (click)="openPopup()" class="btn btn-primary">New Skin</button>
+  </header>
+
+  <!-- Create Popup -->
+  @if (showPopup()) {
+    <div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+      <div class="bg-white p-6 rounded shadow w-96">
+        <h2 class="text-lg font-medium mb-4">Add Skin</h2>
+        <form (ngSubmit)="create()">
+          <select [value]="newSkin().category" (change)="updateNewSkin('category', $any($event.target).value)"
+                  name="category" class="w-full mb-2 p-2 border rounded">
+            <option value="hoodie">Hoodie</option>
+            <option value="hat">Hat</option>
+            <option value="glasses">Glasses</option>
+          </select>
+
+          <input [value]="newSkin().name" (input)="updateNewSkin('name', $any($event.target).value)"
+                 name="name" placeholder="Name"
+                 class="w-full mb-2 p-2 border rounded" required />
+
+          <div class="mb-2">
+            <label class="block text-sm font-medium mb-1">Skin Image</label>
+            <input type="file" accept="image/*"
+                   (change)="onFileSelected($event)"
+                   class="w-full p-2 border rounded" />
+            <p class="text-xs text-gray-500 mt-1">Upload an image file (JPG, PNG, etc.)</p>
+          </div>
+
+          <input [value]="newSkin().unlockLevel ?? 0" (input)="updateNewSkin('unlockLevel', +$any($event.target).value)"
+                 name="unlockLevel" type="number"
+                 placeholder="Unlock Level" class="w-full mb-2 p-2 border rounded" />
+
+          <select (change)="updateNewSkin('avatar', $any($event.target).value === '' ? null : avatars()[$any($event.target).value])"
+                  name="avatar" class="w-full mb-2 p-2 border rounded">
+            <option value="">No specific avatar</option>
+            @for (a of avatars(); track a.id; let i = $index) {
+              <option [value]="i">{{ a.type }}</option>
+            }
+          </select>
+
+          @if (previewUrl()) {
+            <div class="mb-3 text-center">
+              <img [src]="previewUrl()" alt="Preview" class="max-w-32 max-h-32 mx-auto rounded border" />
+            </div>
+          }
+
+          <div class="flex justify-end gap-2">
+            <button type="button" (click)="closePopup()" class="btn">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="!newSkin().name">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Edit popup -->
+  @if (editSkin(); as es) {
+    <div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+      <div class="bg-white p-6 rounded shadow w-96">
+        <h2 class="text-lg font-medium mb-4">Edit Skin</h2>
+        <form (ngSubmit)="update()">
+          <select [value]="es.category" (change)="updateEditSkin('category', $any($event.target).value)"
+                  name="editCategory" class="w-full mb-2 p-2 border rounded">
+            <option value="hoodie">Hoodie</option>
+            <option value="hat">Hat</option>
+            <option value="glasses">Glasses</option>
+          </select>
+
+          <input [value]="es.name" (input)="updateEditSkin('name', $any($event.target).value)"
+                 name="editName" placeholder="Name"
+                 class="w-full mb-2 p-2 border rounded" required />
+
+          <div class="mb-2">
+            <label class="block text-sm font-medium mb-1">Change Image (optional)</label>
+            <input type="file" accept="image/*"
+                   (change)="onEditFileSelected($event)"
+                   class="w-full p-2 border rounded" />
+          </div>
+
+          <input [value]="es.unlockLevel ?? 0" (input)="updateEditSkin('unlockLevel', +$any($event.target).value)"
+                 name="editUnlockLevel" type="number"
+                 placeholder="Unlock Level" class="w-full mb-2 p-2 border rounded" />
+
+          <select (change)="updateEditSkin('avatar', $any($event.target).value === '' ? null : avatars()[$any($event.target).value])"
+                  name="editAvatar" class="w-full mb-2 p-2 border rounded">
+            <option value="">No specific avatar</option>
+            @for (a of avatars(); track a.id; let i = $index) {
+              <option [value]="i">{{ a.type }}</option>
+            }
+          </select>
+
+          @if (editPreviewUrl() || es.imageUrl) {
+            <div class="mb-3 text-center">
+              <img [src]="editPreviewUrl() || es.imageUrl" alt="Preview" class="max-w-32 max-h-32 mx-auto rounded border" />
+            </div>
+          }
+
+          <div class="flex justify-end gap-2">
+            <button type="button" (click)="editSkin.set(null)" class="btn">Cancel</button>
+            <button type="submit" class="btn btn-primary">Update</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <ul class="space-y-2">
+    @for (s of skins(); track s.id) {
+      <li class="p-3 border rounded flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <img [src]="s.imageUrl || '/assets/default-skin.png'" [alt]="s.name"
+               class="w-16 h-16 rounded object-cover border-2 border-gray-200" />
+          <div>
+            <div class="font-medium text-lg">{{ s.name }} <span class="text-sm text-muted">({{ s.category }})</span></div>
+            <div class="text-sm text-muted">Avatar: {{ s.avatar?.type || 'Any' }} · Unlock Lvl {{ s.unlockLevel || 0 }}</div>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <button (click)="startEdit(s)" class="text-blue-600 hover:underline">Edit</button>
+          <button (click)="delete(s.id!)" class="text-red-600 hover:underline">Delete</button>
+        </div>
+      </li>
+    }
+  </ul>
+
+  @if (skins().length === 0) {
+    <div class="text-center py-8 text-gray-500">
+      No skins yet. Click "New Skin" to create one.
+    </div>
+  }
+</main>

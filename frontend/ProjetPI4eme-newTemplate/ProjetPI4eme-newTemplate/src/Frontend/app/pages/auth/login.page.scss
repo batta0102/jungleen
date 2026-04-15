@@ -1,0 +1,126 @@
+.auth-wrap {
+  min-height: 100dvh;
+  background: var(--jie-teal);
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+}
+
+.auth-card {
+  width: min(470px, 100%);
+  background: #f3f5f8;
+  border-radius: 14px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.14);
+  padding: 1.5rem;
+  border: 1px solid #dbe2ef;
+}
+
+.auth-logo-wrap {
+  display: grid;
+  place-items: center;
+  margin-bottom: 0.65rem;
+}
+
+.auth-logo {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+}
+
+.auth-head {
+  text-align: center;
+  margin-bottom: 0.95rem;
+}
+
+.auth-title {
+  margin: 0;
+  font-size: clamp(2.2rem, 4vw, 3rem);
+  line-height: 1;
+  font-weight: 800;
+  color: #1d5f62;
+}
+
+.auth-subtitle {
+  margin: 0.35rem 0 0;
+  color: #6f8098;
+}
+
+.form-group {
+  margin-bottom: 0.75rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: #20314c;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.form-control {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #dbe2ef;
+  background: #e9f0fa;
+  padding: 0.62rem 0.78rem;
+  color: #1a2235;
+}
+
+.form-control:focus {
+  border-color: #c4d4ec;
+  outline: none;
+}
+
+.login-btn {
+  width: 100%;
+  margin-top: 0.5rem;
+  border-radius: 8px;
+  border: 0;
+  padding: 0.72rem 0.95rem;
+  background: #1f6667;
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.login-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, #1f6667 88%, black);
+}
+
+.login-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.auth-foot {
+  margin-top: 0.95rem;
+  text-align: center;
+  color: #72839a;
+}
+
+.auth-foot a {
+  color: #1f6667;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.alert {
+  padding: 0.65rem 0.8rem;
+  border-radius: 10px;
+  border: 1px solid #e4c2c2;
+  background: #fdeeee;
+  color: #8a3131;
+  margin: 0.75rem 0;
+}
+
+.auth-divider {
+  margin: 0.85rem 0 0.65rem;
+  border-top: 1px solid #dde3ee;
+}
+
+.auth-legal {
+  margin: 0;
+  text-align: center;
+  color: #8a96ab;
+  font-size: 0.9rem;
+}
