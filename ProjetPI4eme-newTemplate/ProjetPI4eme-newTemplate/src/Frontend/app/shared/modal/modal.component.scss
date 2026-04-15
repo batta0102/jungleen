@@ -1,0 +1,37 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, black 35%, transparent);
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  z-index: 50;
+}
+
+.dialog {
+  width: min(760px, 100%);
+  max-height: min(85dvh, 860px);
+  overflow: auto;
+  background: white;
+  border-radius: var(--jie-radius);
+  border: 1px solid var(--jie-border);
+  box-shadow: var(--jie-shadow);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  border-bottom: 1px solid var(--jie-border);
+  background: color-mix(in srgb, var(--jie-bg) 70%, white);
+}
+
+.title {
+  font-weight: 800;
+}
+
+.body {
+  padding: 1rem;
+}

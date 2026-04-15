@@ -1,0 +1,69 @@
+<div class="container auth-wrap">
+  <div class="card auth-card">
+    <div class="card-body">
+      <!-- Logo -->
+      <div class="logo-container">
+        <img src="assets/logo/logo.png" alt="Jungle in English" class="auth-logo">
+      </div>
+
+      <!-- Header -->
+      <div class="auth-head">
+        <h1 class="auth-title">Login</h1>
+        <p class="auth-subtitle">Welcome back to Jungle in English</p>
+      </div>
+
+      <!-- Error Alert -->
+      @if (error(); as msg) {
+        <div class="alert alert-error" role="alert">{{ msg }}</div>
+      }
+
+      <!-- Login Form -->
+      <form class="auth-form" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input
+            id="username"
+            type="text"
+            class="form-control"
+            formControlName="username"
+            placeholder="Enter your username"
+            [disabled]="busy()" />
+          @if (loginForm.get('username')?.hasError('required') && loginForm.get('username')?.touched) {
+            <small class="error">Username is required</small>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input
+            id="password"
+            type="password"
+            class="form-control"
+            formControlName="password"
+            placeholder="Enter your password"
+            [disabled]="busy()" />
+          @if (loginForm.get('password')?.hasError('required') && loginForm.get('password')?.touched) {
+            <small class="error">Password is required</small>
+          }
+        </div>
+
+        <button class="btn btn-primary w-100" type="submit" [disabled]="!loginForm.valid || busy()">
+          {{ busy() ? 'Logging in...' : 'Login' }}
+        </button>
+      </form>
+
+      <!-- Footer -->
+      <div class="auth-foot">
+        Don't have an account?
+        <a routerLink="/front/signup">Sign up here</a>
+      </div>
+
+      <!-- Terms -->
+      <p class="terms-text">
+        By logging in, you agree to our
+        <a href="#">Terms of Service</a> and
+        <a href="#">Privacy Policy</a>
+      </p>
+    </div>
+  </div>
+</div>

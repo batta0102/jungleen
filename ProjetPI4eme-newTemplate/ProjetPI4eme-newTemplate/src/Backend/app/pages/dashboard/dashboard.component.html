@@ -1,0 +1,57 @@
+<main class="mx-auto max-w-7xl px-6 py-8">
+  <header class="mb-10">
+    <p class="mb-2 text-sm font-medium uppercase tracking-wider text-secondary">
+      {{ getCurrentDate() }}
+    </p>
+    <h1 class="font-serif text-4xl font-semibold text-text">
+      Welcome to <span class="text-primary">Jungle</span>
+    </h1>
+    <p class="mt-2 text-secondary">
+      Your next-generation language learning platform
+    </p>
+  </header>
+
+  <!-- Stats Section -->
+  <div class="mb-12 grid grid-cols-1 gap-6 md:grid-cols-2  lg:grid-cols-4">
+    <div *ngFor="let stat of stats" app-card class="cursor-pointer hover:border-primary">
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="text-sm font-medium text-secondary mb-1">{{ stat.label }}</p>
+          <p class="font-serif text-3xl font-semibold text-text">{{ stat.value }}</p>
+          <p class="mt-2 text-xs text-secondary">{{ stat.trend }}</p>
+        </div>
+        <div class="h-12 w-12 rounded-lg bg-light flex items-center justify-center text-secondary">
+          <span class="text-xl">{{ stat.icon }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mb-12 grid grid-cols-1 gap-6 lg:grid-cols-3">
+    <div class="lg:col-span-2">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="font-serif text-2xl font-semibold text-text">Current Modules</h2>
+        <a class="text-primary">View Syllabus →</a>
+      </div>
+
+      <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <app-module-card *ngFor="let module of modules" [title]="module.title" [description]="module.description" [icon]="module.icon" [progress]="module.progress"></app-module-card>
+      </div>
+    </div>
+
+    <div>
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="font-serif text-xl font-semibold text-text">Activity</h3>
+        <a class="text-primary">See all</a>
+      </div>
+      <app-card>
+        <app-activity-timeline [items]="timeline"></app-activity-timeline>
+      </app-card>
+
+      <div class="mt-6">
+        <h3 class="font-serif text-xl font-semibold text-text mb-4">Calendar</h3>
+        <app-calendar></app-calendar>
+      </div>
+    </div>
+  </div>
+</main>

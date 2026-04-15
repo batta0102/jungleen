@@ -1,0 +1,90 @@
+.divider {
+  border: none;
+  border-top: 1px solid var(--jie-border);
+  margin: 0.75rem 0 1.1rem;
+}
+
+.clubs-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.club-row {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.85rem;
+}
+
+.club-img {
+  border-radius: 14px;
+  width: 150px;
+  height: 110px;
+  object-fit: cover;
+  border: 1px solid var(--jie-border);
+  background: color-mix(in srgb, var(--jie-bg) 55%, white);
+}
+
+.club-title {
+  font-weight: 900;
+}
+
+.club-desc {
+  margin: 0.35rem 0 0;
+  max-width: 70ch;
+}
+
+.club-actions {
+  margin-top: 0.65rem;
+}
+
+.learn-btn {
+  background: color-mix(in srgb, var(--jie-teal) 12%, white);
+}
+
+.learn-btn:hover {
+  background: color-mix(in srgb, var(--jie-teal) 16%, white);
+}
+
+.arrow {
+  font-weight: 900;
+}
+
+.pagination {
+  margin-top: 1.25rem;
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.page-btn {
+  min-width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--jie-border);
+  background: color-mix(in srgb, var(--jie-bg) 30%, white);
+  cursor: pointer;
+}
+
+.page-btn[aria-current='page'] {
+  background: var(--jie-teal);
+  border-color: var(--jie-teal);
+  color: white;
+}
+
+.page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 680px) {
+  .club-row {
+    grid-template-columns: 1fr;
+  }
+
+  .club-img {
+    width: 100%;
+    height: 180px;
+  }
+}

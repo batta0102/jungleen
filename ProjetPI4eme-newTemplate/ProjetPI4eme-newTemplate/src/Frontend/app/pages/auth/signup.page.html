@@ -1,0 +1,151 @@
+<div class="container auth-wrap">
+  <div class="card auth-card">
+    <div class="card-body">
+      <!-- Logo -->
+      <div class="logo-container">
+        <img src="assets/logo/logo.png" alt="Jungle in English" class="auth-logo">
+      </div>
+
+      <!-- Header -->
+      <div class="auth-head">
+        <h1 class="auth-title">Sign Up</h1>
+        <p class="auth-subtitle">Join the Jungle in English community</p>
+      </div>
+
+      <!-- Error Alert -->
+      @if (error(); as msg) {
+        <div class="alert alert-error" role="alert">{{ msg }}</div>
+      }
+
+      <!-- Signup Form -->
+      <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" class="auth-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName">First Name</label>
+            <input
+              type="text"
+              id="firstName"
+              class="form-control"
+              formControlName="firstName"
+              placeholder="Enter your first name"
+              [disabled]="busy()" />
+            @if (signupForm.get('firstName')?.hasError('required') && signupForm.get('firstName')?.touched) {
+              <small class="error">First name is required</small>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="lastName">Last Name</label>
+            <input
+              type="text"
+              id="lastName"
+              class="form-control"
+              formControlName="lastName"
+              placeholder="Enter your last name"
+              [disabled]="busy()" />
+            @if (signupForm.get('lastName')?.hasError('required') && signupForm.get('lastName')?.touched) {
+              <small class="error">Last name is required</small>
+            }
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            class="form-control"
+            formControlName="email"
+            placeholder="Enter your email address"
+            [disabled]="busy()" />
+          @if (signupForm.get('email')?.hasError('required') && signupForm.get('email')?.touched) {
+            <small class="error">Email is required</small>
+          }
+          @if (signupForm.get('email')?.hasError('email') && signupForm.get('email')?.touched) {
+            <small class="error">Please enter a valid email address</small>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input
+            type="text"
+            id="username"
+            class="form-control"
+            formControlName="username"
+            placeholder="Choose a unique username (min 3 characters)"
+            [disabled]="busy()" />
+          @if (signupForm.get('username')?.hasError('required') && signupForm.get('username')?.touched) {
+            <small class="error">Username is required</small>
+          }
+          @if (signupForm.get('username')?.hasError('minlength') && signupForm.get('username')?.touched) {
+            <small class="error">Username must be at least 3 characters</small>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="role">I am a:</label>
+          <select
+            id="role"
+            class="form-control"
+            formControlName="role"
+            [disabled]="busy()">
+            <option value="student">Student</option>
+            <option value="teacher">Teacher</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            class="form-control"
+            formControlName="password"
+            placeholder="Create a strong password (min 8 characters)"
+            [disabled]="busy()" />
+          @if (signupForm.get('password')?.hasError('required') && signupForm.get('password')?.touched) {
+            <small class="error">Password is required</small>
+          }
+          @if (signupForm.get('password')?.hasError('minlength') && signupForm.get('password')?.touched) {
+            <small class="error">Password must be at least 8 characters</small>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword">Confirm Password</label>
+          <input
+            type="password"
+            id="confirmPassword"
+            class="form-control"
+            formControlName="confirmPassword"
+            placeholder="Confirm your password"
+            [disabled]="busy()" />
+          @if (signupForm.get('confirmPassword')?.hasError('required') && signupForm.get('confirmPassword')?.touched) {
+            <small class="error">Please confirm your password</small>
+          }
+          @if (signupForm.hasError('passwordMismatch') && signupForm.get('confirmPassword')?.touched) {
+            <small class="error">Passwords do not match</small>
+          }
+        </div>
+
+        <button class="btn btn-primary w-100" type="submit" [disabled]="busy() || !signupForm.valid">
+          {{ busy() ? 'Creating Account...' : 'Sign Up' }}
+        </button>
+      </form>
+
+      <!-- Footer -->
+      <div class="auth-foot">
+        Already have an account?
+        <a routerLink="/front/login">Log in here</a>
+      </div>
+
+      <!-- Terms -->
+      <p class="terms-text">
+        By signing up, you agree to our
+        <a href="#">Terms of Service</a> and
+        <a href="#">Privacy Policy</a>
+      </p>
+    </div>
+  </div>
+</div>

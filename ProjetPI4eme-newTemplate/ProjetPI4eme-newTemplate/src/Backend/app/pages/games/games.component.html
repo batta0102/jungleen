@@ -1,0 +1,73 @@
+<main class="mx-auto max-w-7xl px-6 py-8">
+  <header class="mb-10 flex items-start justify-between">
+    <div>
+      <h1 class="font-serif text-5xl font-semibold text-text">Games & Learning Fun</h1>
+      <p class="mt-2 text-secondary">Learn while having fun with our educational games.</p>
+    </div>
+    <button class="inline-flex items-center gap-3 bg-primary text-white px-5 py-3 rounded-lg shadow-md hover:bg-opacity-90">
+      <span class="text-xl">+</span>
+      New Game
+    </button>
+  </header>
+
+  <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
+    <!-- Games Grid -->
+    <div class="lg:col-span-2">
+      <div class="grid gap-6 md:grid-cols-2">
+        <div *ngFor="let game of games" class="rounded-xl border border-border bg-white p-6 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all">
+          <div class="mb-6 flex items-start justify-between">
+            <div [class]="'flex h-14 w-14 items-center justify-center rounded-lg text-2xl ' + game.bgColor + ' ' + game.iconColor">
+              {{ game.icon }}
+            </div>
+            <app-badge variant="primary">{{ game.category }}</app-badge>
+          </div>
+
+          <div class="mb-6">
+            <h3 class="mb-2 font-serif text-xl font-semibold text-text">{{ game.title }}</h3>
+            <div class="flex gap-4 text-sm text-secondary">
+              <span class="flex items-center gap-1">
+                🏆 {{ game.players }}
+              </span>
+              <span class="flex items-center gap-1">
+                ⭐ {{ game.rating }}
+              </span>
+            </div>
+          </div>
+
+          <button class="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-opacity-90 transition-colors">
+            Play Now
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Leaderboard -->
+    <div class="space-y-8">
+      <div class="rounded-xl border border-border bg-white p-6 shadow-sm">
+        <div class="mb-6 flex items-center justify-between">
+          <h3 class="font-serif text-lg font-semibold text-text">Leaderboard</h3>
+          <span class="text-2xl">🏆</span>
+        </div>
+
+        <div class="space-y-4">
+          <div *ngFor="let player of leaderboard" class="flex items-center justify-between border-b border-border pb-3 last:border-0 last:pb-0">
+            <div class="flex items-center gap-3">
+              <span [class]="'flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ' + getRankClass(player.rank)">
+                {{ player.rank }}
+              </span>
+              <div class="h-8 w-8 rounded-full bg-light border border-border flex items-center justify-center text-xs font-medium text-primary">
+                {{ player.avatar }}
+              </div>
+              <span class="font-medium text-text">{{ player.name }}</span>
+            </div>
+            <span class="font-mono text-sm font-medium text-primary">{{ player.points.toLocaleString() }}</span>
+          </div>
+        </div>
+
+        <button class="mt-4 w-full text-xs uppercase font-medium text-secondary hover:text-text transition-colors py-2 rounded-lg hover:bg-light">
+          View Full Leaderboard
+        </button>
+      </div>
+    </div>
+  </div>
+</main>

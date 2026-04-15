@@ -1,0 +1,113 @@
+<div class="modal-backdrop" *ngIf="isOpen" (click)="onBackdropClick($event)">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <div class="modal-title-section">
+        <h2 class="modal-title">📝 Reviews</h2>
+        <p class="modal-subtitle">{{ resourceTitle }}</p>
+      </div>
+      <button 
+        class="close-btn" 
+        type="button" 
+        (click)="onClose()"
+        aria-label="Close modal"
+      >
+        ✕
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="modal-body">
+      <!-- Loading State -->
+      <div *ngIf="loading()" class="loading-section">
+        <div class="spinner"></div>
+        <p>Loading reviews...</p>
+      </div>
+
+      <!-- Reviews Summary -->
+      <div *ngIf="!loading()" class="reviews-summary">
+        <div class="summary-badge">
+          <span class="average-rating">{{ getAverageRating() }}</span>
+          <div class="summary-stars">{{ formatStars(getAverageRating()) }}</div>
+          <span class="review-count">{{ reviews().length }} {{ reviews().length === 1 ? 'review' : 'reviews' }}</span>
+        </div>
+      </div>
+
+      <!-- Reviews List -->
+      <div *ngIf="!loading()" class="reviews-section">
+        <h3 class="section-title">All Reviews</h3>
+        
+        <div class="review-list" *ngIf="reviews().length > 0; else noReviews">
+          <div class="review-item" *ngFor="let review of reviews()">
+            <div class="review-header">
+              <span class="review-stars">{{ formatStars(review.rating) }}</span>
+            </div>
+            <p class="review-comment">{{ review.comment }}</p>
+          </div>
+        </div>
+
+        <ng-template #noReviews>
+          <div class="no-reviews-state">
+            <div class="empty-icon">⭐</div>
+            <p class="empty-message">No reviews yet</p>
+            <p class="empty-hint">Be the first to share your thoughts!</p>
+          </div>
+        </ng-template>
+      </div>
+
+      <!-- Review Form -->
+      <div *ngIf="!loading()" class="review-form-section">
+        <h3 class="section-title">✨ Add Your Review</h3>
+
+        <form class="review-form" (ngSubmit)="submitReview()">
+          <div class="form-group">
+            <label class="form-label" for="review-comment">Your Comment</label>
+            <textarea
+              id="review-comment"
+              class="form-textarea"
+              [(ngModel)]="comment"
+              name="comment"
+              rows="4"
+              placeholder="Share your experience with this resource..."
+              [disabled]="submitting()"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Your Rating</label>
+            <div class="star-input-wrapper" (mouseleave)="clearHoverRating()">
+              <div class="stars">
+                <button
+                  class="star"
+                  type="button"
+                  *ngFor="let star of stars"
+                  [class.filled]="star <= getDisplayRating()"
+                  (mouseenter)="setHoverRating(star)"
+                  (click)="setRating(star)"
+                  [disabled]="submitting()"
+                  [attr.aria-label]="star + ' stars'"
+                >
+                  ★
+                </button>
+              </div>
+              <span class="rating-value">{{ rating() }}/6</span>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button 
+              class="btn btn-primary" 
+              type="submit" 
+              [disabled]="!canSubmit()"
+            >
+              <span *ngIf="!submitting()">🚀 Submit Review</span>
+              <span *ngIf="submitting()">
+                <span class="spinner-small"></span> Saving...
+              </span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

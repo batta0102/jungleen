@@ -1,0 +1,323 @@
+<section class="hero">
+  <div class="container hero-shell">
+    <div class="hero-copy">
+      <div class="hero-kicker">Jungle in English</div>
+      <h1 class="hero-title">Your Future Speaks English</h1>
+      <p class="hero-lead">Step in and let’s start your learning journey</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" [routerLink]="['/trainings']">Get Started</a>
+        <a class="btn btn-ghost" href="#contact">Contact</a>
+      </div>
+    </div>
+
+    <div class="hero-aside card" aria-label="Featured preview">
+      <div class="hero-aside-media" aria-hidden="true"></div>
+      <div class="card-body hero-aside-body">
+        <div class="hero-aside-title">Learn by doing</div>
+        <div class="muted">Trainings, clubs, and events built for real confidence.</div>
+        <div class="hero-aside-pills">
+          <span class="pill">Progress</span>
+          <span class="pill">Community</span>
+          <span class="pill">Practice</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="about">
+  <div class="container">
+    <div class="about-split">
+      <article class="card about-copy">
+        <div class="card-body">
+          <h2 class="section-title">What is Jungle in English ?</h2>
+          <p class="section-lead">
+            Jungle in English is a modern education space designed for people who want to improve their English skills.
+            Learn through structured trainings, clubs, and events — online and on campus.
+          </p>
+
+          <p class="muted about-features-lead">
+            Explore our range of courses, events, and interactive clubs that cater to all levels of learners, from
+            beginners to advanced.
+          </p>
+
+          <div class="about-features" aria-label="Key features">
+            <article class="about-feature">
+              <div class="feature-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" class="feature-svg" focusable="false">
+                  <path d="M6 4h9a2 2 0 0 1 2 2v14H8a2 2 0 0 0-2 2V4z" />
+                  <path d="M8 6h7v2H8V6zm0 4h7v2H8v-2zm0 4h5v2H8v-2z" />
+                </svg>
+              </div>
+              <div>
+                <div class="feature-title">Structured Learning Paths</div>
+              </div>
+            </article>
+
+            <article class="about-feature">
+              <div class="feature-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" class="feature-svg" focusable="false">
+                  <path d="M21 8V7l-9-4L3 7v1l9 4 9-4z" />
+                  <path d="M3 10v7l9 4 9-4v-7l-9 4-9-4z" />
+                </svg>
+              </div>
+              <div>
+                <div class="feature-title">Live Classes &amp; Events</div>
+              </div>
+            </article>
+
+            <article class="about-feature">
+              <div class="feature-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" class="feature-svg" focusable="false">
+                  <path d="M16 11a4 4 0 1 0-8 0v1H6v8h12v-8h-2v-1zm-6 1v-1a2 2 0 1 1 4 0v1h-4z" />
+                </svg>
+              </div>
+              <div>
+                <div class="feature-title">Clubs and Community</div>
+              </div>
+            </article>
+
+            <article class="about-feature">
+              <div class="feature-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" class="feature-svg" focusable="false">
+                  <path d="M4 18V6h2v12H4zm4 0V10h2v8H8zm4 0V8h2v10h-2zm4 0V12h2v6h-2z" />
+                </svg>
+              </div>
+              <div>
+                <div class="feature-title">Progress Tracking</div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </article>
+
+      <aside class="card about-media" aria-label="About preview">
+        <div class="about-media-top" aria-hidden="true"></div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<section class="stats" aria-label="Highlights">
+  <div class="container stats-grid">
+    @for (s of stats; track s.label) {
+      <div class="stat">
+        <div class="stat-value">{{ s.value }}</div>
+        <div class="stat-label">{{ s.label }}</div>
+      </div>
+    }
+  </div>
+</section>
+
+<section class="section" id="courses">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <h2 class="section-title">Our Trainings</h2>
+        <p class="section-lead">All the trainings are available online and face to face, in groups and individually.</p>
+      </div>
+      <a class="btn btn-ghost" [routerLink]="['/trainings']">Show all +</a>
+    </div>
+
+    <div class="scroll-wrap" aria-label="Trainings">
+      <button class="scroll-btn" type="button" (click)="scrollRow(trainingsRow, -1)" aria-label="Scroll trainings left">‹</button>
+      <div class="scroll-row" #trainingsRow>
+        @for (training of trainings(); track training.id) {
+          <article class="scroll-item card module-card">
+            <div class="module-thumb" aria-hidden="true"></div>
+            <div class="card-body">
+              <div class="item-title">{{ training.name }}</div>
+              <div class="muted">{{ training.chapters.length }} chapter(s) · {{ training.learningObjectives.length }} objectives</div>
+              <div class="item-actions">
+                <a class="btn btn-primary" [routerLink]="['/trainings', training.id]">Learn more</a>
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+      <button class="scroll-btn" type="button" (click)="scrollRow(trainingsRow, 1)" aria-label="Scroll trainings right">›</button>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="clubs">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <h2 class="section-title">Our Clubs</h2>
+        <p class="section-lead">Join a club today and be part of a dynamic network that inspires learning, creativity, and fun.</p>
+      </div>
+      <a class="btn btn-ghost" [routerLink]="['/clubs']">Show all +</a>
+    </div>
+
+    <div class="scroll-wrap" aria-label="Clubs">
+      <button class="scroll-btn" type="button" (click)="scrollRow(clubsRow, -1)" aria-label="Scroll clubs left">‹</button>
+      <div class="scroll-row" #clubsRow>
+        @for (club of clubs(); track club.id) {
+          <article class="scroll-item card module-card">
+            <div class="module-thumb module-thumb--clubs" aria-hidden="true"></div>
+            <div class="card-body">
+              <div class="item-title">{{ club.name }}</div>
+              <div class="muted">{{ club.description }}</div>
+              <div class="item-actions">
+                <a class="btn btn-primary" [routerLink]="['/clubs', club.id]">Read more</a>
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+      <button class="scroll-btn" type="button" (click)="scrollRow(clubsRow, 1)" aria-label="Scroll clubs right">›</button>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="events">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <h2 class="section-title">Our Events</h2>
+        <p class="section-lead">All the trainings are available online and face to face, in groups and individually.</p>
+      </div>
+      <a class="btn btn-ghost" [routerLink]="['/events']">Show all +</a>
+    </div>
+
+    <div class="scroll-wrap" aria-label="Events">
+      <button class="scroll-btn" type="button" (click)="scrollRow(eventsRow, -1)" aria-label="Scroll events left">‹</button>
+      <div class="scroll-row" #eventsRow>
+        @for (event of upcomingEvents(); track event.id) {
+          <article class="scroll-item card module-card">
+            <div class="module-thumb module-thumb--events" aria-hidden="true"></div>
+            <div class="card-body">
+              <div class="item-title">{{ event.name }}</div>
+              <div class="muted">{{ event.date }} · {{ event.time }}</div>
+              <div class="muted">{{ event.location }}</div>
+              <div class="badges">
+                <span class="badge">{{ event.visibility }}</span>
+                <span class="badge">{{ event.priceType }}</span>
+              </div>
+              <div class="item-actions">
+                <a class="btn btn-primary" [routerLink]="['/events']">Consult</a>
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+      <button class="scroll-btn" type="button" (click)="scrollRow(eventsRow, 1)" aria-label="Scroll events right">›</button>
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-label="Why Jungle in English">
+  <div class="container">
+    <h2 class="section-title">Why Jungle in English</h2>
+    <p class="section-lead">A modern approach to learning: structured, social, and practical.</p>
+
+    <div class="why-grid">
+      <article class="card why-card">
+        <div class="card-body">
+          <div class="kicker">Explore New Horizons</div>
+          <div class="muted">Learn through real situations and guided practice.
+          </div>
+        </div>
+      </article>
+      <article class="card why-card why-card--active">
+        <div class="card-body">
+          <div class="kicker">Fuel Your Passion</div>
+          <div class="muted">Clubs and events keep motivation high.</div>
+        </div>
+      </article>
+      <article class="card why-card">
+        <div class="card-body">
+          <div class="kicker">Unleash Your Creativity</div>
+          <div class="muted">Speak, write, act, debate — and build confidence.</div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="testimonials" aria-label="Student feedback">
+  <div class="container">
+    <h2 class="section-title">Student Feedback</h2>
+    <p class="section-lead">What our students say about the journey.</p>
+    <div class="grid grid-2">
+      @for (tst of testimonials(); track tst.id) {
+        <figure class="card feedback-card">
+          <div class="card-body">
+            <div class="feedback-quote" aria-hidden="true">“</div>
+            <blockquote class="quote">{{ tst.text }}</blockquote>
+            <figcaption class="muted">{{ tst.studentName }} · {{ tst.program }}</figcaption>
+          </div>
+        </figure>
+      }
+    </div>
+  </div>
+</section>
+
+<section class="section" id="instructors" aria-label="Our instructors">
+  <div class="container">
+    <h2 class="section-title">Our Instructors</h2>
+    <p class="section-lead">They bring learning to life with engaging lessons and personalized guidance.</p>
+
+    <div class="grid grid-4">
+      @for (inst of instructors; track inst.name) {
+        <article class="card instructor-card">
+          <div class="instructor-photo" aria-hidden="true"></div>
+          <div class="card-body">
+            <div class="item-title">{{ inst.name }}</div>
+            <div class="muted">{{ inst.title }}</div>
+          </div>
+        </article>
+      }
+    </div>
+  </div>
+</section>
+
+<section class="section" id="contact">
+  <div class="container">
+    <h2 class="section-title">Contact Us</h2>
+    <p class="section-lead">Have questions or need assistance? Feel free to reach out — we’re here to help.</p>
+
+    <div class="contact-split">
+      <div class="card">
+        <div class="card-body">
+          @if (contactSent()) {
+            <div class="success">Thanks! We received your message.</div>
+          }
+
+          <form [formGroup]="contactForm" (ngSubmit)="submitContact()" novalidate>
+            <div class="contact-grid">
+              <div class="field">
+                <label for="c-name">Name</label>
+                <input id="c-name" type="text" formControlName="name" autocomplete="name" />
+              </div>
+              <div class="field">
+                <label for="c-email">Email</label>
+                <input id="c-email" type="email" formControlName="email" autocomplete="email" />
+              </div>
+              <div class="field">
+                <label for="c-phone">Phone number</label>
+                <input id="c-phone" type="tel" formControlName="phone" autocomplete="tel" />
+              </div>
+              <div class="field">
+                <label for="c-subject">Subject</label>
+                <input id="c-subject" type="text" formControlName="subject" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="c-msg">Your message</label>
+              <textarea id="c-msg" formControlName="message"></textarea>
+            </div>
+
+            <button class="btn btn-primary" type="submit">Send message</button>
+          </form>
+        </div>
+      </div>
+
+      <aside class="card contact-media" aria-label="Contact illustration">
+        <div class="contact-media-inner" aria-hidden="true"></div>
+      </aside>
+    </div>
+  </div>
+</section>

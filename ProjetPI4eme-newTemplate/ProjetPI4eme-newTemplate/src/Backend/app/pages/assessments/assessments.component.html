@@ -1,0 +1,394 @@
+<main class="mx-auto max-w-7xl px-6 py-8">
+  <header class="mb-10 flex items-start justify-between">
+    <div>
+      <h1 class="font-serif text-5xl font-semibold text-text">Assessments & Quizzes</h1>
+      <p class="mt-2 text-secondary">Manage tests, exams, and track results.</p>
+      @if (createSuccess()) {
+        <p class="mt-2 text-sm text-secondary">{{ createSuccess() }}</p>
+      }
+    </div>
+    <button
+      class="inline-flex items-center gap-3 bg-primary text-white px-5 py-3 rounded-lg shadow-md hover:bg-opacity-90"
+      type="button"
+      (click)="openCreateQuiz()">
+      <span class="text-xl">+</span>
+      Create Quiz
+    </button>
+  </header>
+
+  @if (createOpen()) {
+    <section class="mb-8 rounded-xl border border-border bg-white p-6 shadow-sm">
+      <h3 class="font-serif text-2xl font-semibold text-text">Create Quiz</h3>
+      <div class="mt-4 grid gap-4 md:grid-cols-2">
+        <label class="flex flex-col gap-2 text-sm text-secondary">
+          Title
+          <input class="rounded-lg border border-border px-3 py-2 text-text" [ngModel]="newQuizTitle()" (ngModelChange)="newQuizTitle.set($event)" />
+        </label>
+
+        <label class="flex flex-col gap-2 text-sm text-secondary">
+          Description
+          <input class="rounded-lg border border-border px-3 py-2 text-text" [ngModel]="newQuizContent()" (ngModelChange)="newQuizContent.set($event)" />
+        </label>
+
+        <label class="flex flex-col gap-2 text-sm text-secondary">
+          Type
+          <select class="rounded-lg border border-border px-3 py-2 text-text" [ngModel]="newQuizType()" (ngModelChange)="newQuizType.set($event)">
+            <option value="QCM_SINGLE">QCM_SINGLE</option>
+            <option value="QCM_MULTI">QCM_MULTI</option>
+            <option value="VRAI_FAUX">VRAI_FAUX</option>
+          </select>
+        </label>
+
+        <label class="flex flex-col gap-2 text-sm text-secondary">
+          Target
+          <select class="rounded-lg border border-border px-3 py-2 text-text" [ngModel]="newQuizTarget()" (ngModelChange)="newQuizTarget.set($event)">
+            <option value="STUDENT">STUDENT</option>
+            <option value="CANDIDATE">CANDIDATE</option>
+          </select>
+        </label>
+
+        <label class="flex flex-col gap-2 text-sm text-secondary">
+          Duration (minutes)
+          <input type="number" min="1" class="rounded-lg border border-border px-3 py-2 text-text" [ngModel]="newQuizDuration()" (ngModelChange)="newQuizDuration.set(+$event)" />
+        </label>
+
+        <label class="flex flex-col gap-2 text-sm text-secondary">
+          Max attempts
+          <input type="number" min="1" class="rounded-lg border border-border px-3 py-2 text-text" [ngModel]="newQuizAttempts()" (ngModelChange)="newQuizAttempts.set(+$event)" />
+        </label>
+
+        <label class="flex flex-col gap-2 text-sm text-secondary">
+          Max grade
+          <input type="number" min="1" class="rounded-lg border border-border px-3 py-2 text-text" [ngModel]="newQuizNoteMax()" (ngModelChange)="newQuizNoteMax.set(+$event)" />
+        </label>
+
+        <label class="flex items-center gap-2 text-sm text-secondary mt-7">
+          <input type="checkbox" [ngModel]="publishNow()" (ngModelChange)="publishNow.set(!!$event)" />
+          Publish now
+        </label>
+      </div>
+
+      <div class="mt-6">
+        <div class="mb-3 flex items-center justify-between">
+          <h4 class="font-serif text-xl font-semibold text-text">Questions</h4>
+          <button class="inline-flex items-center gap-2 border border-border text-text px-3 py-2 rounded-lg text-sm font-medium hover:bg-light" type="button" (click)="addCreateQuestion()">
+            + Add Question
+          </button>
+        </div>
+
+        <div class="space-y-4">
+          @for (question of createQuestions(); track $index; let questionIndex = $index) {
+            <div class="rounded-lg border border-border bg-light p-4">
+              <div class="mb-3 flex items-center justify-between gap-3">
+                <strong class="text-text">Question {{ questionIndex + 1 }}</strong>
+                <button class="inline-flex items-center gap-2 border border-border text-text px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-white" type="button" (click)="removeCreateQuestion(questionIndex)">
+                  Remove
+                </button>
+              </div>
+
+              <label class="flex flex-col gap-2 text-sm text-secondary mb-3">
+                Question text
+                <input
+                  class="rounded-lg border border-border px-3 py-2 text-text bg-white"
+                  [ngModel]="question.contenu"
+                  (ngModelChange)="updateCreateQuestionContent(questionIndex, $event)"
+                />
+              </label>
+
+              <div class="space-y-2">
+                @for (choice of question.choix; track $index; let choiceIndex = $index) {
+                  <div class="grid gap-2 md:grid-cols-[1fr_auto_auto] items-center">
+                    <input
+                      class="rounded-lg border border-border px-3 py-2 text-text bg-white"
+                      [ngModel]="choice.contenu"
+                      (ngModelChange)="updateCreateChoiceContent(questionIndex, choiceIndex, $event)"
+                      placeholder="Choice text"
+                    />
+
+                    <label class="inline-flex items-center gap-2 text-sm text-secondary">
+                      <input
+                        type="checkbox"
+                        [checked]="choice.estCorrect"
+                        (change)="setCreateChoiceCorrect(questionIndex, choiceIndex, $any($event.target).checked)"
+                      />
+                      Correct
+                    </label>
+
+                    <button
+                      class="inline-flex items-center gap-2 border border-border text-text px-3 py-2 rounded-lg text-sm font-medium hover:bg-white"
+                      type="button"
+                      (click)="removeCreateChoice(questionIndex, choiceIndex)">
+                      Remove
+                    </button>
+                  </div>
+                }
+
+                <button class="inline-flex items-center gap-2 border border-border text-text px-3 py-2 rounded-lg text-sm font-medium hover:bg-white" type="button" (click)="addCreateChoice(questionIndex)">
+                  + Add Choice
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      @if (createError()) {
+        <p class="mt-4 text-sm text-secondary">{{ createError() }}</p>
+      }
+
+      <div class="mt-5 flex gap-3">
+        <button class="inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90" type="button" [disabled]="creating()" (click)="createQuiz()">
+          {{ creating() ? 'Creating...' : 'Create' }}
+        </button>
+        <button class="inline-flex items-center gap-2 border border-border text-text px-4 py-2 rounded-lg text-sm font-medium hover:bg-light" type="button" [disabled]="creating()" (click)="closeCreateQuiz()">
+          Cancel
+        </button>
+      </div>
+    </section>
+  }
+
+  @if (manageOpen()) {
+    <section class="mb-8 rounded-xl border border-border bg-white p-6 shadow-sm">
+      <h3 class="font-serif text-2xl font-semibold text-text">Manage Quiz</h3>
+      <div class="mt-4 grid gap-4 md:grid-cols-2">
+        <label class="flex flex-col gap-2 text-sm text-secondary">
+          Title
+          <input class="rounded-lg border border-border px-3 py-2 text-text" [ngModel]="editQuizTitle()" (ngModelChange)="editQuizTitle.set($event)" />
+        </label>
+
+        <label class="flex flex-col gap-2 text-sm text-secondary">
+          Description
+          <input class="rounded-lg border border-border px-3 py-2 text-text" [ngModel]="editQuizContent()" (ngModelChange)="editQuizContent.set($event)" />
+        </label>
+
+        <label class="flex flex-col gap-2 text-sm text-secondary">
+          Type
+          <select class="rounded-lg border border-border px-3 py-2 text-text" [ngModel]="editQuizType()" (ngModelChange)="editQuizType.set($event)">
+            <option value="QCM_SINGLE">QCM_SINGLE</option>
+            <option value="QCM_MULTI">QCM_MULTI</option>
+            <option value="VRAI_FAUX">VRAI_FAUX</option>
+          </select>
+        </label>
+
+        <label class="flex flex-col gap-2 text-sm text-secondary">
+          Target
+          <select class="rounded-lg border border-border px-3 py-2 text-text" [ngModel]="editQuizTarget()" (ngModelChange)="editQuizTarget.set($event)">
+            <option value="STUDENT">STUDENT</option>
+            <option value="CANDIDATE">CANDIDATE</option>
+          </select>
+        </label>
+
+        <label class="flex flex-col gap-2 text-sm text-secondary">
+          Duration (minutes)
+          <input type="number" min="1" class="rounded-lg border border-border px-3 py-2 text-text" [ngModel]="editQuizDuration()" (ngModelChange)="editQuizDuration.set(+$event)" />
+        </label>
+
+        <label class="flex flex-col gap-2 text-sm text-secondary">
+          Max attempts
+          <input type="number" min="1" class="rounded-lg border border-border px-3 py-2 text-text" [ngModel]="editQuizAttempts()" (ngModelChange)="editQuizAttempts.set(+$event)" />
+        </label>
+
+        <label class="flex flex-col gap-2 text-sm text-secondary">
+          Max grade
+          <input type="number" min="1" class="rounded-lg border border-border px-3 py-2 text-text" [ngModel]="editQuizNoteMax()" (ngModelChange)="editQuizNoteMax.set(+$event)" />
+        </label>
+
+        <label class="flex items-center gap-2 text-sm text-secondary mt-7">
+          <input type="checkbox" [ngModel]="editPublishNow()" (ngModelChange)="editPublishNow.set(!!$event)" />
+          Publish now
+        </label>
+      </div>
+
+      <div class="mt-6">
+        <div class="mb-3 flex items-center justify-between">
+          <h4 class="font-serif text-xl font-semibold text-text">Questions</h4>
+          <button class="inline-flex items-center gap-2 border border-border text-text px-3 py-2 rounded-lg text-sm font-medium hover:bg-light" type="button" (click)="addQuestion()">
+            + Add Question
+          </button>
+        </div>
+
+        <div class="space-y-4">
+          @for (question of editQuestions(); track $index; let questionIndex = $index) {
+            <div class="rounded-lg border border-border bg-light p-4">
+              <div class="mb-3 flex items-center justify-between gap-3">
+                <strong class="text-text">Question {{ questionIndex + 1 }}</strong>
+                <button class="inline-flex items-center gap-2 border border-border text-text px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-white" type="button" (click)="removeQuestion(questionIndex)">
+                  Remove
+                </button>
+              </div>
+
+              <label class="flex flex-col gap-2 text-sm text-secondary mb-3">
+                Question text
+                <input
+                  class="rounded-lg border border-border px-3 py-2 text-text bg-white"
+                  [ngModel]="question.contenu"
+                  (ngModelChange)="updateQuestionContent(questionIndex, $event)"
+                />
+              </label>
+
+              <div class="space-y-2">
+                @for (choice of question.choix; track $index; let choiceIndex = $index) {
+                  <div class="grid gap-2 md:grid-cols-[1fr_auto_auto] items-center">
+                    <input
+                      class="rounded-lg border border-border px-3 py-2 text-text bg-white"
+                      [ngModel]="choice.contenu"
+                      (ngModelChange)="updateChoiceContent(questionIndex, choiceIndex, $event)"
+                      placeholder="Choice text"
+                    />
+
+                    <label class="inline-flex items-center gap-2 text-sm text-secondary">
+                      <input
+                        type="checkbox"
+                        [checked]="choice.estCorrect"
+                        (change)="setChoiceCorrect(questionIndex, choiceIndex, $any($event.target).checked)"
+                      />
+                      Correct
+                    </label>
+
+                    <button
+                      class="inline-flex items-center gap-2 border border-border text-text px-3 py-2 rounded-lg text-sm font-medium hover:bg-white"
+                      type="button"
+                      (click)="removeChoice(questionIndex, choiceIndex)">
+                      Remove
+                    </button>
+                  </div>
+                }
+
+                <button class="inline-flex items-center gap-2 border border-border text-text px-3 py-2 rounded-lg text-sm font-medium hover:bg-white" type="button" (click)="addChoice(questionIndex)">
+                  + Add Choice
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      @if (manageError()) {
+        <p class="mt-4 text-sm text-secondary">{{ manageError() }}</p>
+      }
+
+      <div class="mt-5 flex gap-3">
+        <button class="inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90" type="button" [disabled]="managing()" (click)="saveManagedQuiz()">
+          {{ managing() ? 'Saving...' : 'Save changes' }}
+        </button>
+        <button class="inline-flex items-center gap-2 border border-border text-text px-4 py-2 rounded-lg text-sm font-medium hover:bg-light" type="button" [disabled]="managing()" (click)="closeManageQuiz()">
+          Cancel
+        </button>
+      </div>
+    </section>
+  }
+
+  <app-tabs
+    [tabs]="tabs"
+    [activeTab]="activeTab()"
+    (onChange)="selectTab($event)"
+    class="mb-8">
+  </app-tabs>
+
+  <app-admission-analytics *ngIf="activeTab() === 'statistics'"></app-admission-analytics>
+
+  <div *ngIf="activeTab() !== 'statistics'">
+
+  <!-- Stats Cards -->
+  <div class="mb-8 grid gap-6 md:grid-cols-3">
+    <div class="rounded-xl border border-border bg-white p-6 shadow-sm">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-secondary">Pass Rate</p>
+          <p class="mt-2 font-serif text-3xl font-semibold text-text">{{ passRate() }}%</p>
+        </div>
+        <div class="rounded-full bg-green-50 p-3 text-green-600 text-2xl">✓</div>
+      </div>
+    </div>
+
+    <div class="rounded-xl border border-border bg-white p-6 shadow-sm">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-secondary">Tests Completed</p>
+          <p class="mt-2 font-serif text-3xl font-semibold text-text">{{ testsCompleted() }}</p>
+        </div>
+        <div class="rounded-full bg-blue-50 p-3 text-blue-600 text-2xl">📄</div>
+      </div>
+    </div>
+
+    <div class="rounded-xl border border-border bg-white p-6 shadow-sm">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-secondary">Average Score</p>
+          <p class="mt-2 font-serif text-3xl font-semibold text-text">{{ averageScore() }}%</p>
+        </div>
+        <div class="rounded-full bg-amber-50 p-3 text-amber-600 text-2xl">📊</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Quizzes & Latest Results -->
+  <div class="grid gap-8 lg:grid-cols-3">
+    <div class="lg:col-span-2 space-y-6">
+      <h3 class="font-serif text-2xl font-semibold text-text">Recent Quizzes</h3>
+
+      @if (loading()) {
+        <div class="rounded-xl border border-border bg-white p-6 shadow-sm">
+          <p class="text-secondary">Loading quizzes...</p>
+        </div>
+      } @else if (error()) {
+        <div class="rounded-xl border border-border bg-white p-6 shadow-sm">
+          <p class="text-secondary">{{ error() }}</p>
+        </div>
+      } @else if (assessments().length === 0) {
+        <div class="rounded-xl border border-border bg-white p-6 shadow-sm">
+          <p class="text-secondary">No quizzes available.</p>
+        </div>
+      }
+
+      <div *ngFor="let test of assessments()" class="rounded-xl border border-border bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+          <div class="flex-1">
+            <div class="mb-2 flex items-center gap-3">
+              <h4 class="font-serif text-lg font-semibold text-text">{{ test.title }}</h4>
+              <app-badge [variant]="test.status === 'published' ? 'success' : 'warning'">
+                {{ test.status === 'published' ? 'Published' : 'Draft' }}
+              </app-badge>
+            </div>
+            <div class="flex gap-4 text-sm text-secondary">
+              <span>{{ test.questions }} Questions</span>
+              <span>•</span>
+              <span>{{ test.duration }}</span>
+              <span *ngIf="test.status === 'published'">•</span>
+              <span *ngIf="test.status === 'published'">{{ test.participants }} Participants</span>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button class="inline-flex items-center gap-2 border border-border text-text px-4 py-2 rounded-lg text-sm font-medium hover:bg-light" type="button" (click)="openManageQuiz(test.id)">
+              Manage
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lg:col-span-1">
+      <h3 class="mb-6 font-serif text-2xl font-semibold text-text">Latest Results</h3>
+      <div class="overflow-hidden rounded-xl border border-border bg-white">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-light text-secondary">
+            <tr>
+              <th class="px-4 py-3 font-medium">Session</th>
+              <th class="px-4 py-3 font-medium">Score</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-border">
+            <tr *ngFor="let result of results()">
+              <td class="px-4 py-3 text-text font-medium">{{ result.student }}</td>
+              <td class="px-4 py-3 font-medium text-primary">{{ result.score }}%</td>
+            </tr>
+            <tr *ngIf="!loading() && !error() && results().length === 0">
+              <td class="px-4 py-3 text-secondary" colspan="2">No results yet.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  </div>
+</main>

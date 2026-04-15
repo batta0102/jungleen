@@ -1,0 +1,232 @@
+<div class="products-management-container">
+
+  <!-- Navigation Tabs -->
+  <div class="navigation-tabs">
+    <a 
+      routerLink="/back/resources" 
+      routerLinkActive="active" 
+      [routerLinkActiveOptions]="{exact: true}"
+      class="nav-tab"
+    >
+      Resources Management
+    </a>
+    <a 
+      routerLink="/back/products-management" 
+      routerLinkActive="active"
+      class="nav-tab"
+    >
+      Products Management
+    </a>
+    <a 
+      routerLink="/back/orders-management" 
+      routerLinkActive="active"
+      class="nav-tab"
+    >
+      Orders Management
+    </a>
+  </div>
+
+  <!-- Page Header -->
+  <div class="header">
+    <h1>📦 Products Management</h1>
+    <button class="btn btn-primary" (click)="openAddForm()" [disabled]="loading()">
+      + Add Product
+    </button>
+  </div>
+
+  <!-- Error Alert -->
+  @if (error()) {
+    <div class="alert alert-danger">
+      {{ error() }}
+      <button class="btn btn-sm btn-secondary" (click)="loadProducts()">Retry</button>
+    </div>
+  }
+
+  <!-- Loading -->
+  @if (loading() && !showForm()) {
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Loading products...</p>
+    </div>
+  }
+
+  <!-- Product Form Modal -->
+  @if (showForm()) {
+    <div class="modal-overlay" (click)="closeForm()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>{{ isEditMode() ? 'Edit Product' : 'Add New Product' }}</h2>
+          <button class="btn-close" (click)="closeForm()">✕</button>
+        </div>
+
+        <form class="product-form" (ngSubmit)="saveProduct()">
+          <div class="form-group">
+            <label for="name">Product Name *</label>
+            <input
+              id="name"
+              type="text"
+              class="form-control"
+              [value]="currentProduct().name"
+              (input)="updateField('name', $any($event.target).value)"
+              required
+              placeholder="Enter product name"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="category">Category *</label>
+            <select
+              id="category"
+              class="form-control"
+              [value]="currentProduct().category"
+              (change)="updateField('category', $any($event.target).value)"
+              required
+            >
+              <option value="Book">Book</option>
+              <option value="Course">Course</option>
+              <option value="Study Material">Study Material</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="description">Description *</label>
+            <textarea
+              id="description"
+              class="form-control"
+              rows="4"
+              [value]="currentProduct().description"
+              (input)="updateField('description', $any($event.target).value)"
+              required
+              placeholder="Enter product description"
+            ></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="price">Price ($)</label>
+              <input
+                id="price"
+                type="number"
+                step="0.01"
+                class="form-control"
+                [value]="currentProduct().price"
+                (input)="updateField('price', +$any($event.target).value)"
+                placeholder="0.00"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="stock">Stock *</label>
+              <input
+                id="stock"
+                type="number"
+                class="form-control"
+                [value]="currentProduct().stock"
+                (input)="updateField('stock', +$any($event.target).value)"
+                placeholder="0"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="image">Image URL</label>
+            <input
+              id="image"
+              type="url"
+              class="form-control"
+              [value]="currentProduct().image"
+              (input)="updateField('image', $any($event.target).value)"
+              placeholder="https://example.com/image.jpg"
+            />
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" (click)="closeForm()">
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary" [disabled]="loading()">
+              {{ isEditMode() ? 'Update Product' : 'Add Product' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Products Table -->
+  @if (!loading() && products().length > 0) {
+    <div class="table-container">
+      <table class="products-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Description</th>
+            <th>Price</th>
+            <th>Stock</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (product of products(); track product.idProduct || $index) {
+            <tr>
+              <td>{{ product.idProduct }}</td>
+              <td>{{ product.name }}</td>
+              <td>
+                <span class="badge badge-{{ product.category === 'Book' ? 'primary' : 'secondary' }}">
+                  {{ product.category }}
+                </span>
+              </td>
+              <td class="description-cell">{{ product.description }}</td>
+              <td>${{ product.price?.toFixed(2) || '0.00' }}</td>
+              <td>
+                <span [class.low-stock]="(product.stock || 0) < 10">
+                  {{ product.stock || 0 }}
+                </span>
+              </td>
+              <td class="actions-cell">
+                <button
+                  class="btn btn-sm btn-info"
+                  (click)="checkProductOrders(product)"
+                  [disabled]="loading()"
+                  title="View orders for this product"
+                >
+                  📋 Orders
+                </button>
+                <button
+                  class="btn btn-sm btn-warning"
+                  (click)="openEditForm(product)"
+                  [disabled]="loading()"
+                >
+                  Edit
+                </button>
+                <button
+                  class="btn btn-sm btn-danger"
+                  (click)="deleteProduct(product)"
+                  [disabled]="loading()"
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- Empty State -->
+  @if (!loading() && products().length === 0 && !error()) {
+    <div class="empty-state">
+      <span class="empty-icon">📦</span>
+      <h3>No Products Found</h3>
+      <p>Start by adding your first product</p>
+      <button class="btn btn-primary" (click)="openAddForm()">
+        + Add First Product
+      </button>
+    </div>
+  }
+</div>
+
