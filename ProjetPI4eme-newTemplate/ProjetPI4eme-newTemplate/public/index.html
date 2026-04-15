@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="refresh" content="0; url=/dashboard">
+  <title>Jungle - Redirecting...</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background: #f7ede2;
+    }
+    .loader {
+      text-align: center;
+      color: #2d5757;
+    }
+    .spinner {
+      border: 3px solid #e0d5c7;
+      border-top: 3px solid #2d5757;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+  <script>
+    // Fallback if meta refresh doesn't work
+    window.location.href = '/dashboard';
+  </script>
+</head>
+<body>
+  <div class="loader">
+    <div class="spinner"></div>
+    <p>Redirecting to Jungle Dashboard...</p>
+  </div>
+</body>
+</html>

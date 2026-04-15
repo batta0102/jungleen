@@ -1,0 +1,219 @@
+<div class="container">
+  <header class="events-header">
+    <div class="head-left">
+      <div class="crumb" aria-label="Breadcrumb">
+        <span class="muted">Dashboard</span>
+        <span class="muted">›</span>
+        <span>Events</span>
+      </div>
+      <h1 class="page-title">Events</h1>
+      <p class="page-subtitle">Upcoming sessions, workshops, and meetups — book free seats or buy tickets.</p>
+    </div>
+
+    <div class="head-right" aria-label="Search">
+      <div class="search">
+        <span class="search-icon" aria-hidden="true">⌕</span>
+        <input
+          class="search-input"
+          type="search"
+          placeholder="Search events by name or topic..."
+          [ngModel]="query()"
+          (ngModelChange)="query.set($event)"
+          aria-label="Search events"
+        />
+      </div>
+    </div>
+  </header>
+
+  <nav class="toolbar" aria-label="Filters">
+    <div class="pill-row">
+      @for (f of filters; track f.key) {
+        <button class="pill" type="button" [attr.aria-pressed]="filter() === f.key" (click)="setFilter(f.key)">
+          {{ f.label }}
+        </button>
+      }
+    </div>
+  </nav>
+
+  <section class="events-grid" aria-label="Upcoming events">
+    @for (row of eventRows(); track trackEventId($index, row)) {
+      <article class="card event-card" [class.selected]="selectedEventId() ? selectedEventId() === row.event.id : $index === 0">
+        <button class="event-click" type="button" (click)="selectEvent(row.event.id)" aria-label="Open event details">
+          <div class="event-media">
+            <img class="event-img" [src]="row.heroSrc" alt="" />
+
+            <div class="media-badges">
+              <span class="tag">{{ row.topic }}</span>
+              @if (row.mode === 'online') {
+                <span class="tag online">Online</span>
+              }
+            </div>
+
+            <div class="availability" [class.limited]="row.availability === 'Limited'" [class.sold]="row.availability === 'Sold out'">
+              {{ row.availability }}
+            </div>
+          </div>
+
+          <div class="card-body event-body">
+            <div class="event-title">{{ row.event.name }}</div>
+
+            <div class="event-rows">
+              <div class="row">
+                <span class="icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M7 3v2M17 3v2M4 8h16M6 6h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                </span>
+                <span class="muted">{{ row.event.date }}</span>
+                <span class="dot muted">•</span>
+                <span class="icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="2"/></svg>
+                </span>
+                <span class="muted">{{ row.event.time }}</span>
+              </div>
+
+              <div class="row">
+                <span class="icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11Z" stroke="currentColor" stroke-width="2"/><path d="M12 10.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" stroke="currentColor" stroke-width="2"/></svg>
+                </span>
+                <span class="muted">{{ row.event.location }}</span>
+              </div>
+
+              <div class="row">
+                <span class="icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M3 12l9-9 9 9-9 9-9-9Z" stroke="currentColor" stroke-width="2"/><path d="M13.5 7.5h0" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
+                </span>
+                <span class="price">{{ priceLabel(row.event.priceType, row.priceTnd) }}</span>
+              </div>
+            </div>
+
+            <div class="event-actions">
+              @if (isBooked(row.event.id)) {
+                <span class="pill booked">Booked</span>
+              } @else {
+                <button
+                  class="btn btn-primary"
+                  type="button"
+                  (click)="$event.stopPropagation(); bookOrBuy(row.event.id)"
+                  [disabled]="row.availability === 'Sold out'"
+                >
+                  {{ primaryActionLabel(row.event) }}
+                </button>
+              }
+
+              <button class="btn" type="button" (click)="$event.stopPropagation(); selectEvent(row.event.id)">View details</button>
+            </div>
+          </div>
+        </button>
+      </article>
+    }
+
+    @if (eventRows().length === 0) {
+      <div class="card empty">
+        <div class="card-body">
+          <div class="section-title" style="margin-top: 0;">No events found</div>
+          <div class="muted">Try a different filter or search query.</div>
+          <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button class="btn" type="button" (click)="query.set(''); setFilter('all')">Clear</button>
+          </div>
+        </div>
+      </div>
+    }
+  </section>
+
+  @if (selectedRow(); as sel) {
+    <section class="detail" aria-label="Event details">
+      <div class="detail-grid">
+        <article class="card detail-main">
+          <div class="detail-hero">
+            <img class="detail-img" [src]="sel.heroSrc" alt="" />
+            <div class="detail-overlay">
+              <div class="detail-title">{{ sel.event.name }}</div>
+              <div class="detail-sub">
+                <span class="chip">{{ sel.topic }}</span>
+                @if (sel.mode === 'online') {
+                  <span class="chip online">Online</span>
+                }
+                <span class="chip" [class.limited]="sel.availability === 'Limited'" [class.sold]="sel.availability === 'Sold out'">
+                  {{ sel.availability }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <div class="detail-meta">
+              <div class="meta-item">
+                <span class="icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M7 3v2M17 3v2M4 8h16M6 6h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                </span>
+                <span>{{ sel.event.date }}</span>
+              </div>
+              <div class="meta-item">
+                <span class="icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="2"/></svg>
+                </span>
+                <span>{{ sel.event.time }}</span>
+              </div>
+              <div class="meta-item">
+                <span class="icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11Z" stroke="currentColor" stroke-width="2"/><path d="M12 10.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" stroke="currentColor" stroke-width="2"/></svg>
+                </span>
+                <span>{{ sel.event.location }}</span>
+              </div>
+            </div>
+
+            <h2 class="section-title">About this event</h2>
+            <p class="muted" style="margin-top: 0.35rem;">{{ sel.event.overview }}</p>
+
+            <div class="detail-cols">
+              <div class="col">
+                <h3 class="subhead">Schedule</h3>
+                <ol class="muted">
+                  @for (step of sel.event.schedule; track step) {
+                    <li>{{ step }}</li>
+                  }
+                </ol>
+              </div>
+              <div class="col">
+                <h3 class="subhead">What you’ll learn</h3>
+                <ul class="muted">
+                  @for (outcome of sel.event.expectedOutcomes; track outcome) {
+                    <li>{{ outcome }}</li>
+                  }
+                </ul>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <aside class="card detail-side">
+          <div class="card-body">
+            <div class="side-title">Tickets & Booking</div>
+            <div class="side-price">{{ priceLabel(sel.event.priceType, sel.priceTnd) }}</div>
+            <div class="muted" style="margin-top: 0.25rem;">Secure your spot — seats can be limited.</div>
+
+            <div class="side-actions">
+              @if (isBooked(sel.event.id)) {
+                <div class="success">You’re booked for this event.</div>
+              } @else {
+                <button class="btn btn-primary" type="button" (click)="bookOrBuy(sel.event.id)" [disabled]="sel.availability === 'Sold out'">
+                  {{ primaryActionLabel(sel.event) }}
+                </button>
+              }
+              <a class="btn" href="#top" (click)="$event.preventDefault()">Back to list</a>
+            </div>
+
+            <div class="side-note">
+              @if (sel.event.priceType === 'free') {
+                <span class="pill">Free</span>
+                <span class="muted">Booking required</span>
+              } @else {
+                <span class="pill">Paid</span>
+                <span class="muted">Price shown in TND</span>
+              }
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+  }
+</div>

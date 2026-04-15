@@ -1,0 +1,40 @@
+.resources-container {
+  min-height: 100vh;
+  background: #f9fafb;
+}
+
+.navigation-tabs {
+  display: flex;
+  gap: 0.5rem;
+  background: white;
+  border-bottom: 2px solid #e5e7eb;
+  padding: 0 2rem;
+}
+
+.nav-tab {
+  padding: 1rem 1.5rem;
+  text-decoration: none;
+  color: #6b7280;
+  font-weight: 500;
+  font-size: 0.95rem;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+  cursor: pointer;
+  position: relative;
+  top: 2px;
+}
+
+.nav-tab:hover {
+  color: #3b82f6;
+  background: #f9fafb;
+}
+
+.nav-tab.active {
+  color: #3b82f6;
+  border-bottom-color: #3b82f6;
+  font-weight: 600;
+}
+
+.tab-content {
+  padding: 0;
+}

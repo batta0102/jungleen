@@ -1,0 +1,238 @@
+:host {
+  display: block;
+  --ink: #1d1c24;
+  --muted: #6c6a77;
+  --card: #ffffff;
+  --stroke: #e4e1ee;
+  --accent: #ff8a3d;
+  --accent-soft: rgba(255, 138, 61, 0.16);
+  --star: #f4b43a;
+  --star-muted: #c9c4d6;
+  font-family: "Space Grotesk", "Segoe UI", sans-serif;
+  color: var(--ink);
+}
+
+.resource-reviews {
+  padding: 2rem 1.5rem;
+  border-radius: 24px;
+  background: radial-gradient(circle at top, #fff4e7 0%, #f4f1ff 35%, #eef6ff 100%);
+  box-shadow: 0 16px 40px rgba(25, 30, 60, 0.08);
+}
+
+.resource-list {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.resource-card {
+  background: var(--card);
+  border: 1px solid var(--stroke);
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 12px 28px rgba(30, 32, 54, 0.08);
+}
+
+.resource-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.resource-title {
+  margin: 0;
+  font-size: 1.35rem;
+  letter-spacing: -0.02em;
+}
+
+.resource-type {
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.resource-description {
+  margin: 0.75rem 0 1.25rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.reviews-title {
+  margin: 0 0 0.75rem;
+  font-size: 1.05rem;
+}
+
+.review-list {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.review-item {
+  padding: 0.75rem 1rem;
+  border-radius: 14px;
+  background: #f7f5ff;
+  border: 1px solid #ece7ff;
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.35rem;
+}
+
+.review-stars {
+  display: block;
+  font-weight: 600;
+  color: var(--star);
+}
+
+.edit-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  transition: background 150ms ease;
+  opacity: 0.6;
+}
+
+.edit-btn:hover:not(:disabled) {
+  background: rgba(255, 138, 61, 0.1);
+  opacity: 1;
+}
+
+.edit-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.3;
+}
+
+.review-comment {
+  margin: 0;
+  color: var(--ink);
+}
+
+.reviews-empty {
+  margin: 0.5rem 0 1rem;
+  color: var(--muted);
+}
+
+.review-form {
+  display: grid;
+  gap: 0.85rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--stroke);
+}
+
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.form-label {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.cancel-btn {
+  padding: 0.4rem 0.9rem;
+  border-radius: 8px;
+  border: 1px solid var(--stroke);
+  background: #fff;
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.cancel-btn:hover {
+  background: #f9f9f9;
+  border-color: var(--muted);
+}
+
+.form-textarea {
+  width: 100%;
+  padding: 0.75rem 0.9rem;
+  border-radius: 12px;
+  border: 1px solid var(--stroke);
+  font-family: inherit;
+  resize: vertical;
+  background: #fff;
+}
+
+.star-input {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.stars {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.star {
+  border: none;
+  background: transparent;
+  font-size: 1.35rem;
+  cursor: pointer;
+  color: var(--star-muted);
+  transition: transform 120ms ease, color 120ms ease;
+  padding: 0;
+}
+
+.star.filled {
+  color: var(--star);
+  transform: translateY(-1px);
+}
+
+.star:hover {
+  color: var(--star);
+}
+
+.rating-label {
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.submit-button {
+  justify-self: start;
+  padding: 0.65rem 1.4rem;
+  border-radius: 999px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+  box-shadow: 0 8px 16px rgba(255, 138, 61, 0.25);
+}
+
+.submit-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  box-shadow: none;
+}
+
+.submit-button:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+  .resource-reviews {
+    padding: 1.5rem 1rem;
+  }
+
+  .resource-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

@@ -1,0 +1,39 @@
+<main class="mx-auto max-w-7xl px-6 py-8">
+  <header class="mb-10">
+    <h1 class="font-serif text-4xl font-semibold text-text">Notifications</h1>
+    <p class="mt-2 text-secondary">Your recent alerts and messages</p>
+  </header>
+
+  <div class="space-y-4">
+    <div *ngFor="let n of notifications" 
+         class="bg-white rounded-xl border border-border p-5 hover:shadow-md transition-shadow duration-200 cursor-pointer">
+      <div class="flex items-start justify-between gap-4">
+        <!-- Icon -->
+        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-light flex items-center justify-center text-primary">
+          <span class="text-xl">{{ getNotificationIcon(n.title) }}</span>
+        </div>
+        
+        <!-- Content -->
+        <div class="flex-1 min-w-0">
+          <p class="font-semibold text-text mb-1">{{ n.title }}</p>
+          <p class="text-sm text-secondary">{{ n.body }}</p>
+        </div>
+
+        <!-- Time -->
+        <div class="flex-shrink-0 text-xs text-secondary font-medium">
+          {{ n.time }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="notifications.length === 0" 
+         class="text-center py-16">
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-light mb-4">
+        <span class="text-3xl">🔔</span>
+      </div>
+      <h3 class="font-serif text-xl font-semibold text-text mb-2">No notifications yet</h3>
+      <p class="text-secondary">When you get notifications, they'll appear here</p>
+    </div>
+  </div>
+</main>

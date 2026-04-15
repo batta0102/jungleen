@@ -1,0 +1,88 @@
+<div class="resource-list-container">
+  <div class="list-header">
+    <h1>Resources Management</h1>
+    <a routerLink="/back/resources/create" class="btn btn-primary">
+      + Add New Resource
+    </a>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-container">
+      <p>Loading resources...</p>
+    </div>
+  }
+
+  @if (error()) {
+    <div class="alert alert-danger">
+      <strong>Error:</strong> {{ error() }}
+      <button (click)="loadResources()" class="btn btn-sm btn-secondary">
+        Retry
+      </button>
+    </div>
+  }
+
+  @if (!loading() && resources().length > 0) {
+    <div class="table-responsive">
+      <table class="resource-table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>File URL</th>
+            <th>Upload Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (resource of resources(); let i = $index; track i) {
+            <tr class="resource-row">
+              <td class="title-cell">
+                <span class="type-icon">{{ getTypeIcon(resource.type) }}</span>
+                {{ resource.title }}
+              </td>
+              <td>{{ resource.type }}</td>
+              <td>{{ resource.description }}</td>
+              <td>
+                @if (resource.fileUrl) {
+                  <a [href]="resource.fileUrl" target="_blank" class="file-link">📎 File</a>
+                } @else {
+                  <span class="text-muted">—</span>
+                }
+              </td>
+              <td>{{ resource.uploadDate | date: 'short' }}</td>
+              <td class="actions-cell">
+                <a [routerLink]="['/back/resources', getResourceId(resource), 'edit']" 
+                   class="btn btn-sm btn-info"
+                   [style.opacity]="!getResourceId(resource) ? '0.5' : '1'">
+                  Edit
+                </a>
+                <button (click)="deleteResource(getResourceId(resource))" 
+                        [disabled]="!getResourceId(resource)"
+                        [title]="getResourceId(resource) ? 'Delete this resource' : 'Cannot delete: ID is missing'"
+                        class="btn btn-sm btn-danger">
+                  Delete
+                </button>
+                <a [routerLink]="['/back/resource-reviews', getResourceId(resource)]" 
+                   class="btn btn-sm btn-success"
+                   [style.opacity]="!getResourceId(resource) ? '0.5' : '1'"
+                   [title]="getResourceId(resource) ? 'View and manage reviews' : 'Cannot view reviews: ID is missing'">
+                  Check Reviews
+                </a>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (!loading() && resources().length === 0 && !error()) {
+    <div class="empty-state">
+      <p>No resources found</p>
+      <a routerLink="/back/resources/create" class="btn btn-primary">
+        Create First Resource
+      </a>
+    </div>
+  }
+</div>

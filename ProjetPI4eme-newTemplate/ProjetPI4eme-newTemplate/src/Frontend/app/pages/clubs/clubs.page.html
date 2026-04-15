@@ -1,0 +1,56 @@
+<div class="container">
+  <header class="page-header">
+    <h1 class="page-title">Clubs</h1>
+    <p class="page-subtitle">
+      Learning English is more fun and effective when you practice with others! Our clubs offer a dynamic way to improve your skills while connecting with fellow learners.
+    </p>
+    <p class="page-subtitle">Explore our clubs and take your English learning journey to the next level! 🚀</p>
+  </header>
+
+  <hr class="divider" />
+
+  <section class="clubs-list" aria-label="Club list">
+    @for (club of pagedClubs(); track trackClubId($index, club)) {
+      <article class="card club-row">
+        <img
+          class="club-img"
+          [ngSrc]="clubImageSrc(club)"
+          width="150"
+          height="110"
+          alt=""
+        />
+
+        <div class="club-content">
+          <div class="club-title">{{ club.name }}</div>
+          <p class="muted club-desc">{{ club.description }}</p>
+
+          <div class="club-actions">
+            <a class="btn learn-btn" [routerLink]="['/clubs', club.id]">
+              <span class="arrow" aria-hidden="true">→</span>
+              Learn more
+            </a>
+          </div>
+        </div>
+      </article>
+    }
+  </section>
+
+  <nav class="pagination" aria-label="Pagination">
+    <button class="page-btn" type="button" (click)="prevPage()" [disabled]="page() <= 1" aria-label="Previous page">
+      ‹
+    </button>
+    @for (p of pages(); track p) {
+      <button
+        class="page-btn"
+        type="button"
+        [attr.aria-current]="p === page() ? 'page' : null"
+        (click)="setPage(p)"
+      >
+        {{ p }}
+      </button>
+    }
+    <button class="page-btn" type="button" (click)="nextPage()" [disabled]="page() >= pageCount()" aria-label="Next page">
+      ›
+    </button>
+  </nav>
+</div>

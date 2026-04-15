@@ -1,0 +1,67 @@
+<div class="container">
+  <header class="page-header">
+    <h1 class="page-title">Evaluations</h1>
+    <p class="page-subtitle">Assessments and evaluations to measure progress.</p>
+  </header>
+
+  <section class="grid grid-2">
+    <article class="card">
+      <div class="card-body">
+        <div class="item-title">Placement test</div>
+        @if (loading()) {
+          <p class="muted">Loading latest result...</p>
+        } @else if (error()) {
+          <p class="muted">{{ error() }}</p>
+        } @else if (latestResult()) {
+          <p class="muted">
+            Latest score: {{ latestResult()!.score }} / {{ latestResult()!.noteSur }}
+            ({{ latestResult()!.pourcentage }}%)
+          </p>
+          <div class="actions-row">
+            <button class="btn btn-primary" type="button" [disabled]="actionLoading()" (click)="startPlacementTest()">
+              Take test
+            </button>
+            <button class="btn" type="button" (click)="toggleLatestResultDetails()">
+            {{ showLatestResultDetails() ? 'Hide latest result' : 'View latest result' }}
+            </button>
+          </div>
+          @if (showLatestResultDetails()) {
+            <div class="result-details muted">
+              <p><strong>Result ID:</strong> {{ latestResult()!.id }}</p>
+              <p><strong>Published:</strong> {{ formatDate(latestResult()!.datePublicationResultat) }}</p>
+              <p><strong>Session:</strong> #{{ latestResult()!.session?.id }}</p>
+              <p><strong>Session status:</strong> {{ latestResult()!.session?.statut }}</p>
+              <p><strong>Quiz:</strong> {{ latestResult()!.session?.qcm?.titre ?? 'N/A' }}</p>
+            </div>
+          }
+        } @else {
+          <p class="muted">No result found yet.</p>
+          <button class="btn btn-primary" type="button" [disabled]="actionLoading()" (click)="startPlacementTest()">Take test</button>
+        }
+        @if (actionMessage()) {
+          <p class="muted">{{ actionMessage() }}</p>
+        }
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="card-body">
+        <div class="item-title">Session history</div>
+        @if (loading()) {
+          <p class="muted">Loading sessions...</p>
+        } @else if (!error() && sessions().length > 0) {
+          <ul class="muted eval-list">
+            @for (session of sessions(); track session.id) {
+              <li>
+                <strong>Session #{{ session.id }}</strong>
+                <span>• {{ session.statut }} • {{ session.pourcentage }}%</span>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="muted">No evaluation sessions yet.</p>
+        }
+      </div>
+    </article>
+  </section>
+</div>

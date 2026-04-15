@@ -1,0 +1,79 @@
+.actions {
+  margin-top: 0.75rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.enroll-block {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.price-pair {
+  display: grid;
+  gap: 0.25rem;
+  margin-right: 0.25rem;
+}
+
+.price-line {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: space-between;
+  align-items: baseline;
+  min-width: 160px;
+}
+
+.price-value {
+  font-weight: 900;
+}
+
+.chapter-title {
+  font-weight: 900;
+  margin-bottom: 0.5rem;
+}
+
+.sections {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.section-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.check {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.section-title {
+  font-weight: 800;
+}
+
+.content-panel {
+  margin-top: 0.5rem;
+  border: 1px solid var(--jie-border);
+  border-radius: 12px;
+  padding: 0.75rem;
+  background: color-mix(in srgb, var(--jie-bg) 70%, white);
+}
+
+.cert-pre {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid var(--jie-border);
+  margin: 0.75rem 0 0;
+}

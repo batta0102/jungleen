@@ -1,0 +1,176 @@
+<div class="quiz-attempt-container">
+  <!-- Timer Bar at Top -->
+  <div class="timer-bar" [class.warning]="isTimeWarning()" [class.critical]="isTimeCritical()">
+    <div class="timer-content">
+      <div class="timer-label">Time Remaining</div>
+      <div class="timer-display" [class.critical]="isTimeCritical()">
+        {{ formatTime(timeRemaining()) }}
+      </div>
+    </div>
+    <div class="timer-progress-container">
+      <div class="timer-progress-bar" [style.width.%]="timePercentage()"></div>
+    </div>
+  </div>
+
+  <div class="quiz-layout">
+    <!-- Main Content Area -->
+    <main class="quiz-main">
+      <!-- Question Header -->
+      <header class="question-header">
+        <h2 class="quiz-title">{{ quiz().titre }}</h2>
+        <div class="question-counter">
+          Question {{ currentQuestionIndex() + 1 }} of {{ questionStates().length }}
+        </div>
+      </header>
+
+      <!-- Current Question Display -->
+      @if (currentQuestion()) {
+        <section class="question-section">
+          <h3 class="question-text">
+            {{ currentQuestion()!.content }}
+          </h3>
+
+          <!-- DEBUG INFO -->
+          <div style="background: #f0f0f0; padding: 0.5rem; margin-bottom: 1rem; border-radius: 4px; font-size: 0.75rem; max-height: 60px; overflow-y: auto;">
+            <strong>DEBUG:</strong> Q{{ currentQuestionIndex() + 1 }} | Choices: {{ currentQuestion()!.choices.length }} | Selected: {{ currentQuestion()!.selectedChoiceIds.length }} | IDs: {{ currentQuestion()!.selectedChoiceIds }}
+          </div>
+
+          <div class="choices-container">
+            @for (choice of currentQuestion()!.choices; track choice.id) {
+              <label class="choice-button" [class.selected]="isChoiceSelected(choice.id)">
+                <input
+                  [type]="quiz().type === 'QCM_MULTI' ? 'checkbox' : 'radio'"
+                  [name]="quiz().type === 'QCM_MULTI' ? 'q-multi-' + currentQuestion()!.id : 'q-' + currentQuestion()!.id"
+                  [value]="choice.id"
+                  [checked]="isChoiceSelected(choice.id)"
+                  (change)="onChoiceChange($event, choice.id)"
+                  class="choice-input"
+                />
+                <span class="choice-text">{{ choice.contenu }}</span>
+              </label>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- Navigation Buttons -->
+      <footer class="question-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="goToPrevious()"
+          [disabled]="!canGoPrevious()"
+        >
+          ← Previous
+        </button>
+
+        <div class="footer-spacer"></div>
+
+        @if (canGoNext()) {
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="goToNext()"
+          >
+            Next →
+          </button>
+        }
+
+        @if (!canGoNext()) {
+          <button
+            type="button"
+            class="btn btn-primary"
+            [disabled]="!allAnswered()"
+            (click)="openConfirmSubmit()"
+          >
+            Submit Quiz
+          </button>
+        }
+      </footer>
+    </main>
+
+    <!-- Question Navigator Sidebar -->
+    <aside class="question-navigator">
+      <div class="navigator-header">
+        <h4>Questions</h4>
+        <span class="progress-indicator">
+          {{ answeredCount() }}/{{ questionStates().length }} answered
+        </span>
+      </div>
+
+      <nav class="question-buttons">
+        @for (question of questionStates(); track question.id; let idx = $index) {
+          <button
+            type="button"
+            class="question-nav-btn"
+            [class.current]="idx === currentQuestionIndex()"
+            [class.answered]="question.answered"
+            [class.unanswered]="!question.answered"
+            (click)="goToQuestion(idx)"
+            [attr.aria-label]="'Question ' + (idx + 1) + (question.answered ? ', answered' : ', unanswered')"
+          >
+            {{ idx + 1 }}
+          </button>
+        }
+      </nav>
+
+      <div class="navigator-legend">
+        <div class="legend-item">
+          <div class="legend-dot answered"></div>
+          <span>Answered</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot unanswered"></div>
+          <span>Unanswered</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot current"></div>
+          <span>Current</span>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="btn btn-close"
+        (click)="close()"
+        aria-label="Close quiz"
+      >
+        ✕ Close
+      </button>
+    </aside>
+  </div>
+
+  <!-- Submission Confirmation Dialog -->
+  @if (showConfirmSubmit()) {
+    <div class="modal-backdrop" role="dialog" aria-modal="true">
+      <div class="modal-content">
+        <h3>Submit Quiz?</h3>
+        <p>
+          You are about to submit your answers. You will not be able to change them after submission.
+        </p>
+        <p class="progress-info">
+          {{ answeredCount() }} of {{ questionStates().length }} questions answered
+        </p>
+        
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="cancelSubmit()"
+            [disabled]="isSubmitting()"
+          >
+            Continue Quiz
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="submitAttempt()"
+            [disabled]="isSubmitting()"
+          >
+            {{ isSubmitting() ? 'Submitting...' : 'Yes, Submit' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

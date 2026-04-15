@@ -1,0 +1,88 @@
+<div class="review-section">
+  <!-- Reviews List -->
+  <div class="reviews-header">
+    <h3 class="reviews-title">
+      <span class="star-icon">⭐</span>
+      Reviews
+      <span class="review-count">({{ reviews().length }})</span>
+    </h3>
+  </div>
+
+  <div class="review-list" *ngIf="reviews().length > 0; else noReviews">
+    <div class="review-item" *ngFor="let review of reviews()">
+      <div class="review-header">
+        <span class="review-stars">{{ formatStars(review.rating) }}</span>
+        <button 
+          class="edit-btn" 
+          type="button"
+          (click)="startEdit(review)"
+          [disabled]="editingReviewId() !== null"
+          title="Edit review"
+        >
+          ✏️
+        </button>
+      </div>
+      <p class="review-comment">{{ review.comment }}</p>
+    </div>
+  </div>
+
+  <ng-template #noReviews>
+    <p class="no-reviews">No reviews yet. Be the first to leave one! 🌟</p>
+  </ng-template>
+
+  <!-- Review Form -->
+  <form class="review-form" (ngSubmit)="submitReview()">
+    <div class="form-header">
+      <label class="form-label">
+        {{ editingReviewId() ? '✏️ Edit Your Review' : '✨ Add Your Review' }}
+      </label>
+      <button 
+        *ngIf="editingReviewId()"
+        class="cancel-btn"
+        type="button"
+        (click)="cancelEdit()"
+      >
+        Cancel
+      </button>
+    </div>
+
+    <textarea
+      class="form-textarea"
+      [(ngModel)]="comment"
+      name="comment"
+      rows="3"
+      placeholder="Share your thoughts about this resource..."
+      [disabled]="submitting()"
+    ></textarea>
+
+    <div class="star-input" (mouseleave)="clearHoverRating()">
+      <span class="rating-label-text">Rating:</span>
+      <div class="stars">
+        <button
+          class="star"
+          type="button"
+          *ngFor="let star of stars"
+          [class.filled]="star <= getDisplayRating()"
+          (mouseenter)="setHoverRating(star)"
+          (click)="setRating(star)"
+          [disabled]="submitting()"
+          [attr.aria-label]="star + ' stars'"
+        >
+          ★
+        </button>
+      </div>
+      <span class="rating-value">{{ rating() }}/6</span>
+    </div>
+
+    <button 
+      class="submit-button" 
+      type="submit" 
+      [disabled]="!canSubmit()"
+    >
+      <span *ngIf="!submitting()">
+        {{ editingReviewId() ? '💾 Update Review' : '🚀 Submit Review' }}
+      </span>
+      <span *ngIf="submitting()">⏳ Saving...</span>
+    </button>
+  </form>
+</div>

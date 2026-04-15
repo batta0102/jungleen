@@ -1,0 +1,412 @@
+<main class="mx-auto max-w-7xl px-6 py-8">
+  <header class="mb-8">
+    <h1 class="font-serif text-5xl font-semibold text-text">Career Center</h1>
+    <p class="mt-2 text-secondary">Publish teaching job offers and manage candidate applications.</p>
+  </header>
+
+  <section class="mb-8 grid gap-4 md:grid-cols-2">
+    <article class="rounded-xl border border-border bg-white p-5 shadow-sm">
+      <p class="text-secondary text-sm">Open Job Offers</p>
+      <p class="text-4xl font-serif font-semibold text-text">{{ activeOffersCount() }}</p>
+    </article>
+    <article class="rounded-xl border border-border bg-white p-5 shadow-sm">
+      <p class="text-secondary text-sm">Applications</p>
+      <p class="text-4xl font-serif font-semibold text-text">{{ candidaturesCount() }}</p>
+    </article>
+  </section>
+
+  <section class="mb-8 rounded-xl border border-border bg-white p-6 shadow-sm">
+    <h2 class="font-serif text-2xl font-semibold text-text">
+      {{ editingOfferId() ? 'Edit Job Offer' : 'Create Job Offer' }}
+    </h2>
+
+    <div class="mt-4 grid gap-4 md:grid-cols-2">
+      <label class="field">
+        Title
+        <input [ngModel]="offerTitle()" (ngModelChange)="offerTitle.set($event)" />
+      </label>
+
+      <label class="field">
+        Required level
+        <input [ngModel]="offerLevel()" (ngModelChange)="offerLevel.set($event)" />
+      </label>
+
+      <label class="field">
+        Summary
+        <input [ngModel]="offerContent()" (ngModelChange)="offerContent.set($event)" />
+      </label>
+
+      <label class="field">
+        Experience (years)
+        <input type="number" min="0" [ngModel]="offerExperience()" (ngModelChange)="offerExperience.set(+$event)" />
+      </label>
+
+      <label class="field md:col-span-2">
+        Description
+        <textarea rows="4" [ngModel]="offerDescription()" (ngModelChange)="offerDescription.set($event)"></textarea>
+      </label>
+
+      <label class="inline-flex items-center gap-2 text-sm text-secondary">
+        <input type="checkbox" [ngModel]="offerActive()" (ngModelChange)="offerActive.set(!!$event)" />
+        Offer is active
+      </label>
+    </div>
+
+    <div class="mt-4 flex flex-wrap gap-3">
+      <button class="inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90" type="button" (click)="saveOffer()">
+        {{ editingOfferId() ? 'Update Offer' : 'Create Offer' }}
+      </button>
+      <button class="inline-flex items-center gap-2 border border-border text-text px-4 py-2 rounded-lg text-sm font-medium hover:bg-light" type="button" (click)="resetOfferForm()">
+        Clear
+      </button>
+    </div>
+
+    @if (message()) {
+      <p class="mt-3 text-sm text-secondary">{{ message() }}</p>
+    }
+  </section>
+
+  <section class="mb-8 rounded-xl border border-border bg-white p-6 shadow-sm">
+    <h2 class="font-serif text-2xl font-semibold text-text">Job Offerings</h2>
+
+    @if (loading()) {
+      <p class="mt-4 text-secondary">Loading offers...</p>
+    } @else if (error()) {
+      <p class="mt-4 text-secondary">{{ error() }}</p>
+    } @else if (offers().length === 0) {
+      <p class="mt-4 text-secondary">No job offerings yet.</p>
+    } @else {
+      <div class="mt-4 space-y-3">
+        @for (offer of offers(); track offer.id) {
+          <article class="rounded-lg border border-border bg-light p-4">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h3 class="font-serif text-xl font-semibold text-text">{{ offer.titre }}</h3>
+              <span class="status-pill" [class.inactive]="!offer.actif">{{ offer.actif ? 'Active' : 'Inactive' }}</span>
+            </div>
+            <p class="mt-2 text-secondary">{{ offer.description || offer.contenu }}</p>
+            <p class="mt-1 text-sm text-secondary">Level: {{ offer.niveauRequis || 'N/A' }} • Experience: {{ offer.experienceRequise || 0 }} years</p>
+
+            <div class="mt-3 flex gap-2">
+              <button class="inline-flex items-center gap-2 border border-border text-text px-3 py-2 rounded-lg text-sm font-medium hover:bg-white" type="button" (click)="editOffer(offer)">Edit</button>
+              <button class="inline-flex items-center gap-2 border border-border text-text px-3 py-2 rounded-lg text-sm font-medium hover:bg-white" type="button" (click)="deleteOffer(offer.id)">Delete</button>
+            </div>
+          </article>
+        }
+      </div>
+    }
+  </section>
+
+  <section class="rounded-xl border border-border bg-white p-6 shadow-sm">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+      <h2 class="font-serif text-2xl font-semibold text-text">Applications</h2>
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+        <input 
+          type="text" 
+          placeholder="Search by name or email..." 
+          [(ngModel)]="searchQuery"
+          class="search-input"
+        />
+        <select 
+          [ngModel]="pageSize()" 
+          (ngModelChange)="onPageSizeChange($event)"
+          class="page-size-select">
+          <option value="5">5 per page</option>
+          <option value="10">10 per page</option>
+          <option value="20">20 per page</option>
+          <option value="50">50 per page</option>
+        </select>
+      </div>
+    </div>
+
+    @if (loading()) {
+      <p class="mt-4 text-secondary">Loading applications...</p>
+    } @else if (filteredCandidatures().length === 0) {
+      <p class="mt-4 text-secondary">No applications found.</p>
+    } @else {
+      <div class="mt-4 space-y-4">
+        @for (candidature of filteredCandidatures(); track candidature.id) {
+          <article class="rounded-lg border border-border bg-light p-4">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h3 class="font-semibold text-text">{{ candidature.nom }}</h3>
+                <p class="text-sm text-secondary">{{ candidature.email }} • {{ candidature.poste?.titre || 'No job linked' }}</p>
+              </div>
+              <select
+                class="status-select"
+                [ngModel]="candidature.statut"
+                (ngModelChange)="updateStatus(candidature.id, $event)">
+                @for (status of statusOptions; track status) {
+                  <option [value]="status">{{ status }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="mt-2">
+              <p class="text-sm font-medium text-secondary mb-1">CV:</p>
+              @if (isCvFile(candidature.cv)) {
+                <div class="flex flex-wrap gap-2">
+                  <button class="inline-flex items-center gap-2 bg-primary text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90" type="button" (click)="downloadCV(candidature.cv)">
+                    📄 Download CV - {{ getCvName(candidature.cv) }}
+                  </button>
+                  <button 
+                    class="inline-flex items-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 disabled:opacity-60 disabled:cursor-not-allowed" 
+                    type="button" 
+                    (click)="analyzeCv(candidature.id)"
+                    [disabled]="analysisInProgress()">
+                    {{ analysisInProgress() && selectedAnalysisId() === candidature.id ? '⏳ Analyzing...' : '🤖 Analyze CV' }}
+                  </button>
+                </div>
+              } @else {
+                <p class="text-sm text-secondary">{{ candidature.cv }}</p>
+              }
+            </div>
+
+            <!-- CV Analysis Results -->
+            @if (getAnalysisResult(candidature.id); as analysis) {
+              <div class="mt-4 p-4 rounded-lg border-2" [style.border-color]="getDecisionColor(analysis.decision)">
+                <div class="flex items-center justify-between mb-3">
+                  <h4 class="font-semibold text-text">CV Analysis Results</h4>
+                  <button 
+                    class="text-xs px-2 py-1 rounded border border-secondary text-secondary hover:bg-light"
+                    (click)="toggleAnalysisDetails(candidature.id)">
+                    {{ selectedAnalysisId() === candidature.id ? 'Hide' : 'Show' }} Details
+                  </button>
+                </div>
+
+                <!-- Score Badge -->
+                <div class="flex items-center gap-3 mb-3">
+                  <div class="text-center">
+                    <div class="text-3xl font-bold text-text">{{ analysis.score.toFixed(1) }}/100</div>
+                    <div class="text-xs text-secondary">Overall Score</div>
+                  </div>
+                  <div 
+                    class="px-4 py-2 rounded-full text-white font-semibold"
+                    [style.background-color]="getDecisionColor(analysis.decision)">
+                    {{ analysis.decision }}
+                  </div>
+                </div>
+
+                <!-- Score Breakdown -->
+                <div class="grid grid-cols-3 gap-2 mb-3 text-sm">
+                  <div class="bg-light p-2 rounded text-center">
+                    <div class="font-semibold text-text">{{ analysis.experienceScore.toFixed(0) }}%</div>
+                    <div class="text-xs text-secondary">Experience</div>
+                  </div>
+                  <div class="bg-light p-2 rounded text-center">
+                    <div class="font-semibold text-text">{{ analysis.skillsScore.toFixed(0) }}%</div>
+                    <div class="text-xs text-secondary">Skills</div>
+                  </div>
+                  <div class="bg-light p-2 rounded text-center">
+                    <div class="font-semibold text-text">{{ analysis.educationScore.toFixed(0) }}%</div>
+                    <div class="text-xs text-secondary">Education</div>
+                  </div>
+                </div>
+
+                <!-- Details (collapsible) -->
+                @if (selectedAnalysisId() === candidature.id) {
+                  <div class="space-y-3 p-3 bg-light rounded">
+                    <!-- Explanation -->
+                    <div>
+                      <h5 class="font-medium text-text mb-2 text-sm">Key Findings:</h5>
+                      <ul class="text-sm text-secondary space-y-1">
+                        @for (point of analysis.explanation; track point) {
+                          <li>{{ point }}</li>
+                        }
+                      </ul>
+                    </div>
+
+                    <!-- Matched Skills -->
+                    @if (analysis.matchedSkills.length > 0) {
+                      <div>
+                        <h5 class="font-medium text-text mb-2 text-sm">✓ Matched Skills:</h5>
+                        <div class="flex flex-wrap gap-2">
+                          @for (skill of analysis.matchedSkills; track skill) {
+                            <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">
+                              {{ skill }}
+                            </span>
+                          }
+                        </div>
+                      </div>
+                    }
+
+                    <!-- Missing Skills -->
+                    @if (analysis.missingSkills.length > 0) {
+                      <div>
+                        <h5 class="font-medium text-text mb-2 text-sm">✗ Missing Skills:</h5>
+                        <div class="flex flex-wrap gap-2">
+                          @for (skill of analysis.missingSkills; track skill) {
+                            <span class="inline-block bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-medium">
+                              {{ skill }}
+                            </span>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+
+            <label class="field mt-3">
+              Admin comment
+              <textarea
+                rows="2"
+                [ngModel]="candidature.commentaireAdmin || ''"
+                (ngModelChange)="candidature.commentaireAdmin = $event"></textarea>
+            </label>
+            <button class="mt-2 inline-flex items-center gap-2 border border-border text-text px-3 py-2 rounded-lg text-sm font-medium hover:bg-white" type="button" (click)="updateComment(candidature)">
+              Save comment
+            </button>
+          </article>
+        }
+      </div>
+      
+      <!-- Pagination Controls -->
+      @if (totalCandidatures() > pageSize()) {
+        <div class="flex justify-center items-center gap-2 mt-6">
+          <button 
+            [disabled]="currentPage() === 1"
+            (click)="onPageChange(currentPage() - 1)"
+            class="px-3 py-2 border border-border rounded-lg hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed">
+            Previous
+          </button>
+          
+          <span class="text-sm text-secondary">
+            Page {{ currentPage() }} of {{ Math.ceil(totalCandidatures() / pageSize()) }}
+          </span>
+          
+          <button 
+            [disabled]="currentPage() >= Math.ceil(totalCandidatures() / pageSize())"
+            (click)="onPageChange(currentPage() + 1)"
+            class="px-3 py-2 border border-border rounded-lg hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed">
+            Next
+          </button>
+        </div>
+      }
+    }
+  </section>
+
+  <section class="mt-8 rounded-xl border border-border bg-white p-6 shadow-sm">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+      <h2 class="font-serif text-2xl font-semibold text-text">Interviews</h2>
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+        <input 
+          type="text" 
+          placeholder="Search by candidate name or type..." 
+          [ngModel]="searchInterview()" 
+          (ngModelChange)="onInterviewSearch()"
+          class="search-input"
+        />
+      </div>
+    </div>
+
+    <div class="mt-4 grid gap-4 md:grid-cols-2">
+      <label class="field">
+        Candidate
+        <select [ngModel]="interviewCandidatureId()" (ngModelChange)="interviewCandidatureId.set($event ? +$event : null)">
+          <option [ngValue]="null">Select candidature</option>
+          @for (candidature of candidatures(); track candidature.id) {
+            <option [value]="candidature.id">#{{ candidature.id }} - {{ candidature.nom }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="field">
+        Date and time
+        <input type="datetime-local" [ngModel]="interviewDate()" (ngModelChange)="interviewDate.set($event)" />
+      </label>
+
+      <label class="field">
+        Type
+        <select [ngModel]="interviewType()" (ngModelChange)="onInterviewTypeChange(); interviewType.set($event)">
+          <option value="EN_LIGNE">EN_LIGNE</option>
+          <option value="SUR_SITE">SUR_SITE</option>
+        </select>
+      </label>
+
+      @if (interviewType() === 'EN_LIGNE' && meetLink()) {
+        <div class="meet-link-container">
+          <label>Google Meet Link</label>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <input type="text" [value]="meetLink()" readonly 
+                   style="flex:1; background:#f0f9f0; border:1px solid #34a853; border-radius:6px; padding:8px;">
+            <a [href]="meetLink()" target="_blank" 
+               style="background:#34a853; color:white; padding:8px 16px; 
+                      border-radius:6px; text-decoration:none; white-space:nowrap;">
+              🎥 Join Meet
+            </a>
+          </div>
+        </div>
+      }
+
+      <label class="field">
+        Result
+        <input [ngModel]="interviewResult()" (ngModelChange)="interviewResult.set($event)" />
+      </label>
+
+      <label class="field md:col-span-2">
+        Comment
+        <textarea rows="2" [ngModel]="interviewComment()" (ngModelChange)="interviewComment.set($event)"></textarea>
+      </label>
+    </div>
+
+    <button class="mt-4 inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90" type="button" (click)="scheduleInterview()">
+      Schedule interview
+    </button>
+
+    @if (interviews().length > 0) {
+      <div class="mt-6 space-y-3">
+        @for (interview of interviews(); track interview.id) {
+          <article class="rounded-lg border border-border bg-light p-4">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <p class="font-medium text-text">Interview #{{ interview.id }} • {{ interview.type }}</p>
+              <ng-container *ngIf="interview.meetLink">
+                <a [href]="interview.meetLink" 
+                     target="_blank"
+                     style="display:inline-block; background:#34a853; color:white; 
+                            padding:6px 14px; border-radius:6px; 
+                            text-decoration:none; font-size:0.85rem; margin-top:4px;">
+                  🎥 Join Google Meet
+                </a>
+              </ng-container>
+            </div>
+            <p class="text-sm text-secondary">
+              Candidate: {{ interview.candidature?.nom || 'N/A' }} • Date: {{ interview.dateInterview }}
+            </p>
+            <p class="text-sm text-secondary">Result: {{ interview.resultat || 'N/A' }}</p>
+            <p class="text-sm text-secondary">Comment: {{ interview.commentaire || 'N/A' }}</p>
+            @if (interview.meetLink) {
+              <p class="text-sm text-secondary mt-2">
+                <strong>Meet Link:</strong> 
+                <a href="{{ interview.meetLink }}" target="_blank" class="text-blue-600 hover:underline">{{ interview.meetLink }}</a>
+              </p>
+            }
+          </article>
+        }
+      </div>
+      
+      <!-- Interview Pagination Controls -->
+      @if (totalInterviews() > pageSize()) {
+        <div class="flex justify-center items-center gap-2 mt-6">
+          <button 
+            [disabled]="currentPage() === 1"
+            (click)="onPageChange(currentPage() - 1)"
+            class="px-3 py-2 border border-border rounded-lg hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed">
+            Previous
+          </button>
+          
+          <span class="text-sm text-secondary">
+            Page {{ currentPage() }} of {{ Math.ceil(totalInterviews() / pageSize()) }}
+          </span>
+          
+          <button 
+            [disabled]="currentPage() >= Math.ceil(totalInterviews() / pageSize())"
+            (click)="onPageChange(currentPage() + 1)"
+            class="px-3 py-2 border border-border rounded-lg hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed">
+            Next
+          </button>
+        </div>
+      }
+    }
+  </section>
+</main>

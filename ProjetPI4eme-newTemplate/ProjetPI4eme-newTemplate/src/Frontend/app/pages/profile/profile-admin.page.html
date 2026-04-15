@@ -1,0 +1,50 @@
+<div class="container">
+  <header class="page-header">
+    <h1 class="page-title">Admin Space</h1>
+    <p class="page-subtitle">Platform overview for admins.</p>
+  </header>
+
+  <div class="profile-grid">
+    <section class="card">
+      <div class="card-body">
+        <div class="item-title">Personal information</div>
+        <p class="muted">Demo profile (no backend).</p>
+
+        <div class="field">
+          <label for="role">Profile type</label>
+          <select id="role" [value]="role()" (change)="setRole(($any($event.target)).value)">
+            <option value="student">Student</option>
+            <option value="tutor">Tutor</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Name</label>
+          <input type="text" value="Admin" disabled />
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" value="admin@jungle.example" disabled />
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-body">
+        <div class="item-title">Platform activity</div>
+        <div class="grid grid-3" style="margin-top: 0.75rem;">
+          <div class="card"><div class="card-body"><div class="item-title">{{ stats().events }}</div><div class="muted">Events</div></div></div>
+          <div class="card"><div class="card-body"><div class="item-title">{{ stats().clubs }}</div><div class="muted">Clubs</div></div></div>
+          <div class="card"><div class="card-body"><div class="item-title">{{ stats().trainings }}</div><div class="muted">Courses</div></div></div>
+        </div>
+
+        <div class="pill-row" style="margin-top: 0.75rem;">
+          <a class="btn" [routerLink]="['/trainings']">Courses</a>
+          <a class="btn" [routerLink]="['/clubs']">Clubs</a>
+          <a class="btn" [routerLink]="['/events']">Events</a>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

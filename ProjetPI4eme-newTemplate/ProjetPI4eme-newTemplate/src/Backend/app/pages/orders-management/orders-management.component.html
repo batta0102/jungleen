@@ -1,0 +1,259 @@
+<div class="orders-management-container">
+
+  <!-- Navigation Tabs -->
+  <div class="navigation-tabs">
+    <a 
+      routerLink="/back/resources" 
+      routerLinkActive="active" 
+      [routerLinkActiveOptions]="{exact: true}"
+      class="nav-tab"
+    >
+      Resources Management
+    </a>
+    <a 
+      routerLink="/back/products-management" 
+      routerLinkActive="active"
+      class="nav-tab"
+    >
+      Products Management
+    </a>
+    <a 
+      routerLink="/back/orders-management" 
+      routerLinkActive="active"
+      class="nav-tab"
+    >
+      Orders Management
+    </a>
+  </div>
+
+  <!-- Page Header -->
+  <div class="header">
+    <h1>📦 Orders Management</h1>
+    <button class="btn btn-primary" (click)="openAddForm()" [disabled]="loading()">
+      + Add Order
+    </button>
+  </div>
+
+  <!-- Error Alert -->
+  @if (error()) {
+    <div class="alert alert-danger">
+      {{ error() }}
+      <button class="btn btn-sm btn-secondary" (click)="loadOrders()">Retry</button>
+    </div>
+  }
+
+  <!-- Loading -->
+  @if (loading() && !showForm()) {
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Loading orders...</p>
+    </div>
+  }
+
+  <!-- Order Form Modal -->
+  @if (showForm()) {
+    <div class="modal-overlay" (click)="closeForm()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>{{ isEditMode() ? 'Edit Order' : 'Add New Order' }}</h2>
+          <button class="btn-close" (click)="closeForm()">✕</button>
+        </div>
+
+        <form class="order-form" (ngSubmit)="saveOrder()">
+          <div class="form-group">
+            <label for="productId">Product *</label>
+            @if (productList().length > 0) {
+              <select
+                id="productId"
+                class="form-control"
+                [value]="currentOrder().product?.idProduct || 0"
+                (change)="updateProductId(+$any($event.target).value)"
+                required
+              >
+                <option value="0">-- Select a Product --</option>
+                @for (product of productList(); track product.idProduct) {
+                  <option [value]="product.idProduct">
+                    {{ product.name }} ($ {{ product.price?.toFixed(2) }})
+                  </option>
+                }
+              </select>
+            } @else {
+              <input
+                id="productId"
+                type="number"
+                class="form-control"
+                [value]="currentOrder().product?.idProduct || 0"
+                (input)="updateProductId(+$any($event.target).value)"
+                placeholder="Enter product ID"
+                required
+              />
+              <small class="form-text text-muted">Products not loaded. Enter Product ID manually.</small>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="productName">Product Name</label>
+            <input
+              id="productName"
+              type="text"
+              class="form-control"
+              [value]="getProductName(currentOrder().product?.idProduct)"
+              disabled
+              placeholder="Product name (auto-filled)"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="totalAmount">Total Amount ($) *</label>
+            <input
+              id="totalAmount"
+              type="number"
+              step="0.01"
+              class="form-control"
+              [value]="currentOrder().totalAmount"
+              (input)="updateField('totalAmount', +$any($event.target).value)"
+              placeholder="0.00"
+              required
+            />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="status">Status *</label>
+              <select
+                id="status"
+                class="form-control"
+                [value]="currentOrder().status"
+                (change)="updateField('status', $any($event.target).value)"
+                required
+              >
+                <option value="">Select Status</option>
+                <option value="Pending">Pending</option>
+                <option value="Confirmed">Confirmed</option>
+                <option value="Shipped">Shipped</option>
+                <option value="Delivered">Delivered</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="paymentMethod">Payment Method *</label>
+              <select
+                id="paymentMethod"
+                class="form-control"
+                [value]="currentOrder().paymentMethod"
+                (change)="updateField('paymentMethod', $any($event.target).value)"
+                required
+              >
+                <option value="">Select Payment Method</option>
+                <option value="Credit Card">Credit Card</option>
+                <option value="Debit Card">Debit Card</option>
+                <option value="PayPal">PayPal</option>
+                <option value="Bank Transfer">Bank Transfer</option>
+                <option value="Cash">Cash</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" (click)="closeForm()">
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary" [disabled]="loading()">
+              {{ isEditMode() ? 'Update Order' : 'Add Order' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Filter Info -->
+  @if (filterProductId() !== null) {
+    <div class="filter-info alert alert-info">
+      <span>🔍 Showing orders for Product ID: <strong>{{ filterProductId() }}</strong></span>
+      <button class="btn btn-sm btn-secondary" (click)="clearFilter()">
+        Clear Filter (Show All)
+      </button>
+    </div>
+  }
+
+  <!-- Orders Table -->
+  @if (!loading() && orders().length > 0) {
+    <div class="table-container">
+      <table class="orders-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Product</th>
+            <th>Total Amount</th>
+            <th>Status</th>
+            <th>Payment Method</th>
+            <th>Order Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (order of filteredOrders(); track order.idOrder || $index) {
+            <tr>
+              <td>{{ order.idOrder }}</td>
+              <td>
+                <span class="product-info">
+                  {{ getProductName(order.product?.idProduct) }}
+                  <small class="text-muted">(#{{ order.product?.idProduct || 'N/A' }})</small>
+                </span>
+              </td>
+              <td>${{ order.totalAmount.toFixed(2) }}</td>
+              <td>
+                <span [class]="'badge badge-' + (order.status === 'Delivered' ? 'success' : order.status === 'Cancelled' ? 'danger' : order.status === 'Shipped' ? 'info' : 'warning')">
+                  {{ order.status }}
+                </span>
+              </td>
+              <td>{{ order.paymentMethod }}</td>
+              <td>{{ order.orderDate ? (order.orderDate | date:'short') : 'N/A' }}</td>
+              <td class="actions-cell">
+                <button
+                  class="btn btn-sm btn-warning"
+                  (click)="openEditForm(order)"
+                  [disabled]="loading()"
+                >
+                  Edit
+                </button>
+                <button
+                  class="btn btn-sm btn-danger"
+                  (click)="deleteOrder(order)"
+                  [disabled]="loading()"
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- Empty State -->
+  @if (!loading() && filteredOrders().length === 0 && !error()) {
+    @if (filterProductId() !== null) {
+      <div class="empty-state">
+        <span class="empty-icon">🔍</span>
+        <h3>No Orders Found for This Product</h3>
+        <p>This product doesn't have any orders yet</p>
+        <button class="btn btn-primary" (click)="clearFilter()">
+          Show All Orders
+        </button>
+      </div>
+    } @else {
+      <div class="empty-state">
+        <span class="empty-icon">📦</span>
+        <h3>No Orders Found</h3>
+        <p>Start by adding your first order</p>
+        <button class="btn btn-primary" (click)="openAddForm()">
+          + Add First Order
+        </button>
+      </div>
+    }
+  }
+</div>

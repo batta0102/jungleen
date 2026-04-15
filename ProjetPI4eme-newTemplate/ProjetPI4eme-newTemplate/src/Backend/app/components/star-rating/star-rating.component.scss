@@ -1,0 +1,66 @@
+:host {
+  display: inline-block;
+}
+
+.star-rating {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.star {
+  border: none;
+  background: transparent;
+  font-size: 1.75rem;
+  cursor: pointer;
+  color: #d1d5db;
+  transition: all 0.15s ease;
+  padding: 0;
+  line-height: 1;
+  opacity: 0.5;
+}
+
+.star.filled {
+  color: #f59e0b;
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.star.empty {
+  color: #d1d5db;
+  opacity: 0.5;
+}
+
+.star:hover:not(:disabled) {
+  color: #f59e0b;
+  opacity: 1;
+  transform: scale(1.15);
+}
+
+.star:disabled {
+  cursor: not-allowed;
+  opacity: 0.3;
+}
+
+.star-rating.disabled .star,
+.star-rating.readonly .star {
+  cursor: default;
+}
+
+.star-rating.readonly .star:hover {
+  transform: none;
+}
+
+/* Animation */
+@keyframes star-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+.star.filled {
+  animation: star-pulse 0.3s ease;
+}

@@ -1,0 +1,114 @@
+<div class="results-container">
+  <!-- Results Header -->
+  <header class="results-header">
+    <div class="grade-display" [class]="'grade-' + gradeColor()">
+      <div class="grade-letter">{{ gradeLetter() }}</div>
+      <div class="grade-percentage">{{ percentage() }}%</div>
+    </div>
+    
+    <div class="results-summary">
+      <h1 class="results-title">Quiz Complete! 🎉</h1>
+      <p class="results-quiz-name">{{ quiz().titre }}</p>
+      
+      <div class="stats-grid">
+        <div class="stat-item">
+          <span class="stat-label">Score</span>
+          <span class="stat-value">{{ score() }}/{{ total() }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Accuracy</span>
+          <span class="stat-value">{{ percentage() }}%</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Time Taken</span>
+          <span class="stat-value">{{ formatTime(timeTaken()) }}</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Performance Feedback -->
+  <section class="feedback-section" [class]="'feedback-' + gradeColor()">
+    @switch (gradeLetter()) {
+      @case ('A') {
+        <p><strong>Excellent!</strong> You demonstrated strong mastery of this material. Keep up the great work!</p>
+      }
+      @case ('B') {
+        <p><strong>Well done!</strong> You have a solid understanding of the concepts. Review any incorrect answers to strengthen your knowledge.</p>
+      }
+      @case ('C') {
+        <p><strong>Good effort!</strong> You're making progress. Consider reviewing the material and retaking the quiz to improve your score.</p>
+      }
+      @case ('D') {
+        <p><strong>Almost there!</strong> You're getting closer. Take time to study the material carefully and try again.</p>
+      }
+      @case ('F') {
+        <p><strong>Keep learning!</strong> Don't be discouraged. Review the material thoroughly and practice more before retaking the quiz.</p>
+      }
+    }
+  </section>
+
+  <!-- Detailed Review -->
+  <section class="review-section">
+    <h2 class="review-title">Detailed Review</h2>
+    
+    <div class="questions-review">
+      @for (question of reviewQuestions(); track question.id; let idx = $index) {
+        <article class="review-question" [class.correct]="question.isCorrect" [class.incorrect]="!question.isCorrect">
+          <header class="review-question-header" (click)="toggleQuestion(question.id)">
+            <div class="question-indicator">
+              <span class="question-number">{{ idx + 1 }}</span>
+              <span class="question-status" [class]="question.isCorrect ? 'correct' : 'incorrect'">
+                {{ question.isCorrect ? '✓' : '✗' }}
+              </span>
+            </div>
+            
+            <div class="question-content">
+              <h4 class="question-text">{{ question.content }}</h4>
+              <span class="toggle-icon" [class.open]="expandedQuestion() === question.id">
+                ⌄
+              </span>
+            </div>
+          </header>
+
+          @if (expandedQuestion() === question.id) {
+            <div class="review-choices">
+              @for (choice of question.choices; track choice.id) {
+                <div class="review-choice">
+                  <div class="choice-header">
+                    <input 
+                      type="radio" 
+                      disabled 
+                      [checked]="question.selectedChoiceIds.includes(choice.id)"
+                      class="choice-input"
+                    />
+                    <span class="choice-content">{{ choice.contenu }}</span>
+                  </div>
+
+                  @if (choice.estCorrect) {
+                    <div class="choice-badge correct">
+                      ✓ Correct Answer
+                    </div>
+                  }
+                  
+                  @if (question.selectedChoiceIds.includes(choice.id) && !choice.estCorrect) {
+                    <div class="choice-badge incorrect">
+                      ✗ Your Answer
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </article>
+      }
+    </div>
+  </section>
+
+  <!-- Action Buttons -->
+  <footer class="results-footer">
+    <button type="button" class="btn btn-primary" (click)="close()">
+      Return to Quiz List
+    </button>
+  </footer>
+</div>

@@ -1,0 +1,27 @@
+.profile-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr 1fr;
+}
+
+@media (max-width: 900px) {
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.item-title {
+  font-weight: 800;
+}
+
+.list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.list-item {
+  padding: 0.75rem;
+  border: 1px solid var(--jie-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--jie-bg) 70%, white);
+}

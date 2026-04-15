@@ -1,0 +1,111 @@
+.club-header {
+  padding: 1.25rem 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.crumb {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.crumb-line {
+  width: 44px;
+  height: 2px;
+  background: color-mix(in srgb, var(--jie-text) 40%, transparent);
+  border-radius: 999px;
+}
+
+.crumb-text {
+  font-weight: 700;
+}
+
+.club-intro {
+  padding: 0.5rem 0 0.75rem;
+}
+
+.club-title {
+  margin: 0;
+  font-size: 2rem;
+  letter-spacing: -0.4px;
+}
+
+.club-lead {
+  margin: 0.5rem 0 0;
+  max-width: 86ch;
+}
+
+.club-cta {
+  margin-top: 0.9rem;
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.hero {
+  padding: 0.75rem 0 2rem;
+}
+
+.hero-frame {
+  position: relative;
+  border-radius: 16px;
+  border: 1px solid var(--jie-border);
+  background: color-mix(in srgb, var(--jie-bg) 55%, white);
+  box-shadow: var(--jie-shadow);
+  overflow: hidden;
+}
+
+.hero-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  max-height: 560px;
+  object-fit: cover;
+}
+
+.nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--jie-teal);
+  background: var(--jie-teal);
+  color: white;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.nav-btn.left {
+  left: 1rem;
+}
+
+.nav-btn.right {
+  right: 1rem;
+}
+
+.nav-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@media (max-width: 680px) {
+  .club-title {
+    font-size: 1.6rem;
+  }
+
+  .nav-btn.left {
+    left: 0.6rem;
+  }
+
+  .nav-btn.right {
+    right: 0.6rem;
+  }
+}

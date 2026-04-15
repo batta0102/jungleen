@@ -1,0 +1,227 @@
+<div class="candidate-quiz-container">
+  @switch (pageMode()) {
+
+    <!-- INTRO / CANDIDATE INFO -->
+    @case ('intro') {
+      <div class="intro-view">
+        <div class="intro-card">
+          <div class="intro-badge">
+            <span class="intro-badge-icon">🎓</span>
+          </div>
+          <h1 class="intro-title">Admission Quiz</h1>
+          <p class="intro-subtitle">
+            Welcome to <strong>Jungle in English</strong>! Take our admission quiz
+            to test your English level. Score <strong>50% or higher</strong> and you'll be
+            accepted to join our learning community.
+          </p>
+
+          @if (error()) {
+            <div class="error-banner">
+              <span>⚠️ {{ error() }}</span>
+              <button class="btn-close-banner" type="button" (click)="error.set(null)">✕</button>
+            </div>
+          }
+
+          <div class="intro-form">
+            <div class="form-group">
+              <label for="candName">Full Name</label>
+              <input
+                id="candName"
+                type="text"
+                placeholder="e.g. Jane Doe"
+                [ngModel]="candidateName()"
+                (ngModelChange)="candidateName.set($event)"
+                autocomplete="name"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="candEmail">Email Address</label>
+              <input
+                id="candEmail"
+                type="email"
+                placeholder="e.g. jane@example.com"
+                [ngModel]="candidateEmail()"
+                (ngModelChange)="candidateEmail.set($event)"
+                autocomplete="email"
+              />
+            </div>
+
+            <button
+              class="btn btn-primary btn-lg btn-full"
+              type="button"
+              [disabled]="!candidateName().trim() || !candidateEmail().trim() || loading()"
+              (click)="submitCandidateInfo()"
+            >
+              @if (loading()) {
+                <span class="spinner-inline"></span> Loading quizzes...
+              } @else {
+                Continue to Quiz →
+              }
+            </button>
+          </div>
+
+          <p class="intro-hint">
+            Already a member? <a [routerLink]="['/front/login']">Log in here</a>
+          </p>
+        </div>
+      </div>
+    }
+
+    <!-- QUIZ LIST -->
+    @case ('quiz-list') {
+      <div class="quiz-list-view">
+        <header class="quiz-list-header">
+          <button class="btn btn-back" type="button" (click)="backToIntro()">← Back</button>
+          <div>
+            <h1 class="page-title">Choose Your Admission Quiz</h1>
+            <p class="page-subtitle">Hello <strong>{{ candidateName() }}</strong>, pick a quiz below to start your admission test.</p>
+          </div>
+        </header>
+
+        @if (error()) {
+          <div class="error-banner">
+            <span>⚠️ {{ error() }}</span>
+            <button class="btn-close-banner" type="button" (click)="error.set(null)">✕</button>
+          </div>
+        }
+
+        @if (candidateQuizzes().length === 0) {
+          <div class="empty-state">
+            <p>No admission quizzes available right now. Please check back later.</p>
+          </div>
+        } @else {
+          <div class="quiz-grid">
+            @for (quiz of candidateQuizzes(); track quiz.id) {
+              <article class="quiz-card">
+                <div class="quiz-card-header">
+                  <h3 class="quiz-card-title">{{ quiz.titre }}</h3>
+                  <span class="admission-badge">Admission</span>
+                </div>
+
+                <p class="quiz-card-description">{{ quiz.contenu }}</p>
+
+                <div class="quiz-card-meta">
+                  <div class="meta-item">
+                    <span class="meta-icon">📝</span>
+                    <span>{{ quiz.questions?.length ?? 0 }} questions</span>
+                  </div>
+                  <div class="meta-item">
+                    <span class="meta-icon">⏱️</span>
+                    <span>{{ quiz.dureeMinutes }} min</span>
+                  </div>
+                </div>
+
+                <div class="quiz-card-actions">
+                  <button
+                    type="button"
+                    class="btn btn-primary btn-lg"
+                    (click)="startQuiz(quiz)"
+                  >
+                    Start Quiz
+                  </button>
+                </div>
+              </article>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- QUIZ ATTEMPT -->
+    @case ('attempt') {
+      @if (activeSession()) {
+        <app-quiz-attempt
+          [quiz]="activeSession()!.quiz"
+          [sessionId]="activeSession()!.sessionId"
+          [startTime]="activeSession()!.startTime"
+          (attemptCompleted)="onAttemptCompleted($event)"
+          (attemptClosed)="onAttemptClosed()"
+        />
+      }
+    }
+
+    <!-- RESULT -->
+    @case ('result') {
+      <!-- Result popup overlays -->
+    }
+  }
+
+  <!-- PASS POPUP -->
+  @if (pageMode() === 'result' && passed()) {
+    <div class="result-overlay">
+      <div class="result-modal result-pass">
+        <div class="result-confetti">🎉</div>
+        <div class="result-icon result-icon-pass">✓</div>
+        <h2 class="result-title">Congratulations!</h2>
+        <p class="result-subtitle">You passed the admission quiz!</p>
+
+        @if (quizResult(); as r) {
+          <div class="result-stats">
+            <div class="result-stat">
+              <span class="result-stat-value">{{ r.percentage }}%</span>
+              <span class="result-stat-label">Score</span>
+            </div>
+            <div class="result-stat">
+              <span class="result-stat-value">{{ r.score }}/{{ r.total }}</span>
+              <span class="result-stat-label">Correct</span>
+            </div>
+            <div class="result-stat">
+              <span class="result-stat-value">{{ (r.timeTaken / 60) | number:'1.0-0' }}m</span>
+              <span class="result-stat-label">Time</span>
+            </div>
+          </div>
+        }
+
+        <div class="result-message-box">
+          <span class="result-message-icon">🌟</span>
+          <p>You are <strong>accepted</strong> at Jungle in English! Create your account now to start your learning journey.</p>
+        </div>
+
+        <div class="result-actions">
+          <button class="btn btn-primary btn-lg" type="button" (click)="goToSignup()">
+            Create Account →
+          </button>
+          <button class="btn btn-secondary" type="button" (click)="goToLogin()">
+            Already have an account? Log in
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- FAIL POPUP -->
+  @if (pageMode() === 'result' && !passed()) {
+    <div class="result-overlay">
+      <div class="result-modal result-fail">
+        <div class="result-icon result-icon-fail">✗</div>
+        <h2 class="result-title">Not quite there yet</h2>
+        <p class="result-subtitle">You need at least 50% to pass the admission quiz.</p>
+
+        @if (quizResult(); as r) {
+          <div class="result-stats">
+            <div class="result-stat">
+              <span class="result-stat-value result-stat-fail">{{ r.percentage }}%</span>
+              <span class="result-stat-label">Score</span>
+            </div>
+            <div class="result-stat">
+              <span class="result-stat-value result-stat-fail">{{ r.score }}/{{ r.total }}</span>
+              <span class="result-stat-label">Correct</span>
+            </div>
+          </div>
+        }
+
+        <div class="result-message-box result-message-encourage">
+          <span class="result-message-icon">💪</span>
+          <p>Don't give up! Practice more and try again. You can retake the quiz anytime.</p>
+        </div>
+
+        <div class="result-actions">
+          <button class="btn btn-primary btn-lg" type="button" (click)="retryQuiz()">
+            Try Again →
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,316 @@
+<div class="gami">
+  <div class="container gami-container">
+    <header class="g-header">
+      <div class="g-brand">
+        <div class="g-brand-top">Jungle in English</div>
+        <div class="g-brand-sub">Gamification</div>
+      </div>
+
+      <button class="btn btn-ghost g-menu" type="button" (click)="toggleMobileMenu()" [attr.aria-expanded]="mobileMenuOpen()">
+        Menu
+      </button>
+
+      <nav class="g-nav" aria-label="Gamification navigation" [class.open]="mobileMenuOpen()">
+        <button class="g-nav-btn" type="button" (click)="setTab('dashboard')" [attr.aria-current]="tab() === 'dashboard' ? 'page' : null">Dashboard</button>
+        <button class="g-nav-btn" type="button" (click)="setTab('courses')" [attr.aria-current]="tab() === 'courses' ? 'page' : null">Courses</button>
+        <button class="g-nav-btn" type="button" (click)="setTab('challenges')" [attr.aria-current]="tab() === 'challenges' ? 'page' : null">Challenges</button>
+        <button class="g-nav-btn" type="button" (click)="setTab('leaderboard')" [attr.aria-current]="tab() === 'leaderboard' ? 'page' : null">Leaderboard</button>
+      </nav>
+
+      <div class="g-actions">
+        <a class="btn btn-primary" [routerLink]="['/profile/student']">Your profile</a>
+      </div>
+    </header>
+
+    @if (confetti()) {
+      <div class="confetti" aria-hidden="true">
+        @for (n of [1,2,3,4,5,6,7,8,9,10,11,12]; track n) {
+          <span class="confetti-piece"></span>
+        }
+      </div>
+    }
+
+    <div class="toasts" aria-live="polite" aria-relevant="additions">
+      @for (t of toasts(); track t.id) {
+        <div class="toast" role="status">
+          <div class="toast-title">{{ t.title }}</div>
+          <div class="toast-body">{{ t.body }}</div>
+        </div>
+      }
+    </div>
+
+    @if (tab() === 'dashboard') {
+      <section class="g-section">
+        <h1 class="g-title">Your Dashboard</h1>
+        <p class="g-lead">Progress, challenges, rewards — all in one place.</p>
+
+        <div class="grid grid-3">
+          <article class="card g-card">
+            <div class="card-body">
+              <div class="g-kicker">XP</div>
+              <div class="g-metric">{{ gami.xp() }}</div>
+              <div class="g-sub">{{ gami.xpToNext() }} XP to next level</div>
+              <div class="bar" role="progressbar" [attr.aria-valuenow]="gami.xpInLevel()" aria-valuemin="0" [attr.aria-valuemax]="500">
+                <div class="bar-fill" [style.width.%]="(gami.xpInLevel() / 500) * 100"></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="card g-card">
+            <div class="card-body">
+              <div class="g-kicker">Level</div>
+              <div class="g-metric">{{ gami.level() }}</div>
+              <div class="g-sub">Keep completing tasks to level up.</div>
+            </div>
+          </article>
+
+          <article class="card g-card">
+            <div class="card-body">
+              <div class="g-kicker">Streak</div>
+              <div class="g-metric">{{ gami.streakDays() }} days</div>
+              <div class="g-sub">Learn daily to keep your streak.</div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="g-section">
+        <div class="g-section-head">
+          <h2 class="g-h2">Active challenges</h2>
+          <span class="g-muted">Tick tasks to earn XP.</span>
+        </div>
+
+        <div class="grid grid-3">
+          @for (ch of challenges(); track ch.id) {
+            <article class="card g-card">
+              <div class="card-body">
+                <div class="g-row">
+                  <div class="g-card-title">{{ ch.name }}</div>
+                  <span class="pill" [class]="difficultyClass(ch.difficulty)">{{ ch.difficulty }}</span>
+                </div>
+
+                <div class="g-sub">Reward: {{ rewardXpForChallenge(ch) }} XP</div>
+
+                <div class="bar" role="progressbar" [attr.aria-valuenow]="progressForChallenge(ch.id)" aria-valuemin="0" aria-valuemax="100">
+                  <div class="bar-fill" [style.width.%]="progressForChallenge(ch.id)"></div>
+                </div>
+                <div class="g-muted">{{ progressForChallenge(ch.id) }}% complete</div>
+
+                <div class="g-buttons">
+                  <button class="btn btn-primary" type="button" (click)="openChallenge(ch.id)">{{ progressForChallenge(ch.id) === 0 ? 'Start' : 'Resume' }}</button>
+                  <button class="btn" type="button" (click)="openChallenge(ch.id)">View</button>
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+
+      <section class="g-section">
+        <div class="g-section-head">
+          <h2 class="g-h2">Badges & achievements</h2>
+          <span class="g-muted">Unlock rewards as you progress.</span>
+        </div>
+
+        <div class="grid grid-2">
+          <article class="card g-card">
+            <div class="card-body">
+              <div class="g-card-title">Badges</div>
+              <p class="g-muted">Earn badges for milestones and challenge completions.</p>
+
+              <div class="badge-grid">
+                @for (b of badges(); track b.id) {
+                  <button
+                    class="badge"
+                    type="button"
+                    [class.earned]="gami.earnedBadges().includes(b.id)"
+                    [attr.title]="b.description"
+                  >
+                    <span class="badge-top">{{ b.name }}</span>
+                    <span class="badge-sub">{{ gami.earnedBadges().includes(b.id) ? 'Earned' : 'Locked' }}</span>
+                  </button>
+                }
+              </div>
+            </div>
+          </article>
+
+          <article class="card g-card">
+            <div class="card-body">
+              <div class="g-card-title">Achievements</div>
+              <p class="g-muted">Progress bars show how close you are.</p>
+
+              <div class="ach-list">
+                @for (a of achievements(); track a.id) {
+                  <button class="ach" type="button" (click)="openAchievement(a.id)">
+                    <div class="ach-top">
+                      <span class="ach-name">{{ a.name }}</span>
+                      <span class="ach-val">{{ a.current }}/{{ a.goal }}</span>
+                    </div>
+                    <div class="bar" role="progressbar" [attr.aria-valuenow]="a.current" aria-valuemin="0" [attr.aria-valuemax]="a.goal">
+                      <div class="bar-fill" [style.width.%]="(a.current / a.goal) * 100"></div>
+                    </div>
+                    <div class="g-muted">{{ a.description }}</div>
+                  </button>
+                }
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+    }
+
+    @if (tab() === 'courses') {
+      <section class="g-section">
+        <h1 class="g-title">Gamified Courses</h1>
+        <p class="g-lead">Continue your learning with progress tracking and rewards.</p>
+
+        <div class="grid grid-3">
+          @for (c of courseCards(); track c.id) {
+            <article class="card g-card">
+              <div class="card-body">
+                <div class="g-card-title">{{ c.name }}</div>
+                <div class="g-muted">{{ c.objectives }} objectives · {{ c.completed }}/{{ c.total }} sections</div>
+                <div class="bar" role="progressbar" [attr.aria-valuenow]="c.percent" aria-valuemin="0" aria-valuemax="100">
+                  <div class="bar-fill" [style.width.%]="c.percent"></div>
+                </div>
+                <div class="g-row" style="margin-top: 0.5rem;">
+                  <span class="g-muted">{{ c.percent }}% complete</span>
+                  <span class="pill">+{{ Math.max(0, c.completed) * 10 }} XP (demo)</span>
+                </div>
+                <div class="g-buttons">
+                  <a class="btn btn-primary" [routerLink]="['/trainings', c.id]">{{ c.percent === 0 ? 'Start' : 'Resume' }}</a>
+                  <a class="btn" [routerLink]="['/trainings', c.id]">View</a>
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+    }
+
+    @if (tab() === 'challenges') {
+      <section class="g-section">
+        <h1 class="g-title">Challenges</h1>
+        <p class="g-lead">Complete task lists to unlock sections and earn badges.</p>
+
+        <div class="grid grid-3">
+          @for (ch of challenges(); track ch.id) {
+            <article class="card g-card">
+              <div class="card-body">
+                <div class="g-row">
+                  <div class="g-card-title">{{ ch.name }}</div>
+                  <span class="pill" [class]="difficultyClass(ch.difficulty)">{{ ch.difficulty }}</span>
+                </div>
+                <div class="g-muted">{{ ch.sections.length }} sections</div>
+                <div class="bar" role="progressbar" [attr.aria-valuenow]="progressForChallenge(ch.id)" aria-valuemin="0" aria-valuemax="100">
+                  <div class="bar-fill" [style.width.%]="progressForChallenge(ch.id)"></div>
+                </div>
+                <div class="g-buttons">
+                  <button class="btn btn-primary" type="button" (click)="openChallenge(ch.id)">Open</button>
+                  <button class="btn" type="button" (click)="openChallenge(ch.id)">Details</button>
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+    }
+
+    @if (tab() === 'leaderboard') {
+      <section class="g-section">
+        <h1 class="g-title">Leaderboard</h1>
+        <p class="g-lead">Rankings by XP, completed challenges, and badges.</p>
+
+        <div class="filters">
+          <button class="pill" type="button" [attr.aria-pressed]="leaderboardPeriod() === 'week'" (click)="setLeaderboardPeriod('week')">Week</button>
+          <button class="pill" type="button" [attr.aria-pressed]="leaderboardPeriod() === 'month'" (click)="setLeaderboardPeriod('month')">Month</button>
+          <button class="pill" type="button" [attr.aria-pressed]="leaderboardPeriod() === 'all'" (click)="setLeaderboardPeriod('all')">All-time</button>
+        </div>
+
+        <div class="card g-card">
+          <div class="card-body">
+            <div class="lb-head">
+              <div>Rank</div>
+              <div>User</div>
+              <div class="right">XP</div>
+              <div class="right">Challenges</div>
+              <div class="right">Badges</div>
+            </div>
+
+            <div class="lb">
+              @for (row of leaderboard(); track row.id) {
+                <div class="lb-row" [class.you]="row.id === 'you'">
+                  <div class="rank">{{ $index + 1 }}</div>
+                  <div class="name">{{ row.name }}</div>
+                  <div class="right">{{ row.xp }}</div>
+                  <div class="right">{{ row.completedChallenges }}</div>
+                  <div class="right">{{ row.badges }}</div>
+                </div>
+              }
+            </div>
+
+            @if (youIndex() >= 0) {
+              <div class="g-muted" style="margin-top: 0.75rem;">Your rank: {{ youIndex() + 1 }}</div>
+            }
+          </div>
+        </div>
+      </section>
+    }
+
+    <footer class="g-footer">
+      <a class="g-footer-link" href="#" (click)="$event.preventDefault()">Help</a>
+      <a class="g-footer-link" href="#" (click)="$event.preventDefault()">Settings</a>
+      <a class="g-footer-link" [routerLink]="['/']" fragment="contact">Contact</a>
+    </footer>
+  </div>
+
+  <app-modal [open]="selectedChallengeId() !== null" [title]="selectedChallenge()?.name ?? 'Challenge'" (closed)="closeChallenge()">
+    @if (selectedChallenge(); as ch) {
+      <div class="challenge-modal">
+        <div class="challenge-meta">
+          <span class="pill" [class]="difficultyClass(ch.difficulty)">{{ ch.difficulty }}</span>
+          <span class="pill">{{ progressForChallenge(ch.id) }}% complete</span>
+          <span class="pill">Tasks: {{ gami.getChallengeProgress(ch.id).completed }}/{{ gami.getChallengeProgress(ch.id).total }}</span>
+        </div>
+
+        @for (section of ch.sections; track section.id) {
+          <div class="modal-section">
+            <h3 class="modal-h">{{ section.title }}</h3>
+            <div class="task-list">
+              @for (task of section.tasks; track task.id) {
+                <label class="task" [class.locked]="!gami.isTaskUnlocked(ch.id, section.id, task.id)">
+                  <input
+                    type="checkbox"
+                    [checked]="gami.isTaskComplete(ch.id, section.id, task.id)"
+                    [disabled]="gami.isTaskComplete(ch.id, section.id, task.id) || !gami.isTaskUnlocked(ch.id, section.id, task.id)"
+                    (change)="markTaskDone(ch.id, section.id, task.id)"
+                  />
+                  <span class="task-label">{{ task.label }}</span>
+                  <span class="task-xp">+{{ task.xp }} XP</span>
+                  @if (!gami.isTaskUnlocked(ch.id, section.id, task.id)) {
+                    <span class="task-lock">Locked</span>
+                  }
+                </label>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </app-modal>
+
+  <app-modal [open]="selectedAchievementId() !== null" [title]="selectedAchievement()?.name ?? 'Achievement'" (closed)="closeAchievement()">
+    @if (selectedAchievement(); as a) {
+      <div class="ach-modal">
+        <p class="g-muted">{{ a.description }}</p>
+        <div class="bar" role="progressbar" [attr.aria-valuenow]="a.current" aria-valuemin="0" [attr.aria-valuemax]="a.goal">
+          <div class="bar-fill" [style.width.%]="(a.current / a.goal) * 100"></div>
+        </div>
+        <div class="g-row" style="margin-top: 0.5rem;">
+          <span class="pill">{{ a.current }}/{{ a.goal }}</span>
+          <span class="pill">Keep going</span>
+        </div>
+      </div>
+    }
+  </app-modal>
+</div>

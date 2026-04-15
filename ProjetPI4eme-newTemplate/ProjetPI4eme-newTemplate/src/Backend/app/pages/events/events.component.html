@@ -1,0 +1,48 @@
+<main class="mx-auto max-w-7xl px-6 py-8">
+  <header class="mb-10 flex items-start justify-between">
+    <div>
+      <h1 class="font-serif text-5xl font-semibold text-text">Events</h1>
+      <p class="mt-2 text-secondary">Workshops, conferences, and cultural outings.</p>
+    </div>
+    <button (click)="openModal()" class="inline-flex items-center gap-3 bg-primary text-white px-5 py-3 rounded-lg shadow-md hover:bg-opacity-90">
+      <span class="text-xl">+</span>
+      New Event
+    </button>
+  </header>
+
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-12">
+    <div class="lg:col-span-2">
+      <h2 class="font-serif text-2xl font-semibold text-text mb-4">Calendar</h2>
+      <app-calendar></app-calendar>
+    </div>
+
+    <div>
+      <div class="rounded-xl bg-primary text-white p-6 shadow-md">
+        <h3 class="font-serif text-2xl font-semibold mb-3">Did You Know?</h3>
+        <p class="leading-relaxed">The word "event" comes from the Latin "evenire", meaning "to come out, happen, occur". Every gathering is a new opportunity for learning.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="mb-8">
+    <h2 class="font-serif text-2xl font-semibold text-text mb-6">Upcoming</h2>
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+      <app-event-card 
+        *ngFor="let e of events" 
+        [type]="e.type" 
+        [title]="e.title" 
+        [date]="e.date" 
+        [time]="e.time" 
+        [location]="e.location" 
+        [status]="e.status" 
+        [buttonText]="e.buttonText">
+      </app-event-card>
+    </div>
+  </div>
+</main>
+
+<app-create-event-modal 
+  [isOpen]="isModalOpen()" 
+  (onClose)="closeModal()"
+  (onSubmit)="handleEventCreation($event)">
+</app-create-event-modal>
