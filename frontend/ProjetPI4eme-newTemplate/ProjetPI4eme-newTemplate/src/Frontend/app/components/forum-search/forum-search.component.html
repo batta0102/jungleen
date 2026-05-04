@@ -1,0 +1,117 @@
+<div class="forum-search-container">
+  <!-- Barre de recherche -->
+  <div class="search-bar">
+    <div class="search-input-wrapper">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (input)="onSearchInput()"
+        placeholder="Rechercher dans les messages..."
+        class="search-input"
+        [class.searching]="isSearching"
+      >
+      <button
+        *ngIf="searchQuery"
+        (click)="clearSearch()"
+        class="clear-button"
+        title="Effacer la recherche"
+      >
+        <span>✖️</span>
+      </button>
+    </div>
+    
+    <!-- Loading indicator -->
+    <div *ngIf="isSearching" class="search-loading">
+      <div class="loading-spinner"></div>
+      <span>Recherche...</span>
+    </div>
+  </div>
+
+  <!-- Résultats de recherche -->
+  <div *ngIf="hasSearched" class="search-results">
+    <!-- Header des résultats -->
+    <div class="results-header">
+      <h4 class="results-title">
+        <span class="results-icon">📋</span>
+        Résultats de recherche
+        <span *ngIf="searchResults.length > 0" class="results-count">
+          ({{ searchResults.length }})
+        </span>
+      </h4>
+      <button
+        (click)="clearSearch()"
+        class="close-results"
+        title="Fermer les résultats"
+      >
+        <span>✖️</span>
+      </button>
+    </div>
+
+    <!-- Loading state -->
+    <div *ngIf="isSearching" class="results-loading">
+      <div class="loading-spinner"></div>
+      <span>Recherche en cours...</span>
+    </div>
+
+    <!-- Empty state -->
+    <div *ngIf="!isSearching && searchResults.length === 0" class="results-empty">
+      <div class="empty-icon">🔍</div>
+      <p class="empty-text">Aucun résultat trouvé pour "{{ searchQuery }}"</p>
+      <p class="empty-description">Essayez avec d'autres mots-clés</p>
+    </div>
+
+    <!-- Liste des résultats -->
+    <div *ngIf="!isSearching && searchResults.length > 0" class="results-list">
+      <div 
+        *ngFor="let result of searchResults; trackBy: trackByResultId"
+        class="result-item"
+        (click)="selectResult(result)"
+      >
+        <!-- Header du résultat -->
+        <div class="result-header">
+          <div class="result-author">
+            <span class="author-name">{{ result.authorName }}</span>
+            <span class="result-date">{{ formatDate(result.dateEnvoi) }}</span>
+          </div>
+          <div class="result-stats">
+            <span class="stat-item">
+              <span class="stat-icon">❤️</span>
+              {{ result.likes }}
+            </span>
+            <span class="stat-item">
+              <span class="stat-icon">💬</span>
+              {{ result.comments }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Contenu du résultat -->
+        <div class="result-content">
+          <p 
+            class="result-text" 
+            [innerHTML]="highlightText(result.messageContent, searchQuery)"
+          ></p>
+        </div>
+
+        <!-- Score de pertinence -->
+        <div class="result-relevance">
+          <div class="relevance-bar">
+            <div 
+              class="relevance-fill"
+              [style.width.%]="result.relevanceScore"
+            ></div>
+          </div>
+          <span class="relevance-text">{{ result.relevanceScore }}% pertinent</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div *ngIf="!isSearching && searchResults.length > 0" class="results-footer">
+      <p class="footer-text">
+        Affichage des {{ searchResults.length }} résultats les plus pertinents
+      </p>
+    </div>
+  </div>
+</div>

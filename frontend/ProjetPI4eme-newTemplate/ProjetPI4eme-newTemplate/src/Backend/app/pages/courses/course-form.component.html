@@ -1,0 +1,81 @@
+<main class="courses-page mx-auto max-w-5xl px-6 py-8">
+  <nav class="course-switcher" aria-label="Course admin sections">
+    @for (tab of tabs; track tab.label) {
+      <a class="course-switcher__tab" [routerLink]="tab.link">{{ tab.label }}</a>
+    }
+  </nav>
+
+  <section class="form-shell">
+    <header class="form-header">
+      <div>
+        <p class="eyebrow">GestionCours</p>
+        <h1 class="page-title">{{ headerTitle() }}</h1>
+        <p class="form-lead">Create or update online and on-site courses with the Spring Boot backend.</p>
+      </div>
+
+      <button type="button" class="nav-button nav-button--ghost" (click)="cancel()">Back to courses</button>
+    </header>
+
+    <section *ngIf="loading()" class="route-context">
+      <p class="route-title">Loading</p>
+      <p class="route-copy">Loading the selected course from GestionCours...</p>
+    </section>
+
+    <section *ngIf="error()" class="route-context route-context--error">
+      <p class="route-title">Error</p>
+      <p class="route-copy">{{ error() }}</p>
+    </section>
+
+    <form class="course-form" (ngSubmit)="save()">
+      <div class="form-grid">
+        <label class="field field--full">
+          <span>Title</span>
+          <input [ngModel]="form().title" (ngModelChange)="setTitle($event)" name="title" type="text" placeholder="English Beginner A1" />
+        </label>
+
+        <label class="field field--full">
+          <span>Description</span>
+          <textarea [ngModel]="form().description" (ngModelChange)="setDescription($event)" name="description" rows="4" placeholder="Short course description"></textarea>
+        </label>
+
+        <label class="field">
+          <span>Level</span>
+          <select [ngModel]="form().level" (ngModelChange)="setLevel($event)" name="level">
+            @for (level of levels; track level) {
+              <option [value]="level">{{ level }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Tutor</span>
+          <select [ngModel]="form().tutorId" (ngModelChange)="setTutorId($event)" name="tutorId">
+            @for (tutor of tutorOptions; track tutor) {
+              <option [value]="tutor">Tutor {{ tutor }}</option>
+            }
+          </select>
+        </label>
+
+        <div class="field field--full">
+          <span>Type</span>
+          <div class="kind-toggle" role="tablist" aria-label="Course type">
+            <button type="button" class="kind-chip" [class.kind-chip--active]="kind() === 'ONLINE'" (click)="onKindChange('ONLINE')">Online</button>
+            <button type="button" class="kind-chip" [class.kind-chip--active]="kind() === 'ONSITE'" (click)="onKindChange('ONSITE')">On-site</button>
+          </div>
+        </div>
+
+        @if (isOnSite()) {
+          <label class="field field--full">
+            <span>Classroom name</span>
+            <input [ngModel]="form().classroomName" (ngModelChange)="setClassroomName($event)" name="classroomName" type="text" placeholder="Room 101" />
+          </label>
+        }
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="nav-button nav-button--ghost" (click)="cancel()">Cancel</button>
+        <button type="submit" class="nav-button nav-button--primary" [disabled]="saving() || loading()">{{ submitLabel() }}</button>
+      </div>
+    </form>
+  </section>
+</main>

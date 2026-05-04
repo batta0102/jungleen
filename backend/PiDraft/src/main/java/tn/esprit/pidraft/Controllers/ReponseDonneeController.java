@@ -30,6 +30,11 @@ public class ReponseDonneeController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/session/{sessionTestId}")
+    public ResponseEntity<List<ReponseDonnee>> getBySessionTestId(@PathVariable Long sessionTestId) {
+        return ResponseEntity.ok(service.getBySessionTestId(sessionTestId));
+    }
+
     @PostMapping
     public ReponseDonnee create(@RequestBody ReponseDonnee reponseDonnee) {
         return service.create(reponseDonnee);

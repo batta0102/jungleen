@@ -6,10 +6,11 @@ import { map } from 'rxjs';
 
 import { DataService } from '../../core/data/data.service';
 import { UserContextService } from '../../core/user/user-context.service';
+import { ClubForumComponent } from '../club-forum/club-forum.component';
 
 @Component({
   selector: 'app-club-detail-page',
-  imports: [NgOptimizedImage],
+  imports: [NgOptimizedImage, ClubForumComponent],
   templateUrl: './club-detail.page.html',
   styleUrl: './club-detail.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -24,11 +25,19 @@ export class ClubDetailPage {
     { initialValue: '' }
   );
 
+  readonly clubIdNumber = computed(() => {
+    const parsed = Number(this.clubId());
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+  });
+
   readonly club = computed(() => this.data.getClubById(this.clubId()));
 
   readonly joined = computed(() => this.user.participation().joinedClubIds.includes(this.clubId()));
 
   readonly imageIndex = signal(0);
+
+  // Gestion des onglets
+  readonly activeTab = signal<'details' | 'buddies' | 'forum'>('details');
 
   readonly images = computed(() => {
     const c = this.club();
@@ -45,6 +54,16 @@ export class ClubDetailPage {
     const idx = ((this.imageIndex() % imgs.length) + imgs.length) % imgs.length;
     return imgs[idx];
   });
+
+  // Navigation entre les onglets
+  setActiveTab(tab: 'details' | 'buddies' | 'forum'): void {
+    this.activeTab.set(tab);
+  }
+
+  // Vérifie si un onglet est actif
+  isTabActive(tab: 'details' | 'buddies' | 'forum'): boolean {
+    return this.activeTab() === tab;
+  }
 
   bookPlace(): void {
     const id = this.clubId();
@@ -65,6 +84,6 @@ export class ClubDetailPage {
   }
 
   back(): void {
-    void this.router.navigate(['/front/clubs']);
+    void this.router.navigate(['/clubs']);
   }
 }

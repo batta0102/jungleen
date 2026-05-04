@@ -25,21 +25,17 @@ public class ReponseDonneeService {
         return repository.findById(id);
     }
 
+    public List<ReponseDonnee> getBySessionTestId(Long sessionTestId) {
+        return repository.findBySessionTestId(sessionTestId);
+    }
+
     public ReponseDonnee create(ReponseDonnee reponseDonnee) {
         return repository.save(reponseDonnee);
     }
 
     public ReponseDonnee update(Long id, ReponseDonnee reponseDonnee) {
-        Optional<ReponseDonnee> existing = repository.findById(id);
-        if (existing.isPresent()) {
-            ReponseDonnee rd = existing.get();
-            rd.setEstCorrect(reponseDonnee.getEstCorrect());
-            rd.setScoreObtenu(reponseDonnee.getScoreObtenu());
-            rd.setQuestion(reponseDonnee.getQuestion());
-            rd.setSessionTest(reponseDonnee.getSessionTest());
-            return repository.save(rd);
-        }
-        return null;
+        reponseDonnee.setId(id);
+        return repository.save(reponseDonnee);
     }
 
     public void delete(Long id) {

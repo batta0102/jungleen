@@ -1,0 +1,351 @@
+<div class="container mx-auto px-4 py-8 max-w-7xl">
+  <!-- Back Button -->
+  <div class="mb-6">
+    <a 
+      (click)="goBackToClubs()" 
+      class="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors group cursor-pointer">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 transform group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+      Back to Clubs
+    </a>
+  </div>
+
+  <!-- Header -->
+  <header class="mb-8">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Buddy Requests</h1>
+        <p class="text-gray-600">Manage learning partnership requests</p>
+      </div>
+      
+      <div class="flex gap-3">
+        <button 
+          (click)="exportData()" 
+          class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2">
+          <span>Export</span>
+          Export
+        </button>
+      </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600">Total</p>
+            <p class="text-2xl font-bold text-gray-900">{{ getStatistics().total }}</p>
+          </div>
+          <div class="text-3xl">📋</div>
+        </div>
+      </div>
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600">Pending</p>
+            <p class="text-2xl font-bold text-yellow-600">{{ getStatistics().pending }}</p>
+          </div>
+          <div class="text-3xl">⏳</div>
+        </div>
+      </div>
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600">Active</p>
+            <p class="text-2xl font-bold text-green-600">{{ getStatistics().active }}</p>
+          </div>
+          <div class="text-3xl">✅</div>
+        </div>
+      </div>
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600">Completed</p>
+            <p class="text-2xl font-bold text-gray-600">{{ getStatistics().completed }}</p>
+          </div>
+          <div class="text-3xl">🏁</div>
+        </div>
+      </div>
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600">Cancelled</p>
+            <p class="text-2xl font-bold text-red-600">{{ getStatistics().cancelled }}</p>
+          </div>
+          <div class="text-3xl">❌</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Filtres -->
+  <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 mb-8">
+    <h2 class="text-lg font-semibold text-gray-900 mb-4">Filters</h2>
+    
+    <form [formGroup]="filterForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <!-- Filtre par club -->
+      <div>
+        <label for="clubId" class="block text-sm font-medium text-gray-700 mb-2">Club</label>
+        <select 
+          id="clubId"
+          formControlName="clubId"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="all">All clubs</option>
+          @for (club of clubs; track club.idClub) {
+            <option [value]="club.idClub">{{ club.nom }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Filtre par statut -->
+      <div>
+        <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+        <select 
+          id="status"
+          formControlName="status"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+          @for (option of statusOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Filtre par date -->
+      <div>
+        <label for="dateRange" class="block text-sm font-medium text-gray-700 mb-2">Period</label>
+        <select 
+          id="dateRange"
+          formControlName="dateRange"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="all">All periods</option>
+          <option value="today">Today</option>
+          <option value="week">This week</option>
+          <option value="month">This month</option>
+        </select>
+      </div>
+
+      <!-- Recherche -->
+      <div>
+        <label for="searchTerm" class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+        <input 
+          type="text" 
+          id="searchTerm"
+          formControlName="searchTerm"
+          placeholder="Name, club, level..."
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+    </form>
+
+    <div class="flex justify-end mt-4">
+      <button 
+        (click)="resetFilters()" 
+        class="px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors">
+        Reset filters
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  @if (loading) {
+    <div class="flex flex-col items-center justify-center py-12">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+      <p class="text-gray-600">Loading requests...</p>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (error) {
+    <div class="bg-red-50 border border-red-200 rounded-lg p-6 mb-8">
+      <div class="flex items-center">
+        <div class="text-red-600 text-xl mr-3">❌</div>
+        <div>
+          <h3 class="text-red-800 font-semibold">Error</h3>
+          <p class="text-red-700">{{ error }}</p>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Tableau des demandes -->
+  @if (!loading && !error) {
+    <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+      <!-- Tableau Desktop -->
+      <div class="hidden lg:block">
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Requester</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Partner</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Club</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Level</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              @for (request of filteredRequests; track request.idPair) {
+                <tr class="hover:bg-gray-50 transition-colors">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    #{{ request.idPair }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                      <div class="text-2xl mr-3">{{ request.user1Avatar || '👤' }}</div>
+                      <div>
+                        <div class="text-sm font-medium text-gray-900">{{ request.user1Name }}</div>
+                        <div class="text-sm text-gray-500">{{ request.user1Email }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                      <div class="text-2xl mr-3">{{ request.user2Avatar || '👤' }}</div>
+                      <div>
+                        <div class="text-sm font-medium text-gray-900">{{ request.user2Name }}</div>
+                        <div class="text-sm text-gray-500">{{ request.user2Email }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-900">{{ request.clubName }}</div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                      {{ request.niveauCible }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {{ request.dateCreation | date:'dd MMM yyyy' }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span [class]="'px-3 py-1 rounded-full text-xs font-semibold border ' + getStatusColor(request.status)">
+                      {{ getStatusIcon(request.status) }} {{ getStatusText(request.status) }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    @if (canProcessRequest(request.status)) {
+                      <div class="flex gap-2">
+                        <button 
+                          (click)="acceptRequest(request.idPair)"
+                          [disabled]="isProcessing(request.idPair)"
+                          class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs">
+                          @if (isProcessing(request.idPair)) {
+                            <span class="animate-spin">⏳</span>
+                          } @else {
+                            ✅ Accept
+                          }
+                        </button>
+                        <button 
+                          (click)="rejectRequest(request.idPair)"
+                          [disabled]="isProcessing(request.idPair)"
+                          class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs">
+                          ❌ Refuse
+                        </button>
+                      </div>
+                    } @else {
+                      <span class="text-gray-400 text-xs">-</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tableau Mobile/Tablette -->
+      <div class="lg:hidden">
+        <div class="divide-y divide-gray-200">
+          @for (request of filteredRequests; track request.idPair) {
+            <div class="p-4 hover:bg-gray-50 transition-colors">
+              <!-- Header de la card -->
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center">
+                  <span class="text-sm font-medium text-gray-900">#{{ request.idPair }}</span>
+                  <span [class]="'ml-2 px-2 py-1 rounded-full text-xs font-semibold border ' + getStatusColor(request.status)">
+                    {{ getStatusIcon(request.status) }} {{ getStatusText(request.status) }}
+                  </span>
+                </div>
+                <span class="text-xs text-gray-500">
+                  {{ request.dateCreation | date:'dd MMM yyyy' }}
+                </span>
+              </div>
+
+              <!-- Contenu -->
+              <div class="space-y-3">
+                <!-- Demandeur -->
+                <div class="flex items-center">
+                  <div class="text-xl mr-2">{{ request.user1Avatar || '👤' }}</div>
+                  <div class="flex-1">
+                    <div class="text-sm font-medium text-gray-900">{{ request.user1Name }}</div>
+                    <div class="text-xs text-gray-500">{{ request.user1Email }}</div>
+                  </div>
+                </div>
+
+                <!-- Partenaire -->
+                <div class="flex items-center">
+                  <div class="text-xl mr-2">{{ request.user2Avatar || '👤' }}</div>
+                  <div class="flex-1">
+                    <div class="text-sm font-medium text-gray-900">{{ request.user2Name }}</div>
+                    <div class="text-xs text-gray-500">{{ request.user2Email }}</div>
+                  </div>
+                </div>
+
+                <!-- Club et niveau -->
+                <div class="flex items-center justify-between">
+                  <div>
+                    <span class="text-sm text-gray-600">🏫 {{ request.clubName }}</span>
+                  </div>
+                  <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                    {{ request.niveauCible }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="mt-4 pt-3 border-t border-gray-200">
+                @if (canProcessRequest(request.status)) {
+                  <div class="flex gap-2">
+                    <button 
+                      (click)="acceptRequest(request.idPair)"
+                      [disabled]="isProcessing(request.idPair)"
+                      class="flex-1 px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm">
+                      @if (isProcessing(request.idPair)) {
+                        <span class="animate-spin">⏳</span>
+                      } @else {
+                        ✅ Accept
+                      }
+                    </button>
+                    <button 
+                      (click)="rejectRequest(request.idPair)"
+                      [disabled]="isProcessing(request.idPair)"
+                      class="flex-1 px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm">
+                      ❌ Refuse
+                    </button>
+                  </div>
+                } @else {
+                  <div class="text-center text-gray-400 text-sm">
+                    No action available
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- État vide -->
+      @if (filteredRequests.length === 0) {
+        <div class="text-center py-12">
+          <div class="text-6xl mb-4">🔍</div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">No requests found</h3>
+          <p class="text-gray-600">No buddy requests match your filters.</p>
+        </div>
+      }
+    </div>
+  }
+</div>

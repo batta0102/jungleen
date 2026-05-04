@@ -1,0 +1,129 @@
+<!-- Loading spinner -->
+<div *ngIf="isLoading" style="text-align: center; padding: 50px;">
+  <div style="border: 3px solid #f3f3f3; border-top-color: #0066cc; width: 50px; height: 50px; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+  <p>Loading...</p>
+</div>
+
+
+<!-- 🔴 AJOUTE CE BLOC POUR VOIR LES DONNÉES RÉELLES -->
+
+
+<div class="club-detail-container" *ngIf="!isLoading">
+
+  <!-- Bouton retour -->
+  <button class="back-btn" (click)="goBack()">
+    ← Back to Clubs
+  </button>
+
+  <!-- Affichage des données du club -->
+  <div *ngIf="club">
+    <h1 style="font-size: 32px; margin-bottom: 20px;">{{ club.nom }}</h1>
+
+    <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+      <p style="font-size: 16px;">{{ club.description }}</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+      <div style="background: #e0f2fe; padding: 15px; border-radius: 8px;">
+        <strong>Niveau:</strong> {{ club.niveau }}
+      </div>
+      <div style="background: #e0f2fe; padding: 15px; border-radius: 8px;">
+        <strong>Capacité:</strong> {{ club.capacityMax }} places
+      </div>
+      <div style="background: #e0f2fe; padding: 15px; border-radius: 8px;">
+        <strong>Statut:</strong> {{ club.status }}
+      </div>
+      <div style="background: #e0f2fe; padding: 15px; border-radius: 8px;">
+        <strong>Propriétaire:</strong> #{{ club.clubOwner }}
+      </div>
+    </div>
+
+    <!-- Section Membership -->
+    <div style="margin-top: 30px; padding: 20px; background: #f0f0f0; border-radius: 8px;">
+      <h2>Membership</h2>
+      
+      <!-- Utilisateur non connecté -->
+      <div *ngIf="!isAuthenticated">
+        <p>Vous devez être connecté pour rejoindre ce club.</p>
+        <button (click)="goToLogin()" 
+                style="background: #2196F3; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px;">
+          Se connecter
+        </button>
+        <button style="background: #6c757d; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">
+          S'inscrire
+        </button>
+      </div>
+
+      <!-- Utilisateur connecté -->
+      <div *ngIf="isAuthenticated">
+        <!-- Pas encore de demande -->
+        <div *ngIf="!membershipStatus">
+          <p>Rejoignez ce club pour participer aux activités!</p>
+          <button (click)="joinClub()" 
+                  [disabled]="isJoining"
+                  style="background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">
+            <span *ngIf="!isJoining">Join this Club</span>
+            <span *ngIf="isJoining">Envoi en cours...</span>
+          </button>
+        </div>
+
+        <!-- Demande en attente -->
+        <div *ngIf="membershipStatus === 'EN_ATTENTE'">
+          <p>Votre demande d'adhésion est en attente de validation.</p>
+          <div style="background: #fff3cd; color: #856404; padding: 10px; border-radius: 4px; margin-top: 10px;">
+            ⏳ {{ getStatusText('EN_ATTENTE') }}
+          </div>
+        </div>
+
+        <!-- Adhésion validée -->
+        <div *ngIf="membershipStatus === 'VALIDEE'">
+          <p>Félicitations! Vous êtes membre de ce club.</p>
+          <div style="background: #d4edda; color: #155724; padding: 10px; border-radius: 4px; margin-top: 10px;">
+            ✅ {{ getStatusText('VALIDEE') }}
+          </div>
+        </div>
+
+        <!-- Adhésion refusée -->
+        <div *ngIf="membershipStatus === 'REFUSEE'">
+          <p>Votre demande d'adhésion a été refusée.</p>
+          <div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; margin-top: 10px;">
+            ❌ {{ getStatusText('REFUSEE') }}
+          </div>
+        </div>
+
+        <!-- Bouton Scanner - visible pour tout le monde sur la page club -->
+        <div style="margin-top: 20px;">
+          <button 
+            [routerLink]="['/scanner']" 
+            [queryParams]="{clubId: club.idClub}"
+            class="scanner-btn">
+            <span class="scanner-icon">📸</span>
+            Scanner
+          </button>
+          <p style="font-size: 12px; color: #666; margin-top: 8px;">
+            Utilisez le scanner pour extraire et traduire du texte
+          </p>
+        </div>
+      </div>
+
+      <!-- Message d'erreur -->
+      <div *ngIf="errorMessage" style="background: #fee; color: #c33; padding: 10px; border-radius: 4px; margin-top: 10px;">
+        {{ errorMessage }}
+      </div>
+    </div>
+
+    <
+  </div>
+
+  <!-- Message si pas de club -->
+  <div *ngIf="!club" style="text-align: center; padding: 50px;">
+    <p>Aucun club trouvé</p>
+  </div>
+</div>
+
+
+
+<!-- Error -->
+<div *ngIf="errorMessage" style="background: #fee; color: #c33; padding: 20px; border-radius: 8px; margin: 20px;">
+  {{ errorMessage }}
+</div>

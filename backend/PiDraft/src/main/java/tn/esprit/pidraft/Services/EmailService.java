@@ -46,7 +46,7 @@ public class EmailService {
         } catch (Exception e) {
             System.err.println("❌ Failed to send email to " + toEmail + ": " + e.getMessage());
             e.printStackTrace();
-            // Don't throw - just log the error so interview creation doesn't fail
+            throw new RuntimeException("Failed to send interview email", e);
         }
     }
 

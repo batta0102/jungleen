@@ -1,0 +1,213 @@
+<main class="mx-auto max-w-7xl px-6 py-8">
+  <header class="mb-6 flex items-start justify-between">
+    <div>
+      <h1 class="font-serif text-3xl font-semibold text-text">Courses</h1>
+    </div>
+    <div>
+      <a
+        routerLink="/back/courses/create"
+        class="inline-flex items-center gap-2 bg-primary text-white px-4 py-2.5 rounded-lg shadow hover:bg-primary-hover"
+      >
+        <span class="text-lg">+</span>
+        Add Course
+      </a>
+    </div>
+  </header>
+
+  <!-- Section Statistiques : entre le titre et les filtres -->
+  <section
+    style="margin-bottom: 1.5rem; padding: 1rem 1.25rem; border: 2px solid #2d5757; border-radius: 12px; background: #e8f4f4;"
+    aria-label="Statistiques des cours">
+    <h2 style="margin: 0 0 0.75rem 0; font-size: 1rem; font-weight: 700; color: #1a3d3d;">📊 Statistiques des cours</h2>
+    <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+      <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; border-radius: 8px; background: #fff; border: 1px solid #ccc; min-width: 120px;">
+        <span style="font-size: 1.5rem; font-weight: 700; color: #1a3d3d;">{{ stats().total }}</span>
+        <span style="font-size: 0.875rem; color: #555;">Total cours</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; border-radius: 8px; background: #dcfce7; border: 1px solid #86efac; min-width: 120px;">
+        <span style="font-size: 1.5rem; font-weight: 700; color: #166534;">{{ stats().online }}</span>
+        <span style="font-size: 0.875rem; color: #555;">En ligne</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; border-radius: 8px; background: #fffbeb; border: 1px solid #fcd34d; min-width: 120px;">
+        <span style="font-size: 1.5rem; font-weight: 700; color: #b45309;">{{ stats().onsite }}</span>
+        <span style="font-size: 0.875rem; color: #555;">Sur site</span>
+      </div>
+      @for (entry of stats().byLevel; track entry[0]) {
+        <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; border-radius: 8px; background: #dbeafe; border: 1px solid #93c5fd; min-width: 90px;">
+          <span style="font-size: 1.25rem; font-weight: 700; color: #1d4ed8;">{{ entry[1] }}</span>
+          <span style="font-size: 0.875rem; color: #555;">Niveau {{ entry[0] }}</span>
+        </div>
+      }
+    </div>
+  </section>
+
+  @if (error()) {
+    <div class="mb-4 p-4 rounded-lg bg-red-50 text-red-800 flex items-center justify-between">
+      <span>{{ error() }}</span>
+      <button type="button" (click)="loadCourses()" class="px-3 py-1 rounded bg-red-200 hover:bg-red-300">Retry</button>
+    </div>
+  }
+
+  @if (loading()) {
+    <p class="text-secondary">Loading courses...</p>
+  }
+
+  @if (!loading() && courses().length > 0) {
+    <div class="flex gap-2 mb-4">
+      <button
+        type="button"
+        (click)="setFilterType(null)"
+        class="px-3 py-1.5 rounded text-sm font-medium transition-colors"
+        [class.bg-primary]="filterType() === null"
+        [class.text-white]="filterType() === null"
+        [class.bg-gray-100]="filterType() !== null"
+        [class.text-secondary]="filterType() !== null"
+      >
+        All
+      </button>
+      <button
+        type="button"
+        (click)="setFilterType('Online')"
+        class="px-3 py-1.5 rounded text-sm font-medium transition-colors"
+        [class.bg-primary]="filterType() === 'Online'"
+        [class.text-white]="filterType() === 'Online'"
+        [class.bg-gray-100]="filterType() !== 'Online'"
+        [class.text-secondary]="filterType() !== 'Online'"
+      >
+        Online
+      </button>
+      <button
+        type="button"
+        (click)="setFilterType('On-site')"
+        class="px-3 py-1.5 rounded text-sm font-medium transition-colors"
+        [class.bg-primary]="filterType() === 'On-site'"
+        [class.text-white]="filterType() === 'On-site'"
+        [class.bg-gray-100]="filterType() !== 'On-site'"
+        [class.text-secondary]="filterType() !== 'On-site'"
+      >
+        On-Site
+      </button>
+    </div>
+
+    <div class="rounded-lg border border-border bg-white overflow-hidden">
+      <table class="w-full text-left">
+        <thead class="bg-gray-50 border-b border-border">
+          <tr>
+            <th class="px-4 py-3 font-semibold text-text">TITLE</th>
+            <th class="px-4 py-3 font-semibold text-text">LEVEL</th>
+            <th class="px-4 py-3 font-semibold text-text">TYPE</th>
+            <th class="px-4 py-3 font-semibold text-text">DESCRIPTION</th>
+            <th class="px-4 py-3 font-semibold text-text">CLASSROOM</th>
+            <th class="px-4 py-3 font-semibold text-text">ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of filteredCourses(); track courseId(c)) {
+            <tr class="border-b border-border hover:bg-gray-50/50">
+              <td class="px-4 py-3 font-medium text-text">{{ c.title }}</td>
+              <td class="px-4 py-3 text-secondary">{{ c.level ?? '-' }}</td>
+              <td class="px-4 py-3">
+                @if (c.type === 'On-site') {
+                  <span class="inline-block px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">On-Site</span>
+                } @else {
+                  <span class="inline-block px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">Online</span>
+                }
+              </td>
+              <td class="px-4 py-3 text-secondary">{{ c.description ?? '-' }}</td>
+              <td class="px-4 py-3 text-secondary">{{ courseClassroom(c) }}</td>
+              <td class="px-4 py-3">
+                <div class="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    (click)="openAdvancedCheck(c)"
+                    class="px-3 py-1.5 rounded border border-amber-500 text-amber-700 text-sm hover:bg-amber-50 whitespace-nowrap"
+                  >
+                    Advanced Check
+                  </button>
+                  <a
+                    [routerLink]="['/back/courses', courseId(c), 'edit']"
+                    class="px-3 py-1.5 rounded border border-primary text-primary text-sm hover:bg-primary/10 inline-block"
+                  >
+                    Update
+                  </a>
+                  <button
+                    type="button"
+                    (click)="deleteCourse(c.id)"
+                    class="px-3 py-1.5 rounded border border-red-500 text-red-600 text-sm hover:bg-red-50"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (advancedCheckOpen() && advancedCheckCourse) {
+    <div class="fixed inset-0 z-40 flex items-center justify-center bg-black/40">
+      <div class="w-full max-w-2xl rounded-xl bg-white shadow-xl p-6 relative">
+        <button
+          type="button"
+          (click)="closeAdvancedCheck()"
+          class="absolute right-4 top-4 text-secondary hover:text-text"
+        >
+          ✕
+        </button>
+        <h2 class="text-xl font-semibold text-text mb-2">
+          Advanced Check – {{ advancedCheckCourse.title }}
+        </h2>
+        <p class="text-sm text-secondary mb-4">
+          Automatic report based on sessions, bookings and classrooms for this course.
+        </p>
+
+        <div class="space-y-4 max-h-[60vh] overflow-y-auto">
+          <section>
+            <h3 class="text-sm font-semibold text-text mb-1">Conflicts</h3>
+            @if (advancedCheckConflicts().length === 0) {
+              <p class="text-sm text-secondary">No conflicts detected.</p>
+            } @else {
+              <ul class="list-disc pl-5 text-sm text-red-700">
+                @for (msg of advancedCheckConflicts(); track msg) {
+                  <li>{{ msg }}</li>
+                }
+              </ul>
+            }
+          </section>
+
+          <section>
+            <h3 class="text-sm font-semibold text-text mb-1">Capacity & Bookings</h3>
+            @if (advancedCheckCapacityWarnings().length === 0) {
+              <p class="text-sm text-secondary">No capacity issues detected.</p>
+            } @else {
+              <ul class="list-disc pl-5 text-sm text-amber-700">
+                @for (msg of advancedCheckCapacityWarnings(); track msg) {
+                  <li>{{ msg }}</li>
+                }
+              </ul>
+            }
+          </section>
+        </div>
+
+        <div class="mt-4 flex justify-end">
+          <button
+            type="button"
+            (click)="closeAdvancedCheck()"
+            class="px-4 py-2 rounded-lg border border-border text-sm text-secondary hover:bg-gray-50"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (!loading() && courses().length === 0 && !error()) {
+    <app-empty-state title="No courses available" description="Create your first course or check that the API is running (e.g. GET /api/courses)." emoji="📚"></app-empty-state>
+    <div class="mt-4">
+      <a routerLink="/back/courses/create" class="inline-flex items-center gap-2 bg-primary text-white px-5 py-3 rounded-lg">+ New Course</a>
+    </div>
+  }
+</main>

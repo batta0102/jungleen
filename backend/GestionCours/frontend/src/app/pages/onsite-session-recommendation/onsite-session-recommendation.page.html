@@ -1,0 +1,53 @@
+<div class="page">
+  <div class="card card-header">
+    <h1 class="title">Onsite Session - Recommend Classroom</h1>
+    <p class="subtitle">Saisissez la date et la capacité requise, puis demandez une salle recommandée.</p>
+
+    <div class="filters">
+      <div class="field">
+        <label for="date">Date de session</label>
+        <input id="date" type="datetime-local" [ngModel]="date()" (ngModelChange)="date.set($event)" />
+      </div>
+
+      <div class="field">
+        <label for="capacity">Capacité requise</label>
+        <input id="capacity" type="number" min="1" placeholder="ex: 20"
+               [ngModel]="requiredCapacity()" (ngModelChange)="requiredCapacity.set($event)" />
+      </div>
+
+      <div class="field">
+        <label for="type">Type préféré (optionnel)</label>
+        <select id="type" [ngModel]="preferredType()" (ngModelChange)="preferredType.set($event)">
+          <option value="">Aucune préférence</option>
+          @for (type of classroomTypes; track type) {
+            <option [value]="type">{{ type }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="field actions">
+        <button type="button" class="btn btn-primary" (click)="recommend()" [disabled]="loading()">
+          {{ loading() ? 'Recherche…' : 'Recommend Classroom' }}
+        </button>
+      </div>
+    </div>
+
+    @if (errorMessage(); as msg) {
+      <div class="alert alert-error" role="alert">{{ msg }}</div>
+    }
+
+    @if (successMessage(); as msg) {
+      <div class="alert alert-success" role="status">{{ msg }}</div>
+    }
+  </div>
+
+  @if (recommendation(); as room) {
+    <div class="card recommendation-card">
+      <h2>Salle recommandée</h2>
+      <p><strong>Nom:</strong> {{ room.name }}</p>
+      <p><strong>Type:</strong> {{ room.type }}</p>
+      <p><strong>Capacité:</strong> {{ room.capacity }}</p>
+      <p><strong>Features:</strong> {{ room.featuresDescription || 'Aucune' }}</p>
+    </div>
+  }
+</div>

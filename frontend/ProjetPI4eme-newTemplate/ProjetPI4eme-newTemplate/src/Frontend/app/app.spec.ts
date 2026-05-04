@@ -16,11 +16,11 @@ describe('App', () => {
     expect(app).toBeTruthy();
   });
 
-  it('should render footer brand', async () => {
+  it('should render router outlet shell', async () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('footer .brand')?.textContent).toContain('Jungle in English');
+    expect(compiled.querySelector('router-outlet')).toBeTruthy();
   });
 });

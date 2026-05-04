@@ -1,47 +1,184 @@
-<main class="mx-auto max-w-7xl px-6 py-8">
-  <header class="mb-8 flex items-start justify-between">
-    <div>
-      <h1 class="font-serif text-5xl font-semibold text-text">Course Management</h1>
-      <p class="mt-2 text-secondary">Manage your academic programs and learning sessions.</p>
-    </div>
-    <div>
-      <button class="inline-flex items-center gap-3 bg-primary text-white px-5 py-3 rounded-lg shadow-md hover:bg-primary-hover">
-        <span class="text-xl">+</span>
-        New Course
-      </button>
+<main class="courses-page mx-auto max-w-6xl px-6 py-8">
+  <nav class="course-switcher" aria-label="Course admin sections">
+    @for (tab of tabs; track tab.id) {
+      <a class="course-switcher__tab" [class.course-switcher__tab--active]="router.url === tab.link" [routerLink]="tab.link">{{ tab.label }}</a>
+    }
+  </nav>
+
+  <header class="page-topbar">
+    <nav class="stepper" aria-label="Course sections">
+      @for (tab of tabs; track tab.id; let i = $index) {
+        <button
+          type="button"
+          class="step-pill"
+          [class.step-pill--active]="activeTab() === i"
+          (click)="setTab(i)"
+        >
+          <span class="step-dot">•</span>
+          <span>{{ tab.label }}</span>
+        </button>
+      }
+    </nav>
+
+    <div class="step-meta">
+      <button type="button" class="nav-button nav-button--ghost" (click)="previousStep()" [disabled]="activeTab() === 0">Previous</button>
+      <span class="step-count">Step {{ currentStep }} / {{ totalSteps }}</span>
+      <button type="button" class="nav-button nav-button--ghost" (click)="nextStep()" [disabled]="activeTab() >= totalSteps - 1">Next</button>
     </div>
   </header>
 
-  <div class="border-b border-border pb-4 mb-6">
-    <nav class="flex gap-8 text-sm text-secondary">
-      <a class="border-b-2 border-primary pb-2 text-primary font-semibold">All Courses</a>
-      <a class="pb-2 hover:text-text">Active Sessions</a>
-      <a class="pb-2 hover:text-text">Associations</a>
-    </nav>
-  </div>
+  <section class="hero-row">
+    <div>
+      <h1 class="page-title">Courses</h1>
+    </div>
 
-  <div class="grid grid-cols-1 gap-4 md:grid-cols-3 items-center mb-6">
-    <div class="md:col-span-2">
-      <div class="flex items-center gap-4">
-        <div class="relative w-full">
-          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-secondary">🔍</span>
-          <input placeholder="Search courses..." class="w-full pl-12 pr-4 py-3 rounded-lg border border-border placeholder-secondary" />
+    <button type="button" (click)="openCreateCourse()" class="nav-button nav-button--primary add-course-btn">
+      <span class="text-lg leading-none">+</span>
+      <span>Add Course</span>
+    </button>
+  </section>
+
+  <section *ngIf="error()" class="route-context route-context--error">
+    <p class="route-title">GestionCours API</p>
+    <p class="route-copy">{{ error() }}</p>
+    <button type="button" class="nav-button nav-button--primary nav-button--small" (click)="loadCourses()" style="margin-top: 0.75rem;">Retry</button>
+  </section>
+
+  <section *ngIf="loading()" class="route-context">
+    <p class="route-title">Loading</p>
+    <p class="route-copy">Loading courses from the Spring Boot GestionCours service...</p>
+  </section>
+
+  <section class="stats-grid" aria-label="Course summary">
+    <article class="stat-card">
+      <span class="stat-label">TOTAL COURSES</span>
+      <strong>{{ totalCourses() }}</strong>
+    </article>
+    <article class="stat-card">
+      <span class="stat-label">ONLINE</span>
+      <strong>{{ onlineCourses() }}</strong>
+    </article>
+    <article class="stat-card stat-card--accent">
+      <span class="stat-label">ON-SITE</span>
+      <strong>{{ onsiteCourses() }}</strong>
+    </article>
+    <article class="stat-card">
+      <span class="stat-label">ACTIVE CLASSROOMS</span>
+      <strong>{{ activeClassrooms() }}</strong>
+    </article>
+    <article class="stat-card">
+      <span class="stat-label">TUTORS</span>
+      <strong>{{ tutors() }}</strong>
+    </article>
+  </section>
+
+  <section class="filters-row" aria-label="Search and filters">
+    <div class="type-toggle" role="tablist" aria-label="Course type filter">
+      <button type="button" class="type-chip" [class.type-chip--active]="typeFilter() === 'all'" (click)="typeFilter.set('all'); refresh()">All</button>
+      <button type="button" class="type-chip" [class.type-chip--active]="typeFilter() === 'Online'" (click)="typeFilter.set('Online'); refresh()">Online</button>
+      <button type="button" class="type-chip" [class.type-chip--active]="typeFilter() === 'On-Site'" (click)="typeFilter.set('On-Site'); refresh()">On-Site</button>
+    </div>
+
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event); refresh()"
+        type="text"
+        placeholder="Search by title, description..."
+        class="search-input"
+      />
+    </div>
+
+    <select class="select-input" [ngModel]="levelFilter()" (ngModelChange)="levelFilter.set($event); refresh()">
+      <option value="all">All Levels</option>
+      <option value="A1">A1</option>
+      <option value="A2">A2</option>
+      <option value="B1">B1</option>
+      <option value="B2">B2</option>
+      <option value="C1">C1</option>
+      <option value="C2">C2</option>
+    </select>
+
+    <select class="select-input" [ngModel]="sortBy()" (ngModelChange)="sortBy.set($event); refresh()">
+      <option value="title-asc">Sort: Title A - Z</option>
+    </select>
+  </section>
+
+  <section class="table-shell">
+    <div class="table-wrap">
+      <table class="courses-table">
+        <thead>
+          <tr>
+            <th>TITLE</th>
+            <th>LEVEL</th>
+            <th>TYPE</th>
+            <th>DESCRIPTION</th>
+            <th>CLASSROOM</th>
+            <th>ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (course of pagedCourses(); track trackByCourse($index, course)) {
+            <tr>
+              <td>
+                <strong>{{ course.title }}</strong>
+              </td>
+              <td>{{ course.level }}</td>
+              <td>
+                <span class="type-badge" [class.type-badge--online]="course.type === 'Online'" [class.type-badge--onsite]="course.type === 'On-Site'">
+                  {{ course.type }}
+                </span>
+              </td>
+              <td>{{ course.description }}</td>
+              <td>{{ course.classroom }}</td>
+              <td>
+                <div class="row-actions">
+                  <button type="button" class="action-btn action-btn--neutral" (click)="editCourse(course)">Update</button>
+                  <button type="button" class="action-btn action-btn--danger" (click)="deleteCourse(course)">Delete</button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <footer class="table-footer">
+      <nav class="stepper stepper--footer" aria-label="Course sections footer">
+        @for (tab of tabs; track tab.id; let i = $index) {
+          <button
+            type="button"
+            class="step-pill step-pill--small"
+            [class.step-pill--active]="activeTab() === i"
+            (click)="setTab(i)"
+          >
+            <span class="step-dot">•</span>
+            <span>{{ tab.label }}</span>
+          </button>
+        }
+      </nav>
+
+      <div class="footer-summary">
+        <div class="footer-note">{{ displayRange() }}</div>
+
+        <div class="pagination-bar">
+          <button type="button" class="nav-button nav-button--ghost nav-button--small" (click)="setPage(page() - 1)" [disabled]="page() <= 1">Previous</button>
+          <span class="page-indicator">Page {{ page() }} / {{ pageCount() }}</span>
+          <button type="button" class="nav-button nav-button--ghost nav-button--small" (click)="setPage(page() + 1)" [disabled]="page() >= pageCount()">Next</button>
         </div>
       </div>
-    </div>
-    <div class="flex gap-4 justify-end">
-      <select class="px-4 py-3 rounded-lg border border-border bg-white">
-        <option>All Levels</option>
-      </select>
-      <select class="px-4 py-3 rounded-lg border border-border bg-white">
-        <option>All Statuses</option>
-      </select>
-    </div>
-  </div>
+    </footer>
+  </section>
 
-  <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-    <app-course-card *ngFor="let c of courses" [title]="c.title" [instructor]="c.instructor" [students]="c.students" [sessions]="c.sessions" [progress]="c.progress" [status]="c.status"></app-course-card>
-  </div>
+  <section *ngIf="routeContextVisible" class="route-context">
+    <p class="route-title">Route context</p>
+    <p class="route-copy">{{ routeContextMessage }}</p>
+  </section>
 
-  <app-empty-state *ngIf="courses.length === 0" title="No courses available" description="Check back soon for new courses" emoji="📚"></app-empty-state>
+  <section class="table-footer-spacer"></section>
+
+  <section class="mt-8">
+    <router-outlet></router-outlet>
+  </section>
 </main>

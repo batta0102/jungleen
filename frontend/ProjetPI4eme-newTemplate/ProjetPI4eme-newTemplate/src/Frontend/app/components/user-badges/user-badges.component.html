@@ -1,0 +1,80 @@
+<div class="user-badges-container">
+  <!-- Loading state -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="loading-spinner"></div>
+    <span>Chargement des badges...</span>
+  </div>
+
+  <!-- Badges list -->
+  <div *ngIf="!loading" class="badges-list">
+    <!-- Unlocked badges -->
+    <div *ngIf="unlockedBadges.length > 0" class="badges-section">
+      <h4 class="section-title">Badges débloqués</h4>
+      <div class="badges-grid">
+        <div 
+          *ngFor="let badge of unlockedBadges; trackBy: trackByBadgeId"
+          class="badge-item unlocked"
+          [class]="getBadgeClass(badge.type)"
+        >
+          <div class="badge-icon">{{ badge.icon }}</div>
+          <div class="badge-content">
+            <h5 class="badge-name">{{ badge.name }}</h5>
+            <p class="badge-description">{{ badge.description }}</p>
+          </div>
+          <div class="badge-progress">
+            <span class="progress-text">✅ Débloqué</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Locked badges -->
+    <div *ngIf="lockedBadges.length > 0" class="badges-section">
+      <h4 class="section-title">Badges à débloquer</h4>
+      <div class="badges-grid">
+        <div 
+          *ngFor="let badge of lockedBadges; trackBy: trackByBadgeId"
+          class="badge-item locked"
+          [class]="getBadgeClass(badge.type)"
+        >
+          <div class="badge-icon">{{ badge.icon }}</div>
+          <div class="badge-content">
+            <h5 class="badge-name">{{ badge.name }}</h5>
+            <p class="badge-description">{{ badge.description }}</p>
+            <div class="badge-requirements">
+              <div class="requirement">
+                <span class="req-icon">📝</span>
+                <span class="req-text">{{ badge.requirements.messages }} messages</span>
+              </div>
+              <div class="requirement">
+                <span class="req-icon">❤️</span>
+                <span class="req-text">{{ badge.requirements.likes }} likes</span>
+              </div>
+              <div class="requirement">
+                <span class="req-icon">💬</span>
+                <span class="req-text">{{ badge.requirements.comments }} commentaires</span>
+              </div>
+            </div>
+          </div>
+          <div class="badge-progress">
+            <div class="progress-bar">
+              <div 
+                class="progress-fill"
+                [style.width.%]="badge.progress"
+                [class]="getBadgeClass(badge.type)"
+              ></div>
+            </div>
+            <span class="progress-text">{{ badge.progress }}%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div *ngIf="badges.length === 0" class="empty-state">
+      <div class="empty-icon">🏆</div>
+      <h4 class="empty-title">Aucun badge disponible</h4>
+      <p class="empty-description">Participez au forum pour débloquer des badges !</p>
+    </div>
+  </div>
+</div>

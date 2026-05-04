@@ -1,0 +1,44 @@
+/* GestionCours – thème moderne */
+:root {
+  --bg-page: #f0f4f8;
+  --bg-card: #ffffff;
+  --border: #e2e8f0;
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --primary: #0f766e;
+  --primary-hover: #0d9488;
+  --accent: #0d9488;
+  --error: #dc2626;
+  --success: #16a34a;
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(0,0,0,.08);
+  --shadow-lg: 0 10px 40px -10px rgba(0,0,0,.15);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: var(--bg-page);
+  color: var(--text);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* Utilitaires */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  border: 0;
+}
+
+.text-error { color: var(--error); }
+.text-muted { color: var(--text-muted); font-size: 0.9rem; }

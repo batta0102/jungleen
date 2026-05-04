@@ -1,0 +1,263 @@
+<div class="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 py-8">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <!-- Header avec bouton retour -->
+    <div class="mb-6">
+      <button 
+        (click)="goBack()" 
+        class="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors group">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 transform group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+        Back to club
+      </button>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="flex flex-col items-center justify-center py-12">
+      <div class="animate-spin rounded-full h-12 w-12 border-4 border-green-600 border-t-transparent mb-4"></div>
+      <p class="text-gray-600">Loading club members...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error" class="bg-red-50 border-l-4 border-red-500 rounded-lg p-4 mb-6">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+        <div class="ml-3">
+          <p class="text-sm text-red-700">{{ error }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulaire principal -->
+    <div *ngIf="!loading && !error" class="bg-white rounded-2xl shadow-xl overflow-hidden">
+      
+      <!-- En-tête du formulaire -->
+      <div class="bg-gradient-to-r from-green-700 to-emerald-700 px-6 py-8 text-white shadow-lg">
+        <h1 class="text-3xl font-bold mb-2">Request a Buddy</h1>
+        <p class="text-green-200">Choose a student from the app and send your request</p>
+      </div>
+
+      <!-- Corps du formulaire -->
+      <form [formGroup]="buddyRequestForm" (ngSubmit)="onSubmit()" class="p-6 space-y-6">
+        
+        <!-- Club (lecture seule) -->
+        <div class="bg-green-50 rounded-xl p-4 border border-green-100">
+          <label class="block text-sm font-medium text-green-800 mb-2">
+            <span class="flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+              Selected Club
+            </span>
+          </label>
+          <div class="bg-white rounded-lg p-3 border border-green-200">
+            <p class="font-semibold text-gray-900">{{ getSelectedClubName() }}</p>
+            <p class="text-sm text-gray-600 mt-1">{{ getSelectedClubDescription() }}</p>
+          </div>
+        </div>
+
+        <!-- Sélection du partenaire -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            <span class="flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+              Choose a student partner
+            </span>
+          </label>
+          
+          <div *ngIf="availableMembers.length === 0" class="text-center py-8 bg-gray-50 rounded-lg">
+            <p class="text-gray-500">No students available in the app</p>
+          </div>
+
+          <div class="space-y-3 max-h-96 overflow-y-auto pr-2">
+            <div 
+              *ngFor="let member of availableMembers" 
+              class="relative"
+              [class.opacity-50]="member.id === currentUser?.id">
+              
+              <label class="block cursor-pointer">
+                <input 
+                  type="radio" 
+                  name="partnerId" 
+                  [value]="member.id" 
+                  formControlName="partnerId"
+                  [disabled]="member.id === currentUser?.id"
+                  class="sr-only">
+                
+                <div class="flex items-center p-4 border-2 rounded-xl transition-all duration-200"
+                     [class.border-green-500]="buddyRequestForm.get('partnerId')?.value === member.id"
+                     [class.border-gray-200]="buddyRequestForm.get('partnerId')?.value !== member.id"
+                     [class.hover:border-green-300]="member.id !== currentUser?.id"
+                     [class.bg-green-50]="buddyRequestForm.get('partnerId')?.value === member.id">
+                  
+                  <!-- Avatar -->
+                  <div class="flex-shrink-0 mr-4">
+                    <div class="w-12 h-12 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center text-2xl">
+                      {{ member.avatar || '👤' }}
+                    </div>
+                  </div>
+
+                  <!-- Infos membre -->
+                  <div class="flex-1">
+                    <div class="flex items-center justify-between">
+                      <div>
+                        <h3 class="font-semibold text-gray-900">{{ member.nom }}</h3>
+                        <p class="text-sm text-gray-600">{{ member.email }}</p>
+                      </div>
+                      <div class="text-2xl">
+                        <span *ngIf="buddyRequestForm.get('partnerId')?.value === member.id">✅</span>
+                        <span *ngIf="member.id === currentUser?.id" class="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full">You</span>
+                      </div>
+                    </div>
+                    
+                    <!-- Badges -->
+                    <div class="flex items-center gap-2 mt-2">
+                      <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                        {{ member.niveau || 'Intermediate' }}
+                      </span>
+                      <span class="px-2 py-1 bg-emerald-100 text-emerald-800 text-xs rounded-full">
+                        {{ member.role || 'Member' }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div *ngIf="getFieldError('partnerId')" class="mt-2 text-sm text-red-600">
+            {{ getFieldError('partnerId') }}
+          </div>
+        </div>
+
+        <!-- Niveau cible -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            <span class="flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              Target Level
+            </span>
+          </label>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div *ngFor="let option of niveauOptions" class="relative">
+              <label class="block cursor-pointer">
+                <input 
+                  type="radio" 
+                  name="niveauCible" 
+                  [value]="option.value" 
+                  formControlName="niveauCible"
+                  class="sr-only">
+                
+                <div class="p-4 border-2 rounded-xl text-center transition-all duration-200"
+                     [class.border-green-500]="buddyRequestForm.get('niveauCible')?.value === option.value"
+                     [class.border-gray-200]="buddyRequestForm.get('niveauCible')?.value !== option.value"
+                     [class.hover:border-green-300]="true"
+                     [class.bg-green-50]="buddyRequestForm.get('niveauCible')?.value === option.value">
+                  
+                  <div class="text-3xl mb-2">{{ option.icon }}</div>
+                  <h3 class="font-semibold text-gray-900">{{ option.label }}</h3>
+                  <p class="text-xs text-gray-600 mt-1">{{ option.description }}</p>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div *ngIf="getFieldError('niveauCible')" class="mt-2 text-sm text-red-600">
+            {{ getFieldError('niveauCible') }}
+          </div>
+        </div>
+
+        <!-- Message optionnel -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            <span class="flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+              Personal message (optional)
+            </span>
+          </label>
+          
+          <textarea 
+            formControlName="message"
+            rows="4"
+            placeholder="Hi! I'd love for us to be buddies to learn together... Share your goals, motivation, or just say hello!"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none">
+          </textarea>
+          
+          <div class="flex justify-between items-center mt-2">
+            <span class="text-sm text-gray-500">
+              {{ buddyRequestForm.get('message')?.value?.length || 0 }}/500 characters
+            </span>
+            <span *ngIf="getFieldError('message')" class="text-sm text-red-600">
+              {{ getFieldError('message') }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Récapitulatif -->
+        <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-100">
+          <h3 class="font-semibold text-gray-900 mb-3 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Request Summary
+          </h3>
+          
+          <div class="space-y-2 text-sm">
+            <p><span class="font-medium text-gray-700">Club:</span> {{ getSelectedClubName() }}</p>
+            <p><span class="font-medium text-gray-700">Partner:</span> {{ getSelectedPartnerName() || 'Not selected' }}</p>
+            <p><span class="font-medium text-gray-700">Target Level:</span> {{ getSelectedNiveauLabel() }}</p>
+          </div>
+        </div>
+
+        <!-- Boutons d'action -->
+        <div class="flex flex-col sm:flex-row gap-3 pt-4">
+          <button 
+            type="button"
+            (click)="goBack()"
+            class="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium">
+            Cancel
+          </button>
+          
+          <button 
+            type="submit"
+            [disabled]="!isFormValid() || submitting"
+            class="flex-1 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+            <svg *ngIf="submitting" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            {{ submitting ? 'Sending...' : '📤 Send Request' }}
+          </button>
+        </div>
+
+        <!-- Message de confirmation après succès -->
+        <div *ngIf="success" class="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <svg class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+            <div class="ml-3">
+              <p class="text-sm font-medium text-green-800">
+                Request sent successfully! You will be redirected to your buddies list.
+              </p>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

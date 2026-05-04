@@ -30,7 +30,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
-                    .requestMatchers("/api/users/signup").permitAll()
+                        .requestMatchers("/api/users/signup").permitAll()
+                        .requestMatchers("/api/users/*/email").permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtConverter)))
                 .httpBasic(Customizer.withDefaults());

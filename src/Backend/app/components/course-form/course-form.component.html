@@ -1,0 +1,123 @@
+<main class="mx-auto max-w-3xl px-6 py-8">
+  <h1 class="font-serif text-3xl font-semibold text-text mb-6">{{ isEditMode() ? 'Edit Course' : 'New Course' }}</h1>
+
+  @if (loading() && isEditMode()) {
+    <p class="mb-4 text-secondary">Loading course...</p>
+  }
+  @if (error()) {
+    <div class="mb-4 p-4 rounded-lg bg-red-50 text-red-800">{{ error() }}</div>
+  }
+  @if (success()) {
+    <div class="mb-4 p-4 rounded-lg bg-green-50 text-green-800">{{ success() }}</div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
+    <div>
+      <label for="title" class="block text-sm font-medium text-text mb-1">Title *</label>
+      <input
+        id="title"
+        type="text"
+        formControlName="title"
+        class="w-full pl-4 pr-4 py-3 rounded-lg border border-border"
+        [class.border-red-500]="isFieldInvalid('title')"
+        placeholder="Course title"
+      />
+      @if (isFieldInvalid('title')) {
+        <p class="mt-1 text-sm text-red-600">{{ getFieldError('title') }}</p>
+      }
+    </div>
+
+    <div>
+      <label for="instructor" class="block text-sm font-medium text-text mb-1">Instructor *</label>
+      <input
+        id="instructor"
+        type="text"
+        formControlName="instructor"
+        class="w-full pl-4 pr-4 py-3 rounded-lg border border-border"
+        [class.border-red-500]="isFieldInvalid('instructor')"
+        placeholder="Instructor name"
+      />
+      @if (isFieldInvalid('instructor')) {
+        <p class="mt-1 text-sm text-red-600">{{ getFieldError('instructor') }}</p>
+      }
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label for="students" class="block text-sm font-medium text-text mb-1">Students</label>
+        <input
+          id="students"
+          type="number"
+          formControlName="students"
+          class="w-full pl-4 pr-4 py-3 rounded-lg border border-border"
+          [class.border-red-500]="isFieldInvalid('students')"
+          min="0"
+        />
+        @if (isFieldInvalid('students')) {
+          <p class="mt-1 text-sm text-red-600">{{ getFieldError('students') }}</p>
+        }
+      </div>
+      <div>
+        <label for="sessions" class="block text-sm font-medium text-text mb-1">Sessions</label>
+        <input
+          id="sessions"
+          type="number"
+          formControlName="sessions"
+          class="w-full pl-4 pr-4 py-3 rounded-lg border border-border"
+          [class.border-red-500]="isFieldInvalid('sessions')"
+          min="1"
+        />
+        @if (isFieldInvalid('sessions')) {
+          <p class="mt-1 text-sm text-red-600">{{ getFieldError('sessions') }}</p>
+        }
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label for="progress" class="block text-sm font-medium text-text mb-1">Progress (%)</label>
+        <input
+          id="progress"
+          type="number"
+          formControlName="progress"
+          class="w-full pl-4 pr-4 py-3 rounded-lg border border-border"
+          [class.border-red-500]="isFieldInvalid('progress')"
+          min="0"
+          max="100"
+        />
+        @if (isFieldInvalid('progress')) {
+          <p class="mt-1 text-sm text-red-600">{{ getFieldError('progress') }}</p>
+        }
+      </div>
+      <div>
+        <label for="status" class="block text-sm font-medium text-text mb-1">Status</label>
+        <select
+          id="status"
+          formControlName="status"
+          class="w-full pl-4 pr-4 py-3 rounded-lg border border-border"
+        >
+          @for (s of statusOptions; track s) {
+            <option [value]="s">{{ s }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="flex gap-4 pt-4">
+      <button
+        type="submit"
+        class="px-5 py-3 rounded-lg bg-primary text-white font-medium hover:bg-primary-hover disabled:opacity-50"
+        [disabled]="form.invalid || loading()"
+      >
+        {{ isEditMode() ? 'Update Course' : 'Create Course' }}
+      </button>
+      <button
+        type="button"
+        (click)="cancel()"
+        class="px-5 py-3 rounded-lg border border-border bg-white hover:bg-gray-50"
+      >
+        Cancel
+      </button>
+    </div>
+  </form>
+</main>

@@ -1,0 +1,299 @@
+<div class="min-h-screen bg-slate-50 text-slate-900">
+  <div class="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+    <header class="mb-6">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Classroom Booking</p>
+          <h1 class="mt-1 text-2xl font-semibold text-slate-900">Book a classroom</h1>
+          <p class="mt-1 text-sm text-slate-600">Select a room on the left, then reserve it on the right.</p>
+        </div>
+        <a
+          routerLink="/back/courses/classrooms/create"
+          class="inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
+        >
+          Add Classroom
+        </a>
+      </div>
+    </header>
+
+    @if (alert(); as notice) {
+      <div
+        class="mb-6 flex items-start justify-between gap-3 rounded-lg border bg-white px-4 py-3"
+        [class.border-red-200]="notice.type === 'error'"
+        [class.bg-red-50]="notice.type === 'error'"
+        [class.text-red-900]="notice.type === 'error'"
+        [class.border-emerald-200]="notice.type === 'success'"
+        [class.bg-emerald-50]="notice.type === 'success'"
+        [class.text-emerald-900]="notice.type === 'success'"
+        role="alert"
+      >
+        <p class="text-sm">{{ notice.message }}</p>
+        <div class="flex shrink-0 gap-2">
+          @if (error()) {
+            <button type="button" (click)="load()" class="text-sm font-medium text-red-800 underline">Retry</button>
+          }
+          <button type="button" class="text-slate-500 hover:text-slate-800" (click)="dismissAlert()" aria-label="Dismiss">×</button>
+        </div>
+      </div>
+    }
+
+    @if (loading()) {
+      <p class="text-sm text-slate-600">Loading…</p>
+    }
+
+    @if (!loading()) {
+      @if (classrooms().length > 0) {
+        <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div class="min-w-0 flex-1 sm:max-w-md">
+            <label for="classroom-search" class="sr-only">Search</label>
+            <input
+              id="classroom-search"
+              type="search"
+              [ngModel]="searchQuery()"
+              (ngModelChange)="searchQuery.set($event)"
+              placeholder="Search by name or location"
+              class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400"
+            />
+          </div>
+          <div class="flex items-center gap-2">
+            <label for="filter-capacity" class="text-sm text-slate-600">Min. capacity</label>
+            <input
+              id="filter-capacity"
+              type="number"
+              min="0"
+              [ngModel]="filterCapacityMin()"
+              (ngModelChange)="filterCapacityMin.set(parseCapacity($event))"
+              class="w-20 rounded-xl border border-slate-200 bg-white px-2 py-2.5 text-sm shadow-sm focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400"
+            />
+          </div>
+        </div>
+
+        <div class="grid gap-6 lg:grid-cols-[1fr_360px] lg:items-start">
+          <!-- Left: simple classroom cards -->
+          <div class="min-w-0">
+            @if (filteredClassrooms().length === 0) {
+              <p class="rounded-xl border border-slate-200 bg-white py-14 text-center text-sm text-slate-600">No rooms match your filters.</p>
+            } @else {
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                @for (c of filteredClassrooms(); track id(c)) {
+                  <article
+                    class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md"
+                    [class.border-slate-900]="isSelected(c)"
+                    [class.ring-1]="isSelected(c)"
+                    [class.ring-slate-900]="isSelected(c)"
+                  >
+                    <div class="p-3">
+                      <div class="overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+                      <img
+                        [src]="tileVisualSrc(c)"
+                        [alt]="displayClassroomTitle(c)"
+                        class="aspect-[16/10] w-full object-cover"
+                        loading="lazy"
+                      />
+                      </div>
+                    </div>
+                    <div class="space-y-3 px-4 pb-4">
+                      <div>
+                        <h2 class="truncate text-base font-semibold text-slate-900">{{ displayClassroomTitle(c) }}</h2>
+                        <p class="mt-1 text-sm text-slate-600">Type: <span class="font-medium">{{ classroomType(c) }}</span></p>
+                        <p class="text-sm text-slate-600">Capacity: <span class="font-medium">{{ c.capacity ?? '—' }}</span></p>
+                        <p class="text-sm text-slate-600">
+                          Availability:
+                          @if (isClassroomOccupied(c)) {
+                            <span class="font-medium text-amber-700">Occupied</span>
+                          } @else {
+                            <span class="font-medium text-emerald-700">Available</span>
+                          }
+                        </p>
+                      </div>
+                      <div>
+                        <button
+                          type="button"
+                          (click)="selectClassroom(c)"
+                          class="rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800"
+                        >
+                          Select room
+                        </button>
+                        <div class="mt-2 flex items-center gap-3">
+                          <a
+                            [routerLink]="['/back/courses/classrooms', id(c), 'edit']"
+                            class="text-xs font-medium text-slate-600 hover:text-slate-900"
+                          >
+                            Edit
+                          </a>
+                          <button
+                            type="button"
+                            (click)="deleteClassroom(c.id, $event)"
+                            [disabled]="isDeleting(c.id)"
+                            class="text-xs font-medium text-red-600 hover:text-red-700 disabled:opacity-50"
+                          >
+                            {{ isDeleting(c.id) ? 'Deleting...' : 'Delete' }}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Right: selected + reservation -->
+          <aside class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm lg:sticky lg:top-8">
+            <div class="mb-5 rounded-lg border border-slate-200 bg-slate-50 p-3">
+              <p class="text-sm font-semibold text-slate-900">Smart suggestion</p>
+              <p class="mt-0.5 text-xs text-slate-600">Find the best available classroom for your constraints.</p>
+              <div class="mt-3 space-y-2">
+                <div>
+                  <label class="mb-1 block text-xs font-medium text-slate-600" for="suggest-type">Classroom type</label>
+                  <select
+                    id="suggest-type"
+                    class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
+                    [ngModel]="suggestionType()"
+                    (ngModelChange)="suggestionType.set($event)"
+                  >
+                    <option value="STANDARD">STANDARD</option>
+                    <option value="PREMIUM">PREMIUM</option>
+                    <option value="MEETING">MEETING</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="mb-1 block text-xs font-medium text-slate-600" for="suggest-cap">Required capacity</label>
+                  <input
+                    id="suggest-cap"
+                    type="number"
+                    min="1"
+                    class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
+                    [ngModel]="suggestionRequiredCapacity()"
+                    (ngModelChange)="suggestionRequiredCapacity.set(+$event || 1)"
+                  />
+                </div>
+                <div>
+                  <label class="mb-1 block text-xs font-medium text-slate-600" for="suggest-dt">Date and time</label>
+                  <input
+                    id="suggest-dt"
+                    type="datetime-local"
+                    class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
+                    [ngModel]="suggestionDateTime()"
+                    (ngModelChange)="suggestionDateTime.set($event)"
+                  />
+                </div>
+                <button
+                  type="button"
+                  class="w-full rounded-lg border border-slate-300 bg-white py-2 text-sm font-medium text-slate-800 hover:bg-slate-100"
+                  (click)="suggestBestClassroom()"
+                >
+                  Suggest best classroom
+                </button>
+                @if (suggestionMessage()) {
+                  <p class="text-xs font-medium text-slate-700">{{ suggestionMessage() }}</p>
+                }
+                @if (suggestionResult(); as suggested) {
+                  <div class="rounded-md border border-emerald-200 bg-emerald-50 px-2 py-1.5 text-xs text-emerald-900">
+                    <p><strong>{{ displayClassroomTitle(suggested) }}</strong> ({{ classroomType(suggested) }})</p>
+                    <p>Capacity: {{ suggested.capacity ?? '—' }}</p>
+                    <button
+                      type="button"
+                      class="mt-1 rounded bg-emerald-600 px-2 py-1 text-[11px] font-semibold text-white hover:bg-emerald-700"
+                      (click)="applySuggestedClassroom()"
+                    >
+                      Use this classroom
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+
+            @if (selectedClassroom(); as cur) {
+              <h2 class="text-lg font-semibold text-slate-900">Selected classroom</h2>
+              <p class="mt-1 text-sm text-slate-600">{{ displayClassroomTitle(cur) }}</p>
+              <p class="text-sm text-slate-600">Type: {{ classroomType(cur) }}</p>
+              <p class="text-sm text-slate-600">Capacity: {{ cur.capacity ?? '—' }}</p>
+              <p class="text-sm text-slate-600">Features: {{ featuresText(cur) }}</p>
+
+              <div class="mb-5 mt-4 overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+                <model-viewer
+                  [src]="roomModelSrc(cur)"
+                  [poster]="panelVisualSrc(cur)"
+                  [alt]="'3D preview of ' + displayClassroomTitle(cur)"
+                  class="aspect-[16/10] w-full bg-slate-100"
+                  camera-controls
+                  touch-action="pan-y"
+                  auto-rotate
+                  exposure="1"
+                  shadow-intensity="1"
+                  environment-image="neutral"
+                ></model-viewer>
+              </div>
+
+              <div class="space-y-4 border-t border-slate-100 pt-4">
+                <div>
+                  <label class="mb-1 block text-xs font-medium text-slate-600" for="res-dt">Date and time</label>
+                  <input
+                    id="res-dt"
+                    type="datetime-local"
+                    [ngModel]="reservationDateTime()"
+                    (ngModelChange)="reservationDateTime.set($event); onReservationInputChange()"
+                    class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400"
+                  />
+                </div>
+                <div>
+                  <label class="mb-1 block text-xs font-medium text-slate-600" for="res-cap">Required capacity</label>
+                  <input
+                    id="res-cap"
+                    type="number"
+                    min="1"
+                    [ngModel]="reservationRequiredCapacity()"
+                    (ngModelChange)="reservationRequiredCapacity.set(+$event || 1); onReservationInputChange()"
+                    class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400"
+                  />
+                </div>
+
+                <fieldset class="space-y-2 rounded-lg border border-slate-200 p-3">
+                  <legend class="px-1 text-xs font-medium text-slate-600">Equipment options</legend>
+                  <label class="flex items-center gap-2 text-sm text-slate-700">
+                    <input type="checkbox" [checked]="extraProjector()" (change)="extraProjector.set($any($event.target).checked)" class="rounded border-slate-300" />
+                    Projector
+                  </label>
+                  <label class="flex items-center gap-2 text-sm text-slate-700">
+                    <input type="checkbox" [checked]="extraMicrophone()" (change)="extraMicrophone.set($any($event.target).checked)" class="rounded border-slate-300" />
+                    Microphone
+                  </label>
+                  <label class="flex items-center gap-2 text-sm text-slate-700">
+                    <input type="checkbox" [checked]="coffeeBreak()" (change)="coffeeBreak.set($any($event.target).checked)" class="rounded border-slate-300" />
+                    Coffee break
+                  </label>
+                </fieldset>
+
+                @if (reservationError()) {
+                  <p class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">{{ reservationError() }}</p>
+                }
+                @if (reservationSuccess()) {
+                  <p class="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">{{ reservationSuccess() }}</p>
+                }
+
+                <button
+                  type="button"
+                  class="w-full rounded-lg bg-slate-900 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+                  [disabled]="reserving()"
+                  (click)="reserveClassroom()"
+                >
+                  {{ reserving() ? 'Reserving…' : 'Reserve' }}
+                </button>
+              </div>
+            } @else {
+              <div class="py-16 text-center">
+                <p class="text-sm font-medium text-slate-700">Select a room to start booking</p>
+                <p class="mt-1 text-sm text-slate-500">The selected classroom summary and reservation form will appear here.</p>
+              </div>
+            }
+          </aside>
+        </div>
+      } @else {
+        <div class="rounded-xl border border-slate-200 bg-white py-16 text-center">
+          <p class="text-slate-700">No classrooms yet.</p>
+        </div>
+      }
+    }
+  </div>
+</div>

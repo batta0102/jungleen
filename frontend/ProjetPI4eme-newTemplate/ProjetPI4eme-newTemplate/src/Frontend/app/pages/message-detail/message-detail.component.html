@@ -1,0 +1,200 @@
+<div class="message-detail-container max-w-4xl mx-auto px-4 py-8">
+  <!-- Header avec retour -->
+  <div class="detail-header mb-6">
+    <button (click)="goBack()" class="back-btn flex items-center text-gray-600 hover:text-gray-900 transition-colors mb-4">
+      <span class="back-icon mr-2">←</span>
+      Back to forum
+    </button>
+    <h1 class="detail-title text-2xl font-bold text-[#0d9488]">Message Details</h1>
+  </div>
+
+  <!-- Loading state -->
+  <div *ngIf="loading" class="loading-container text-center py-12">
+    <div class="loading-spinner animate-spin rounded-full h-12 w-12 border-b-2 border-[#14b8a6] mx-auto"></div>
+    <p class="loading-text text-gray-600 mt-4">Loading message...</p>
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="error && !loading" class="error-container text-center py-12 bg-red-50 rounded-lg">
+    <div class="error-icon text-4xl mb-2">⚠️</div>
+    <p class="error-message text-[#C84630] mb-4">{{ error }}</p>
+    <button (click)="loadMessageDetail()" class="btn btn-primary px-6 py-3 text-white rounded-lg hover:opacity-90 transition-colors"
+      [style.background-color]="'#2F5F5A'">
+      <span class="btn-icon mr-2">🔄</span>
+      Retry
+    </button>
+  </div>
+
+  <!-- Message detail -->
+  <div *ngIf="!loading && !error && message" class="message-detail space-y-8">
+    <!-- Message principal -->
+    <div class="main-message bg-white rounded-xl shadow-lg p-6">
+      <!-- Message header -->
+      <div class="message-header flex justify-between items-start mb-4">
+        <div class="user-info flex items-center gap-3">
+          <div class="user-avatar w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-2xl">
+            {{ message.user?.avatar || '👤' }}
+          </div>
+          <div class="user-details">
+            <h2 class="user-name text-lg font-bold text-gray-900">{{ message.user?.nom || 'Unknown user' }}</h2>
+            <p class="message-time text-sm text-gray-500">{{ formatDate(message.dateEnvoi) }}</p>
+          </div>
+        </div>
+        
+        <!-- Pin indicator -->
+        <div *ngIf="message.isPinned" class="pin-indicator text-yellow-600 flex items-center gap-1">
+          <span class="pin-icon">📌</span>
+          <span class="pin-text text-sm">Pinned</span>
+        </div>
+      </div>
+
+      <!-- Message content -->
+      <div class="message-content mb-6">
+        <p class="message-text text-gray-800 text-lg">{{ message.contenu }}</p>
+      </div>
+
+      <!-- Message actions -->
+      <div class="message-actions flex gap-6 border-t pt-4">
+        <!-- Like button -->
+        <button
+          (click)="likeMessage()"
+          class="action-btn like-btn flex items-center gap-2 hover:text-red-600 transition-colors"
+          [class.text-red-600]="message.isLiked"
+          title="Like"
+        >
+          <span class="action-icon text-xl">{{ message.isLiked ? '❤️' : '🤍' }}</span>
+          <span class="action-count font-medium">{{ message.likes || 0 }}</span>
+          <span class="action-text">Like</span>
+        </button>
+
+        <!-- Comments count -->
+        <div class="comments-info flex items-center gap-2 text-gray-600">
+          <span class="comments-icon text-xl">💬</span>
+          <span class="comments-count font-medium">{{ comments.length }}</span>
+          <span class="comments-text">comment{{ comments.length > 1 ? 's' : '' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulaire pour ajouter un commentaire -->
+    <div class="add-comment-section bg-white rounded-xl shadow-lg p-6">
+      <h3 class="section-title text-xl font-bold text-[#0d9488] mb-4 flex items-center gap-2">
+        <span class="section-icon">💬</span>
+        Add a comment
+      </h3>
+      
+      <form [formGroup]="commentForm" (ngSubmit)="submitComment()" class="comment-form">
+        <div class="form-group mb-4">
+          <textarea
+            formControlName="comment"
+            class="comment-textarea w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#14b8a6] focus:border-transparent outline-none"
+            placeholder="Share your response..."
+            rows="4"
+            maxlength="500"
+            [class.border-red-500]="commentForm.get('comment')?.invalid && commentForm.get('comment')?.touched"
+          ></textarea>
+          
+          <!-- Validation errors -->
+          <div 
+            *ngIf="commentForm.get('comment')?.invalid && commentForm.get('comment')?.touched"
+            class="validation-errors mt-2"
+          >
+            <small *ngIf="commentForm.get('comment')?.errors?.['required']" class="error-text text-[#C84630]">
+              Comment cannot be empty
+            </small>
+          </div>
+          
+          <!-- Character counter -->
+          <div class="character-counter text-right mt-2 text-sm text-gray-500">
+            <span 
+              [class.text-yellow-600]="commentForm.get('comment')?.value?.length > 400"
+              [class.text-red-600]="commentForm.get('comment')?.value?.length > 475"
+            >
+              {{ commentForm.get('comment')?.value?.length || 0 }}/500
+            </span>
+          </div>
+        </div>
+        
+        <div class="form-actions flex gap-3 justify-end">
+          <button
+            type="button"
+            (click)="resetForm()"
+            class="btn btn-secondary px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+            [disabled]="submitting"
+          >
+            <span class="btn-icon mr-2">🔄</span>
+            Reset
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary px-6 py-2 text-white rounded-lg hover:opacity-90 transition-colors disabled:opacity-50"
+            [style.background-color]="'#2F5F5A'"
+            [disabled]="commentForm.invalid || submitting"
+            [class.opacity-50]="submitting"
+          >
+            <span class="btn-icon mr-2" *ngIf="!submitting">📤</span>
+            <span class="btn-icon mr-2 animate-spin" *ngIf="submitting">⏳</span>
+            {{ submitting ? 'Publishing...' : 'Comment' }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Liste des commentaires -->
+    <div class="comments-section bg-white rounded-xl shadow-lg p-6">
+      <h3 class="section-title text-xl font-bold text-[#0d9488] mb-4 flex items-center gap-2">
+        <span class="section-icon">💬</span>
+        Comments ({{ comments.length }})
+      </h3>
+
+      <!-- Empty comments state -->
+      <div *ngIf="comments.length === 0" class="empty-comments text-center py-8">
+        <div class="empty-icon text-6xl mb-4">📭</div>
+        <p class="empty-text text-gray-600">Be the first to comment on this message!</p>
+      </div>
+
+      <!-- Comments list -->
+      <div *ngIf="comments.length > 0" class="comments-list space-y-4">
+        <div 
+          *ngFor="let comment of comments; trackBy: trackByCommentId"
+          class="comment-item bg-gray-50 rounded-lg p-4"
+        >
+          <div class="flex gap-3">
+            <div class="comment-avatar w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-xl flex-shrink-0">
+              {{ comment.user?.avatar || '👤' }}
+            </div>
+            <div class="comment-content flex-1">
+              <div class="comment-header flex items-center gap-2 mb-1">
+                <span class="comment-author font-semibold text-gray-900">{{ comment.user?.nom || 'Utilisateur' }}</span>
+                <span class="comment-time text-xs text-gray-500">{{ formatDate(comment.dateCreation) }}</span>
+              </div>
+              <p class="comment-text text-gray-700">{{ comment.comment }}</p>
+            </div>
+            <div class="comment-actions flex items-start gap-2">
+              <!-- Like button -->
+              <button
+                (click)="likeComment(comment.commentId, $event)"
+                class="comment-like-btn text-gray-500 hover:text-red-600 transition-colors flex items-center gap-1"
+                [class.text-red-600]="comment.isLiked"
+                title="J'aime"
+              >
+                <span>{{ comment.isLiked ? '❤️' : '🤍' }}</span>
+                <span>{{ comment.likes || 0 }}</span>
+              </button>
+              
+              <!-- Delete button (only for comment owner) -->
+              <button
+                *ngIf="canDeleteComment(comment)"
+                (click)="deleteComment(comment.commentId, $event)"
+                class="comment-delete-btn text-gray-500 hover:text-red-600 transition-colors"
+                title="Supprimer le commentaire"
+              >
+                <span>🗑️</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

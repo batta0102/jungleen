@@ -1,0 +1,309 @@
+<div class="container mx-auto px-4 py-8 max-w-7xl">
+  <!-- Header -->
+  <header class="mb-8">
+    <div class="flex items-center justify-between mb-6">
+      <button 
+        (click)="goBack()" 
+        class="flex items-center px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors">
+        <span class="mr-2">←</span>
+        Retour aux clubs
+      </button>
+      
+      @if (clubInfo) {
+        <div class="flex gap-3">
+          <button 
+            (click)="exportData()" 
+            class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2">
+            <span>📊</span>
+            Exporter
+          </button>
+        </div>
+      }
+    </div>
+    
+    @if (clubInfo) {
+      <div class="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-8 text-white">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-3xl font-bold mb-2">{{ clubInfo.nom }}</h1>
+            <p class="text-blue-100 mb-4">{{ clubInfo.description }}</p>
+            <div class="flex items-center gap-6 text-blue-200">
+              <span class="flex items-center">
+                <span class="mr-2">📊</span>
+                Niveau: {{ clubInfo.niveau }}
+              </span>
+              <span class="flex items-center">
+                <span class="mr-2">👥</span>
+                Capacité: {{ clubInfo.capacityMax }}
+              </span>
+              <span class="flex items-center">
+                <span class="mr-2">📅</span>
+                Créé le: {{ clubInfo.dateCreation | date:'dd MMM yyyy' }}
+              </span>
+            </div>
+          </div>
+          <div class="text-center">
+            <div class="bg-white/20 backdrop-blur-sm rounded-lg p-4">
+              <p class="text-white text-sm mb-1">ID Club</p>
+              <p class="text-white font-bold text-lg">#{{ clubInfo.idClub }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </header>
+
+  <!-- Loading State -->
+  @if (loading) {
+    <div class="flex flex-col items-center justify-center py-12">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+      <p class="text-gray-600">Chargement des données du club...</p>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (error) {
+    <div class="bg-red-50 border border-red-200 rounded-lg p-6 mb-8">
+      <div class="flex items-center">
+        <div class="text-red-600 text-xl mr-3">❌</div>
+        <div>
+          <h3 class="text-red-800 font-semibold">Erreur</h3>
+          <p class="text-red-700">{{ error }}</p>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Contenu principal -->
+  @if (!loading && !error && clubInfo) {
+    <!-- Statistiques principales -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <p class="text-sm text-gray-600 mb-1">Taux de participation</p>
+            <p class="text-3xl font-bold text-gray-900">{{ stats.participationRate }}%</p>
+          </div>
+          <div class="text-3xl">📈</div>
+        </div>
+        <div class="flex items-center justify-between">
+          <span [class]="'px-3 py-1 rounded-full text-xs font-semibold ' + getParticipationColor(stats.participationRate)">
+            {{ getParticipationText(stats.participationRate) }}
+          </span>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <p class="text-sm text-gray-600 mb-1">Buddies actifs</p>
+            <p class="text-3xl font-bold text-green-600">{{ stats.activeBuddies }}</p>
+          </div>
+          <div class="text-3xl">✅</div>
+        </div>
+        <div class="text-sm text-gray-500">
+          sur {{ stats.totalBuddies }} totaux
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <p class="text-sm text-gray-600 mb-1">Sessions moyennes</p>
+            <p class="text-3xl font-bold text-blue-600">{{ stats.averageSessionsPerBuddy }}</p>
+          </div>
+          <div class="text-3xl">📅</div>
+        </div>
+        <div class="text-sm text-gray-500">
+          par buddy actif
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <p class="text-sm text-gray-600 mb-1">Durée moyenne</p>
+            <p class="text-3xl font-bold text-purple-600">{{ formatDuration(stats.averageSessionDuration) }}</p>
+          </div>
+          <div class="text-3xl">⏱️</div>
+        </div>
+        <div class="text-sm text-gray-500">
+          par session
+        </div>
+      </div>
+    </div>
+
+    <!-- Statistiques détaillées -->
+    <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 mb-8">
+      <h2 class="text-xl font-semibold text-gray-900 mb-6">Statistiques détaillées</h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="border-l-4 border-blue-500 pl-4">
+          <h3 class="font-semibold text-gray-900 mb-2">Membres</h3>
+          <div class="space-y-1">
+            <p class="text-sm text-gray-600">
+              <span class="font-medium">Total:</span> {{ stats.totalMemberCount }}
+            </p>
+            <p class="text-sm text-gray-600">
+              <span class="font-medium">Actifs:</span> {{ stats.activeMemberCount }}
+            </p>
+            <p class="text-sm text-gray-600">
+              <span class="font-medium">Avec buddy:</span> {{ getUniqueMemberCount() }}
+            </p>
+          </div>
+        </div>
+
+        <div class="border-l-4 border-green-500 pl-4">
+          <h3 class="font-semibold text-gray-900 mb-2">Buddies</h3>
+          <div class="space-y-1">
+            <p class="text-sm text-gray-600">
+              <span class="font-medium">Total:</span> {{ stats.totalBuddies }}
+            </p>
+            <p class="text-sm text-gray-600">
+              <span class="font-medium">Actifs:</span> {{ stats.activeBuddies }}
+            </p>
+            <p class="text-sm text-gray-600">
+              <span class="font-medium">En attente:</span> {{ stats.pendingBuddies }}
+            </p>
+          </div>
+        </div>
+
+        <div class="border-l-4 border-purple-500 pl-4">
+          <h3 class="font-semibold text-gray-900 mb-2">Sessions</h3>
+          <div class="space-y-1">
+            <p class="text-sm text-gray-600">
+              <span class="font-medium">Total:</span> {{ stats.totalSessions }}
+            </p>
+            <p class="text-sm text-gray-600">
+              <span class="font-medium">Moyenne/buddy:</span> {{ stats.averageSessionsPerBuddy }}
+            </p>
+            <p class="text-sm text-gray-600">
+              <span class="font-medium">Durée moyenne:</span> {{ formatDuration(stats.averageSessionDuration) }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtres et liste des buddies -->
+    <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+      <!-- Filtres -->
+      <div class="border-b border-gray-200 p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-semibold text-gray-900">Buddies du club</h2>
+          <div class="text-sm text-gray-500">
+            {{ getFilteredBuddies().length }} buddies affichés
+          </div>
+        </div>
+        
+        <div class="flex gap-2">
+          <button 
+            (click)="changeView('all')"
+            [class]="'px-4 py-2 rounded-lg transition-colors ' + 
+                   (selectedView === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')">
+            Tous ({{ stats.totalBuddies }})
+          </button>
+          <button 
+            (click)="changeView('active')"
+            [class]="'px-4 py-2 rounded-lg transition-colors ' + 
+                   (selectedView === 'active' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')">
+            Actifs ({{ stats.activeBuddies }})
+          </button>
+          <button 
+            (click)="changeView('pending')"
+            [class]="'px-4 py-2 rounded-lg transition-colors ' + 
+                   (selectedView === 'pending' ? 'bg-yellow-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')">
+            En attente ({{ stats.pendingBuddies }})
+          </button>
+          <button 
+            (click)="changeView('completed')"
+            [class]="'px-4 py-2 rounded-lg transition-colors ' + 
+                   (selectedView === 'completed' ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')">
+            Terminés ({{ stats.completedBuddies }})
+          </button>
+        </div>
+      </div>
+
+      <!-- Liste des buddies -->
+      <div class="divide-y divide-gray-200">
+        @for (buddy of getFilteredBuddies(); track buddy.idPair) {
+          <div class="p-6 hover:bg-gray-50 transition-colors">
+            <!-- Header du buddy -->
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center">
+                <span class="text-sm font-medium text-gray-900 mr-4">#{{ buddy.idPair }}</span>
+                <span [class]="'px-3 py-1 rounded-full text-xs font-semibold border ' + getStatusColor(buddy.status)">
+                  {{ getStatusIcon(buddy.status) }} {{ getStatusText(buddy.status) }}
+                </span>
+              </div>
+              <div class="text-sm text-gray-500">
+                Créé le {{ formatDate(buddy.dateCreation) }}
+              </div>
+            </div>
+
+            <!-- Utilisateurs -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div class="flex items-center">
+                <div class="text-2xl mr-3">{{ buddy.user1Avatar || '👤' }}</div>
+                <div>
+                  <div class="font-medium text-gray-900">{{ buddy.user1Name }}</div>
+                  <div class="text-sm text-gray-500">{{ buddy.user1Email }}</div>
+                </div>
+              </div>
+              
+              <div class="flex items-center">
+                <div class="text-2xl mr-3">{{ buddy.user2Avatar || '👤' }}</div>
+                <div>
+                  <div class="font-medium text-gray-900">{{ buddy.user2Name }}</div>
+                  <div class="text-sm text-gray-500">{{ buddy.user2Email }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Statistiques du buddy -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div class="text-center">
+                <p class="text-sm text-gray-600 mb-1">Sessions</p>
+                <p class="text-lg font-semibold text-gray-900">{{ buddy.sessionCount || 0 }}</p>
+              </div>
+              
+              <div class="text-center">
+                <p class="text-sm text-gray-600 mb-1">Dernière session</p>
+                <p class="text-sm font-medium text-gray-900">
+                  @if (buddy.lastSessionDate) {
+                    {{ formatDate(buddy.lastSessionDate) }}
+                  } @else {
+                    -
+                  }
+                </p>
+              </div>
+              
+              <div class="text-center">
+                <p class="text-sm text-gray-600 mb-1">Durée moyenne</p>
+                <p class="text-sm font-medium text-gray-900">
+                  {{ formatDuration(buddy.averageSessionDuration || 0) }}
+                </p>
+              </div>
+              
+              <div class="text-center">
+                <p class="text-sm text-gray-600 mb-1">Participation</p>
+                <span [class]="'px-2 py-1 rounded-full text-xs font-semibold ' + getParticipationColor(buddy.participationRate || 0)">
+                  {{ buddy.participationRate || 0 }}%
+                </span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- État vide -->
+      @if (getFilteredBuddies().length === 0) {
+        <div class="text-center py-12">
+          <div class="text-6xl mb-4">🔍</div>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">Aucun buddy trouvé</h3>
+          <p class="text-gray-600">Aucun buddy ne correspond à la vue sélectionnée.</p>
+        </div>
+      }
+    </div>
+  }
+</div>

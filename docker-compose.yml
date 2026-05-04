@@ -1,0 +1,93 @@
+version: '3.9'
+
+services:
+  eureka:
+    container_name: eureka
+    build:
+      context: ./backend/ProjetPI4eme-eureka
+    ports:
+      - "8761:8761"
+    networks:
+      - jungle-net
+
+  gateway:
+    container_name: gateway
+    build:
+      context: ./backend/ProjetPI4eme-apiGatway
+    ports:
+      - "8085:8085"
+    environment:
+      EUREKA_URL: http://eureka:8761/eureka/
+      KEYCLOAK_ISSUER_URI: http://keycloak:8180/realms/myrealm
+    depends_on:
+      - eureka
+    networks:
+      - jungle-net
+
+  event-service:
+    container_name: event-service
+    build:
+      context: ./backend/event
+    ports:
+      - "8082:8082"
+    environment:
+      EUREKA_URL: http://eureka:8761/eureka/
+      EUREKA_INSTANCE_HOSTNAME: event-service
+      EVENT_DB_URL: jdbc:mysql://mysql:3306/events?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      EVENT_DB_USERNAME: root
+      EVENT_DB_PASSWORD: root
+      KEYCLOAK_ISSUER_URI: http://keycloak:8180/realms/myrealm
+    depends_on:
+      - eureka
+      - mysql
+    networks:
+      - jungle-net
+
+  user-service:
+    container_name: user-service
+    build:
+      context: ./backend/user-service
+    ports:
+      - "8083:8083"
+    environment:
+      EUREKA_URL: http://eureka:8761/eureka/
+      KEYCLOAK_ISSUER_URI: http://keycloak:8180/realms/myrealm
+      KEYCLOAK_SERVER_URL: http://keycloak:8180
+    depends_on:
+      - eureka
+    networks:
+      - jungle-net
+
+  pidraft:
+    container_name: pidraft
+    build:
+      context: ./backend/PiDraft
+    ports:
+      - "8084:8084"
+    environment:
+      EUREKA_URL: http://eureka:8761/eureka/
+      KEYCLOAK_ISSUER_URI: http://keycloak:8180/realms/myrealm
+    depends_on:
+      - eureka
+    networks:
+      - jungle-net
+
+  mysql:
+    container_name: event-mysql
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: events
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - jungle-net
+
+networks:
+  jungle-net:
+    driver: bridge
+
+volumes:
+  mysql_data:

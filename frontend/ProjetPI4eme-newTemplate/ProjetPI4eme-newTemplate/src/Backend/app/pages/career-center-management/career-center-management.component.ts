@@ -5,6 +5,7 @@ import { forkJoin } from 'rxjs';
 
 import {
   CandidatureDto,
+  CVAnalysisResultDto,
   InterviewDto,
   JobOfferDto,
   InterviewPayload,
@@ -62,6 +63,11 @@ export class CareerCenterManagementComponent {
   readonly interviewResult = signal('EN_ATTENTE');
   readonly interviewComment = signal('');
   readonly meetLink = signal<string>('');
+
+  // CV Analysis signals
+  readonly analysisInProgress = signal(false);
+  readonly analysisResults = signal<Map<number, CVAnalysisResultDto>>(new Map());
+  readonly selectedAnalysisId = signal<number | null>(null);
 
   readonly statusOptions: RecruitmentStatus[] = [
     'EN_ATTENTE',
@@ -435,6 +441,51 @@ export class CareerCenterManagementComponent {
       return cvData.type === 'file';
     } catch {
       return false;
+    }
+  }
+
+  analyzeCv(candidatureId: number): void {
+    this.analysisInProgress.set(true);
+    this.selectedAnalysisId.set(candidatureId);
+
+    this.recruitmentService.analyzeCv(candidatureId).subscribe({
+      next: (result: CVAnalysisResultDto) => {
+        const resultsMap = new Map(this.analysisResults());
+        resultsMap.set(candidatureId, result);
+        this.analysisResults.set(resultsMap);
+        this.analysisInProgress.set(false);
+        this.message.set('CV analysis completed successfully!');
+      },
+      error: (error) => {
+        console.error('CV Analysis error:', error);
+        this.analysisInProgress.set(false);
+        this.message.set('Failed to analyze CV. Please try again.');
+      }
+    });
+  }
+
+  getAnalysisResult(candidatureId: number): CVAnalysisResultDto | undefined {
+    return this.analysisResults().get(candidatureId);
+  }
+
+  getDecisionColor(decision: string): string {
+    switch (decision) {
+      case 'ACCEPT':
+        return '#10b981'; // green
+      case 'REJECT':
+        return '#ef4444'; // red
+      case 'REVIEW':
+        return '#f59e0b'; // orange
+      default:
+        return '#6b7280'; // gray
+    }
+  }
+
+  toggleAnalysisDetails(candidatureId: number): void {
+    if (this.selectedAnalysisId() === candidatureId) {
+      this.selectedAnalysisId.set(null);
+    } else {
+      this.selectedAnalysisId.set(candidatureId);
     }
   }
 }

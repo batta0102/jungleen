@@ -25,6 +25,7 @@ public class Resultat {
     private Double noteSur;
     private Double pourcentage;
     private LocalDateTime datePublicationResultat;
+    private Long userId; // Link to user-service
 
     @OneToOne
     private SessionTest session;

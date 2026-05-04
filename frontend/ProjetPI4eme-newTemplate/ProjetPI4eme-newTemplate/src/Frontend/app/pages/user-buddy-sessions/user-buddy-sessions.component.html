@@ -1,0 +1,149 @@
+<div class="container mx-auto px-4 py-8 max-w-6xl">
+  <!-- Header -->
+  <header class="mb-8">
+    <div class="flex items-center justify-between mb-6">
+      <button 
+        (click)="goBack()" 
+        class="flex items-center px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors">
+        <span class="mr-2">←</span>
+        Back to buddies
+      </button>
+      
+      <div class="flex gap-3">
+        <button 
+          [routerLink]="['/scanner']" 
+          [queryParams]="{clubId: buddy?.clubId}"
+          class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2">
+          <span>📸</span>
+          Scanner
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Loading State -->
+  @if (loading) {
+    <div class="flex flex-col items-center justify-center py-12">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mb-4"></div>
+      <p class="text-gray-600">Loading sessions...</p>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (error) {
+    <div class="bg-red-50 border border-red-200 rounded-lg p-6 mb-8">
+      <div class="flex items-center">
+        <div class="text-red-600 text-xl mr-3">❌</div>
+        <div>
+          <h3 class="text-red-800 font-semibold">Error</h3>
+          <p class="text-red-700">{{ error }}</p>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Buddy Info and Sessions -->
+  @if (!loading && !error && buddy) {
+    <!-- Buddy Info Card -->
+    <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-8">
+      <div class="p-6" [style.background-color]="'#254E49'">
+        <div class="flex items-center">
+          <div class="text-5xl mr-4">{{ getPartnerAvatar() }}</div>
+          <div class="text-white">
+            <h1 class="text-2xl font-bold mb-1">Sessions with {{ getPartnerName() }}</h1>
+            <p class="text-green-100">📅 Total sessions: {{ sessions.length }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sessions List -->
+    <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+      <div class="p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">Session History</h2>
+        
+        @if (sessions.length === 0) {
+          <div class="text-center py-12">
+            <div class="text-6xl mb-4">📅</div>
+            <h3 class="text-xl font-semibold text-gray-900 mb-2">No sessions</h3>
+            <p class="text-gray-600 mb-6">You don't have any sessions with {{ getPartnerName() }} yet</p>
+            <button 
+              (click)="planSession()" 
+              class="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+              <span class="mr-2">➕</span>
+              Schedule first session
+            </button>
+          </div>
+        } @else {
+          <div class="space-y-4">
+            @for (session of sessions; track session.idSession) {
+              <div class="bg-gray-50 rounded-lg p-6 border border-gray-200 hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between mb-4">
+                  <div class="flex items-center">
+                    <div class="text-3xl mr-4">{{ getSessionStatusIcon(session.status) }}</div>
+                    <div>
+                      <h4 class="font-semibold text-gray-900">
+                        Session on {{ session.date | date:'dd MMM yyyy at HH:mm' }}
+                      </h4>
+                      <p class="text-gray-600">Duration: {{ session.duree }} minutes</p>
+                      @if (session.lieu) {
+                        <p class="text-gray-600">📍 {{ session.lieu }}</p>
+                      }
+                      @if (session.description) {
+                        <p class="text-gray-700 mt-2">{{ session.description }}</p>
+                      }
+                    </div>
+                  </div>
+                  
+                  <div class="flex flex-col items-end gap-2">
+                    <span [class]="'px-3 py-1 rounded-full text-xs font-semibold border ' + getSessionStatusColor(session.status)">
+                      {{ getSessionStatusText(session.status) }}
+                    </span>
+                  </div>
+                </div>
+                
+                <!-- Satisfaction for completed sessions -->
+                @if (session.status === SessionStatus.TERMINEE) {
+                  <div class="border-t border-gray-200 pt-4 mt-4">
+                    <p class="text-sm text-gray-600 mb-3">Satisfaction:</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <!-- Satisfaction utilisateur 1 -->
+                      @if (session.satisfactionUser1) {
+                        <div class="bg-white rounded-lg p-3 border border-gray-200">
+                          <div class="flex items-center justify-between mb-2">
+                            <span class="font-medium text-gray-900">{{ buddy.user1?.nom }}</span>
+                            <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
+                              {{ session.satisfactionUser1 }}
+                            </span>
+                          </div>
+                          @if (session.commentaireUser1) {
+                            <p class="text-sm text-gray-600 italic">"{{ session.commentaireUser1 }}"</p>
+                          }
+                        </div>
+                      }
+                      
+                      <!-- Satisfaction utilisateur 2 -->
+                      @if (session.satisfactionUser2) {
+                        <div class="bg-white rounded-lg p-3 border border-gray-200">
+                          <div class="flex items-center justify-between mb-2">
+                            <span class="font-medium text-gray-900">{{ buddy.user2?.nom }}</span>
+                            <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
+                              {{ session.satisfactionUser2 }}
+                            </span>
+                          </div>
+                          @if (session.commentaireUser2) {
+                            <p class="text-sm text-gray-600 italic">"{{ session.commentaireUser2 }}"</p>
+                          }
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

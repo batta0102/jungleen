@@ -1,0 +1,81 @@
+<!-- Conteneur pour toutes les popups -->
+<div class="notification-popup-container">
+  @for (popup of popupsVisibles(); track popup.id) {
+    <div class="notification-popup {{ getUrgenceClass(popup.session.date) }}" 
+         [attr.data-popup-id]="popup.id">
+      
+      <!-- Overlay de fond -->
+      <div class="popup-overlay" (click)="fermerPopup(popup.session.sessionId)"></div>
+      
+      <!-- Contenu de la popup -->
+      <div class="popup-content">
+        <!-- En-tête avec icône et bouton fermer -->
+        <div class="popup-header">
+          <div class="popup-icon">
+            {{ getUrgenceIcon(popup.session.date) }}
+          </div>
+          <div class="popup-title">
+            <h3>Session à venir !</h3>
+            <p class="temps-restant">{{ getTempsRestant(popup.session.date) }}</p>
+          </div>
+          <button class="btn-fermer" (click)="fermerPopup(popup.session.sessionId)" title="Fermer">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 6M6 6l12 12M6 6v12"></path>
+            </svg>
+          </button>
+        </div>
+        
+        <!-- Corps avec informations de session -->
+        <div class="popup-body">
+          <div class="session-info">
+            <div class="info-item">
+              <span class="info-label">Sujet :</span>
+              <span class="info-value">{{ popup.session.sujet }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Date et heure :</span>
+              <span class="info-value">{{ formaterDate(popup.session.date) }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Durée :</span>
+              <span class="info-value">{{ popup.session.duree }} minutes</span>
+            </div>
+            @if (popup.session.lieu) {
+              <div class="info-item">
+                <span class="info-label">Lieu :</span>
+                <span class="info-value">{{ popup.session.lieu }}</span>
+              </div>
+            }
+            @if (popup.session.notes) {
+              <div class="info-item">
+                <span class="info-label">Notes :</span>
+                <span class="info-value">{{ popup.session.notes }}</span>
+              </div>
+            }
+          </div>
+        </div>
+        
+        <!-- Pied avec boutons d'action -->
+        <div class="popup-footer">
+          <button class="btn btn-confirmer" 
+                  (click)="confirmerSession(popup.session)"
+                  title="Confirmer ma présence à cette session">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 11l3 3L22 4"></path>
+              <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"></path>
+            </svg>
+            ✅ Confirmer ma présence
+          </button>
+          <button class="btn btn-reporter" 
+                  (click)="marquerVue(popup.session)"
+                  title="Me rappeler plus tard">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            🔔 Rappeler plus tard
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

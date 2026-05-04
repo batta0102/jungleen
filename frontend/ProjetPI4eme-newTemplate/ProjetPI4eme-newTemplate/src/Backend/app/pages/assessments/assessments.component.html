@@ -341,7 +341,7 @@
         </div>
       }
 
-      <div *ngFor="let test of pagedAssessments()" class="rounded-xl border border-border bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
+      <div *ngFor="let test of assessments()" class="rounded-xl border border-border bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
         <div class="flex items-center justify-between">
           <div class="flex-1">
             <div class="mb-2 flex items-center gap-3">
@@ -365,15 +365,6 @@
           </div>
         </div>
       </div>
-
-      @if (assessments().length > assessmentsPageSize) {
-        <app-pagination
-          [currentPage]="assessmentsPage()"
-          [totalPages]="assessmentsPageCount()"
-          [totalItems]="assessments().length"
-          (pageChange)="setAssessmentsPage($event)"
-        />
-      }
     </div>
 
     <div class="lg:col-span-1">
@@ -387,7 +378,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-border">
-            <tr *ngFor="let result of pagedResults()">
+            <tr *ngFor="let result of results()">
               <td class="px-4 py-3 text-text font-medium">{{ result.student }}</td>
               <td class="px-4 py-3 font-medium text-primary">{{ result.score }}%</td>
             </tr>
@@ -396,15 +387,6 @@
             </tr>
           </tbody>
         </table>
-
-        @if (results().length > resultsPageSize) {
-          <app-pagination
-            [currentPage]="resultsPage()"
-            [totalPages]="resultsPageCount()"
-            [totalItems]="results().length"
-            (pageChange)="setResultsPage($event)"
-          />
-        }
       </div>
     </div>
   </div>

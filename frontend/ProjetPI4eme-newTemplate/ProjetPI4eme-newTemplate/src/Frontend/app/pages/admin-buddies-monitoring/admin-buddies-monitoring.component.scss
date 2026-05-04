@@ -1,0 +1,45 @@
+.admin-monitoring-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+// Chart containers
+canvas {
+  max-height: 100%;
+}
+
+// Table styling
+table {
+  th {
+    background-color: #f9fafb;
+  }
+  
+  tr:hover {
+    background-color: #f9fafb;
+  }
+}
+
+// Loading spinner
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .admin-monitoring-container {
+    padding: 1rem;
+  }
+  
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,140 @@
+<!-- Bouton de notification -->
+<div class="relative">
+  <button 
+    (click)="toggle()"
+    class="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 rounded-lg transition-colors">
+    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+    </svg>
+    
+    <!-- Badge de compteur -->
+    @if (hasUnreadNotifications()) {
+      <span class="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-medium text-white">
+        {{ getBadgeText() }}
+      </span>
+    }
+  </button>
+
+  <!-- Panneau de notifications -->
+  @if (isOpen) {
+    <div class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 overflow-hidden">
+      <!-- Header -->
+      <div class="border-b border-gray-200 px-4 py-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-semibold text-gray-900">Notifications</h3>
+          <div class="flex items-center space-x-2">
+            @if (hasUnreadNotifications()) {
+              <button 
+                (click)="markAllAsRead()"
+                class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">
+                Tout marquer comme lu
+              </button>
+            }
+            @if (!isEmpty()) {
+              <button 
+                (click)="clearAll()"
+                class="text-sm text-red-600 hover:text-red-800 font-medium">
+                Vider tout
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Liste des notifications -->
+      <div class="overflow-y-auto max-h-80">
+        @if (isEmpty()) {
+          <div class="text-center py-8">
+            <div class="text-gray-400 text-4xl mb-2">📭</div>
+            <p class="text-gray-500 text-sm">Aucune notification</p>
+          </div>
+        } @else {
+          <div class="divide-y divide-gray-200">
+            @for (notification of getRecentNotifications(); track notification.id) {
+              <div 
+                class="px-4 py-3 hover:bg-gray-50 transition-colors cursor-pointer"
+                [class]="getNotificationClasses(notification.type)"
+                (click)="executeAction(notification)">
+                <div class="flex items-start space-x-3">
+                  <!-- Icône -->
+                  <div class="flex-shrink-0 mt-0.5">
+                    <span class="text-lg">{{ getIcon(notification.type) }}</span>
+                  </div>
+                  
+                  <!-- Contenu -->
+                  <div class="flex-1 min-w-0">
+                    <!-- Titre et statut -->
+                    <div class="flex items-center justify-between mb-1">
+                      <h4 class="text-sm font-medium text-gray-900 truncate">
+                        {{ notification.title }}
+                      </h4>
+                      @if (!notification.read) {
+                        <span class="h-2 w-2 bg-indigo-600 rounded-full"></span>
+                      }
+                    </div>
+                    
+                    <!-- Message -->
+                    <p class="text-sm text-gray-600 mb-2 line-clamp-2">
+                      {{ notification.message }}
+                    </p>
+                    
+                    <!-- Date et actions -->
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs text-gray-500">
+                        {{ formatDate(notification.timestamp) }}
+                      </span>
+                      
+                      <div class="flex items-center space-x-2">
+                        @if (notification.action) {
+                          <button 
+                            (click)="$event.stopPropagation(); executeAction(notification)"
+                            class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">
+                            {{ notification.action.label }}
+                          </button>
+                        }
+                        
+                        @if (!notification.read) {
+                          <button 
+                            (click)="$event.stopPropagation(); markAsRead(notification)"
+                            class="text-xs text-gray-500 hover:text-gray-700">
+                            Marquer comme lu
+                          </button>
+                        }
+                        
+                        <button 
+                          (click)="$event.stopPropagation(); removeNotification(notification)"
+                          class="text-xs text-red-500 hover:text-red-700">
+                          Supprimer
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Footer -->
+      @if (!isEmpty()) {
+        <div class="border-t border-gray-200 px-4 py-2">
+          <button 
+            (click)="close()"
+            class="w-full text-center text-sm text-gray-600 hover:text-gray-800 font-medium">
+            Fermer
+          </button>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Overlay pour fermer le panneau -->
+@if (isOpen) {
+  <div 
+    (click)="close()"
+    class="fixed inset-0 z-40"
+    aria-hidden="true">
+  </div>
+}

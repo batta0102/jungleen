@@ -36,6 +36,15 @@ public class GatewaySecurityConfig {
                         .pathMatchers("/admin/**").hasAnyRole("admin", "ADMIN", "teacher", "TEACHER", "tutor", "TUTOR", "tuteur")
                         .pathMatchers("/api/users/signup").permitAll()
                         .pathMatchers(HttpMethod.GET,
+                                "/api/courses",
+                                "/api/v1/onlinecourses/**",
+                                "/api/v1/onsitecourses/**",
+                                "/api/v1/online-sessions/**",
+                                "/api/v1/onsite-sessions/**",
+                                "/api/v1/online-bookings/**",
+                                "/api/v1/onsite-bookings/**",
+                                "/api/v1/classrooms/**",
+                                "/api/advanced/**",
                                 "/api/events/**",
                                 "/api/venues/**",
                                 "/api/products/**",
@@ -47,6 +56,15 @@ public class GatewaySecurityConfig {
                                 "/api/avatars/**",
                                 "/api/skins/**",
                                 "/api/crosswords/**",
+                                "/api/clubs/**",
+                                "/api/clubMessages/**",
+                                "/api/comments/**",
+                                "/api/memberships/**",
+                                "/api/buddyPairs/**",
+                                "/api/buddySessions/**",
+                                "/api/calendrier/**",
+                                "/api/vision/**",
+                                "/api/notifications/**",
                                 "/api/candidature/**",
                                 "/api/poste/**",
                                 "/api/qcms/**",
@@ -59,6 +77,16 @@ public class GatewaySecurityConfig {
                                 "/api/analytics/top-events/**",
                                 "/api/analytics/dashboard/**")
                         .permitAll()
+                        .pathMatchers(
+                                "/api/clubs/**",
+                                "/api/clubMessages/**",
+                                "/api/comments/**",
+                                "/api/memberships/**",
+                                "/api/buddyPairs/**",
+                                "/api/buddySessions/**",
+                                "/api/calendrier/**",
+                                "/api/notifications/**")
+                        .permitAll()
                         .pathMatchers(HttpMethod.POST, "/api/events/optimize-schedule").permitAll()
                         .pathMatchers(HttpMethod.POST, "/api/events/*/registrations").permitAll()
                         .pathMatchers(HttpMethod.POST,
@@ -66,15 +94,48 @@ public class GatewaySecurityConfig {
                                 "/api/venues/**",
                                 "/api/analytics/admission/**")
                         .hasAnyRole("admin", "ADMIN", "teacher", "TEACHER", "tutor", "TUTOR", "tuteur")
+                        .pathMatchers(HttpMethod.POST,
+                                "/api/clubs/**",
+                                "/api/clubMessages/**",
+                                "/api/comments/**",
+                                "/api/memberships/**",
+                                "/api/buddyPairs/**",
+                                "/api/buddySessions/**",
+                                "/api/calendrier/**",
+                                "/api/vision/**",
+                                "/api/notifications/**")
+                        .permitAll()
                         .pathMatchers(HttpMethod.PUT,
                                 "/api/events/**",
                                 "/api/venues/**",
                                 "/api/analytics/admission/**")
                         .hasAnyRole("admin", "ADMIN", "teacher", "TEACHER", "tutor", "TUTOR", "tuteur")
+                        .pathMatchers(HttpMethod.PUT,
+                                "/api/clubs/**",
+                                "/api/clubMessages/**",
+                                "/api/comments/**",
+                                "/api/memberships/**",
+                                "/api/buddyPairs/**",
+                                "/api/buddySessions/**",
+                                "/api/calendrier/**",
+                                "/api/vision/**",
+                                "/api/notifications/**")
+                        .permitAll()
                         .pathMatchers(HttpMethod.DELETE,
                                 "/api/events/**",
                                 "/api/venues/**")
                         .hasAnyRole("admin", "ADMIN", "teacher", "TEACHER", "tutor", "TUTOR", "tuteur")
+                        .pathMatchers(HttpMethod.DELETE,
+                                "/api/clubs/**",
+                                "/api/clubMessages/**",
+                                "/api/comments/**",
+                                "/api/memberships/**",
+                                "/api/buddyPairs/**",
+                                "/api/buddySessions/**",
+                                "/api/calendrier/**",
+                                "/api/vision/**",
+                                "/api/notifications/**")
+                        .permitAll()
                         .anyExchange().authenticated())
                                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->
                                                 jwt.jwtAuthenticationConverter(new ReactiveJwtAuthenticationConverterAdapter(jwtAuthenticationConverter))))

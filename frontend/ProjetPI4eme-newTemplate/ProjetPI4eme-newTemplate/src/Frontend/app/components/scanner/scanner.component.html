@@ -1,0 +1,151 @@
+<div class="scanner-container">
+  <div class="scanner-header">
+    <h1 class="scanner-title">📸 Scanner OCR</h1>
+    <p class="scanner-subtitle">Scannez du texte et traduisez-le instantanément</p>
+  </div>
+
+  <!-- Messages d'erreur et succès -->
+  <div *ngIf="errorMessage" class="alert alert-error">
+    <span class="alert-icon">❌</span>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <div *ngIf="successMessage" class="alert alert-success">
+    <span class="alert-icon">✅</span>
+    <span>{{ successMessage }}</span>
+  </div>
+
+  <!-- Section caméra -->
+  <div class="camera-section" *ngIf="hasCamera && !capturedImage">
+    <div class="video-container">
+      <video #videoElement 
+             class="video-feed" 
+             autoplay 
+             playsinline
+             muted>
+      </video>
+      <canvas #canvasElement class="hidden-canvas"></canvas>
+    </div>
+    
+    <div class="camera-controls">
+      <button (click)="takePhoto()" 
+              class="btn btn-primary btn-large"
+              [disabled]="isAnalyzing">
+        <span class="btn-icon">📸</span>
+        Prendre la photo
+      </button>
+      
+      <label class="btn btn-secondary btn-large">
+        <span class="btn-icon">📁</span>
+        Importer une image
+        <input type="file" 
+               accept="image/*" 
+               (change)="onFileSelected($event)"
+               class="hidden-input">
+      </label>
+    </div>
+  </div>
+
+  <!-- Section image capturée -->
+  <div class="captured-section" *ngIf="capturedImage">
+    <div class="captured-image-container">
+      <img [src]="capturedImage" 
+             alt="Image capturée" 
+             class="captured-image">
+      
+      <!-- Overlay de chargement -->
+      <div *ngIf="isAnalyzing" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">Analyse en cours...</p>
+      </div>
+    </div>
+    
+    <div class="image-controls">
+      <button (click)="analyzeImage()" 
+              class="btn btn-primary"
+              [disabled]="isAnalyzing">
+        <span class="btn-icon">🔍</span>
+        Analyser
+      </button>
+      
+      <button (click)="reset()" 
+              class="btn btn-secondary"
+              [disabled]="isAnalyzing">
+        <span class="btn-icon">🔄</span>
+        Recommencer
+      </button>
+    </div>
+  </div>
+
+  <!-- Section résultats -->
+  <div class="results-section" *ngIf="extractedText || translatedText">
+    <div class="results-grid">
+      <!-- Texte original -->
+      <div class="result-card">
+        <div class="result-header">
+          <span class="result-icon">📝</span>
+          <h3 class="result-title">Texte extrait</h3>
+          <span *ngIf="originalLanguage" class="language-badge">{{ originalLanguage }}</span>
+        </div>
+        <div class="result-content">
+          <p class="result-text">{{ extractedText }}</p>
+        </div>
+      </div>
+
+      <!-- Traduction -->
+      <div class="result-card">
+        <div class="result-header">
+          <span class="result-icon">🌐</span>
+          <h3 class="result-title">Traduction</h3>
+          <span class="language-badge">Français</span>
+        </div>
+        <div class="result-content">
+          <p class="result-text">{{ translatedText }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions-section">
+      <button (click)="addToVocabulary()" 
+              class="btn btn-success btn-large"
+              [disabled]="isLoading || !extractedText || !translatedText">
+        <span class="btn-icon">📚</span>
+        Ajouter au vocabulaire
+      </button>
+      
+      <button (click)="shareToClub()" 
+              class="btn btn-info btn-large"
+              [disabled]="isLoading || !extractedText || !translatedText">
+        <span class="btn-icon">👥</span>
+        Partager au club
+      </button>
+    </div>
+  </div>
+
+  <!-- Section pas de caméra -->
+  <div class="no-camera-section" *ngIf="!hasCamera && !capturedImage">
+    <div class="no-camera-content">
+      <span class="no-camera-icon">📷</span>
+      <h3>Aucune caméra détectée</h3>
+      <p>{{ errorMessage || 'Vous pouvez toujours importer une image depuis votre appareil' }}</p>
+      
+      <div class="no-camera-actions">
+        <button (click)="checkCameraAvailability()" 
+                class="btn btn-secondary btn-large">
+          <span class="btn-icon">🔄</span>
+          Réessayer
+        </button>
+        
+        <label class="btn btn-primary btn-large">
+          <span class="btn-icon">📁</span>
+          Importer une image
+          <input type="file" 
+                 accept="image/*" 
+                 (change)="onFileSelected($event)"
+                 class="hidden-input">
+        </label>
+      </div>
+    </div>
+  </div>
+</div>

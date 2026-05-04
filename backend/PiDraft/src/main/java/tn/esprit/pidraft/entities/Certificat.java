@@ -25,6 +25,7 @@ public class Certificat {
     // User info (since there's no user table in PiDraft)
     private String userName;
     private String userEmail;
+    private Long userId; // Link to user-service
 
     // Stores the titles of the 3 QCMs that qualified the user
     @Column(length = 1000)

@@ -1,0 +1,82 @@
+<div class="page">
+  <div class="card card-header">
+    <h1 class="title">Présences (Advanced Attendance)</h1>
+    <p class="subtitle">Choisissez le type de session et l’ID de session, puis chargez la liste. Vous pouvez modifier le statut et la note puis enregistrer par ligne.</p>
+
+    <div class="filters">
+      <div class="field">
+        <label for="sessionType">Type de session</label>
+        <select id="sessionType" [ngModel]="sessionType()" (ngModelChange)="sessionType.set($event)">
+          @for (t of sessionTypes; track t) {
+            <option [value]="t">{{ t }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label for="sessionId">ID session</label>
+        <input id="sessionId" type="text" inputmode="numeric" placeholder="ex: 1"
+               [ngModel]="sessionId()" (ngModelChange)="sessionId.set($event)" />
+      </div>
+      <div class="field actions">
+        <button type="button" class="btn btn-primary" (click)="load()" [disabled]="loading()">
+          {{ loading() ? 'Chargement…' : 'Charger' }}
+        </button>
+      </div>
+    </div>
+
+    @if (errorMessage(); as msg) {
+      <div class="alert alert-error" role="alert">{{ msg }}</div>
+    }
+    @if (successMessage(); as msg) {
+      <div class="alert alert-success" role="status">{{ msg }}</div>
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="card card-loading">
+      <p>Chargement des présences…</p>
+    </div>
+  } @else if (list().length > 0) {
+    <div class="card card-table">
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Étudiant (ID)</th>
+              <th>Statut</th>
+              <th>Note</th>
+              <th>Marqué le</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of list(); track row.id) {
+              <tr>
+                <td>{{ row.studentId }}</td>
+                <td>
+                  <select [ngModel]="row.status" (ngModelChange)="row.status = $event"
+                          class="input-select">
+                    @for (s of statuses; track s) {
+                      <option [value]="s">{{ s }}</option>
+                    }
+                  </select>
+                </td>
+                <td>
+                  <input type="text" class="input-note" placeholder="Note"
+                         [ngModel]="row.note" (ngModelChange)="row.note = $event" />
+                </td>
+                <td class="text-muted">{{ formatDate(row.markedAt) }}</td>
+                <td>
+                  <button type="button" class="btn btn-sm btn-primary"
+                          (click)="saveRow(row)" [disabled]="loadingSave() === row.id">
+                    {{ loadingSave() === row.id ? '…' : 'Enregistrer' }}
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</div>

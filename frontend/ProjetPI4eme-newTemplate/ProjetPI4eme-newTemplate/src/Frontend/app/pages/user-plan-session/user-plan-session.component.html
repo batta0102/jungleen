@@ -1,0 +1,402 @@
+<div class="container mx-auto px-4 py-8 max-w-4xl">
+  <!-- Header -->
+  <header class="mb-8">
+    <div class="flex items-center justify-between mb-6">
+      <button 
+        (click)="goBack()" 
+        class="flex items-center px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors">
+        <span class="mr-2">←</span>
+        Back to buddy
+      </button>
+    </div>
+    
+    @if (buddy) {
+      <div class="p-6 rounded-xl text-white" [style.background]="'linear-gradient(to right, #2F5F5A, #254E49)'">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center">
+            <div class="text-5xl mr-4">{{ getPartnerAvatar() }}</div>
+            <div>
+              <h1 class="text-2xl font-bold mb-1">Schedule a session</h1>
+              <p class="text-green-100">With {{ getPartnerName() }}</p>
+              <p class="text-green-200 text-sm">🏫 {{ getClubName() }}</p>
+            </div>
+          </div>
+          <div class="text-center">
+            <div class="bg-white/20 backdrop-blur-sm rounded-lg p-3">
+              <p class="text-white text-sm">Buddy ID</p>
+              <p class="text-white font-bold">#{{ buddy.idPair }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </header>
+
+  <!-- Loading State -->
+  @if (loading) {
+    <div class="flex flex-col items-center justify-center py-12">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mb-4"></div>
+      <p class="text-gray-600">Loading information...</p>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (error) {
+    <div class="bg-red-50 border border-red-200 rounded-lg p-6 mb-8">
+      <div class="flex items-center">
+        <div class="text-red-600 text-xl mr-3">❌</div>
+        <div>
+          <h3 class="text-red-800 font-semibold">Error</h3>
+          <p class="text-red-700">{{ error }}</p>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Success State -->
+  @if (success) {
+    <div class="bg-green-50 border border-green-200 rounded-lg p-8 mb-8 text-center">
+      <div class="text-6xl mb-4">🎉</div>
+      <h3 class="text-2xl font-bold text-green-800 mb-2">Session scheduled!</h3>
+      <p class="text-green-700 mb-6">
+        Your session with <strong>{{ getPartnerName() }}</strong> has been successfully scheduled.
+      </p>
+      <div class="bg-white rounded-lg p-4 mb-6 text-left max-w-md mx-auto">
+        <h4 class="font-semibold text-gray-900 mb-2">Session Details:</h4>
+        <div class="space-y-1 text-sm text-gray-600">
+          <p><strong>Date:</strong> {{ sessionForm.get('dateSession')?.value | date:'dd MMM yyyy à HH:mm' }}</p>
+          <p><strong>Duration:</strong> {{ formatDuration(sessionForm.get('dureeMinutes')?.value) }}</p>
+          <p><strong>Subject:</strong> {{ sessionForm.get('sujet')?.value }}</p>
+          @if (sessionForm.get('lieu')?.value) {
+            <p><strong>Location:</strong> {{ sessionForm.get('lieu')?.value }}</p>
+          }
+        </div>
+      </div>
+      <div class="flex gap-4 justify-center">
+        <button 
+          (click)="goBack()" 
+          class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+          View session
+        </button>
+        <button 
+          (click)="resetForm()" 
+          class="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors">
+          Schedule another session
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Formulaire -->
+  @if (!loading && !error && !success && buddy) {
+    <form [formGroup]="sessionForm" (ngSubmit)="onSubmit()" class="space-y-8">
+      <!-- Date et heure -->
+      <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+        <div class="mb-6">
+          <h2 class="text-xl font-semibold text-gray-900 mb-2">
+            <span class="mr-2">📅</span>
+            Date and time
+          </h2>
+          <p class="text-gray-600">When do you want to have your session?</p>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <label for="dateSession" class="block text-sm font-medium text-gray-700 mb-2">
+              Session date *
+              @if (hasSuggestedDate()) {
+                <span class="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                  📅 Suggested
+                </span>
+              }
+            </label>
+            <input 
+              type="datetime-local" 
+              id="dateSession"
+              formControlName="dateSession"
+              [min]="getMinDate() + 'T08:00'"
+              [max]="getMaxDate() + 'T22:00'"
+              [readonly]="hasSuggestedDate()"
+              [class.bg-gray-100]="hasSuggestedDate()"
+              [class.cursor-not-allowed]="hasSuggestedDate()"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            
+            @if (getFieldError('dateSession')) {
+              <p class="text-red-600 text-sm mt-2">{{ getFieldError('dateSession') }}</p>
+            }
+            
+            @if (getDateWarning()) {
+              <p class="text-yellow-600 text-sm mt-2">{{ getDateWarning() }}</p>
+            }
+            
+            @if (hasSuggestedDate()) {
+              <p class="text-green-600 text-sm mt-2">
+                ✨ Date fixe basée sur les disponibilités communes
+              </p>
+              <p class="text-gray-500 text-xs mt-1">
+                📅 Cette date ne peut pas être modifiée car elle correspond au créneau suggéré
+              </p>
+              <button type="button" 
+                      (click)="clearSuggestedDate()"
+                      class="mt-2 text-xs text-green-600 hover:text-green-800 underline">
+                Ou choisir une autre date
+              </button>
+            }
+          </div>
+
+          <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+            <p class="text-green-800 text-sm">
+              <span class="mr-2">💡</span>
+              Les sessions sont généralement planifiées entre 8h et 22h pour plus de commodité.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Durée -->
+      <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+        <div class="mb-6">
+          <h2 class="text-xl font-semibold text-gray-900 mb-2">
+            <span class="mr-2">⏱️</span>
+            Durée de la session
+          </h2>
+          <p class="text-gray-600">Combien de temps durera votre session ?</p>
+        </div>
+
+        <div class="space-y-4">
+          <!-- Options prédéfinies -->
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+            @for (option of durationOptions; track option.value) {
+              <button 
+                type="button"
+                (click)="selectDuration(option.value)"
+                [class]="'p-3 border-2 rounded-lg transition-all ' + 
+                       (sessionForm.get('dureeMinutes')?.value === option.value ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-green-300')">
+                <div class="text-center">
+                  <div class="text-2xl mb-1">{{ option.icon }}</div>
+                  <div class="text-sm font-medium">{{ option.label }}</div>
+                </div>
+              </button>
+            }
+          </div>
+
+          <!-- Champ personnalisé -->
+          <div>
+            <label for="dureeMinutes" class="block text-sm font-medium text-gray-700 mb-2">
+              Durée personnalisée (minutes) *
+            </label>
+            <input 
+              type="number" 
+              id="dureeMinutes"
+              formControlName="dureeMinutes"
+              min="15"
+              max="180"
+              step="15"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            
+            @if (getFieldError('dureeMinutes')) {
+              <p class="text-red-600 text-sm mt-2">{{ getFieldError('dureeMinutes') }}</p>
+            }
+          </div>
+
+          <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <p class="text-gray-800 text-sm">
+              <span class="mr-2">📊</span>
+              Durée sélectionnée : <strong>{{ formatDuration(sessionForm.get('dureeMinutes')?.value) }}</strong>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sujet -->
+      <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+        <div class="mb-6">
+          <h2 class="text-xl font-semibold text-gray-900 mb-2">
+            <span class="mr-2">🎯</span>
+            Sujet de la session
+          </h2>
+          <p class="text-gray-600">De quoi voulez-vous parler pendant cette session ?</p>
+        </div>
+
+        <div class="space-y-4">
+          <!-- Suggestions -->
+          <div>
+            <p class="text-sm text-gray-600 mb-2">Suggestions :</p>
+            <div class="flex flex-wrap gap-2">
+              @for (subject of subjectSuggestions; track subject) {
+                <button 
+                  type="button"
+                  (click)="selectSubject(subject)"
+                  class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 transition-colors">
+                  {{ subject }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- Champ sujet -->
+          <div>
+            <label for="sujet" class="block text-sm font-medium text-gray-700 mb-2">
+              Sujet de la session *
+            </label>
+            <input 
+              type="text" 
+              id="sujet"
+              formControlName="sujet"
+              placeholder="Ex: Conversation libre, pratique de la prononciation..."
+              maxlength="100"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            
+            <div class="flex justify-between items-center mt-2">
+              <span class="text-sm text-gray-500">
+                {{ sessionForm.get('sujet')?.value?.length || 0 }}/100 caractères
+              </span>
+              @if (getFieldError('sujet')) {
+                <p class="text-red-600 text-sm">{{ getFieldError('sujet') }}</p>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lieu (optionnel) -->
+      <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+        <div class="mb-6">
+          <h2 class="text-xl font-semibold text-gray-900 mb-2">
+            <span class="mr-2">📍</span>
+            Lieu (optionnel)
+          </h2>
+          <p class="text-gray-600">Où se déroulera la session ?</p>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <label for="lieu" class="block text-sm font-medium text-gray-700 mb-2">
+              Lieu de la session
+            </label>
+            <input 
+              type="text" 
+              id="lieu"
+              formControlName="lieu"
+              placeholder="Ex: Café du coin, salle d'étude, visioconférence..."
+              maxlength="100"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            
+            @if (getFieldError('lieu')) {
+              <p class="text-red-600 text-sm mt-2">{{ getFieldError('lieu') }}</p>
+            }
+          </div>
+
+          <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <p class="text-yellow-800 text-sm">
+              <span class="mr-2">💡</span>
+              Si la session est en ligne, vous pouvez préciser la plateforme (Zoom, Skype, etc.)
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notes (optionnel) -->
+      <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+        <div class="mb-6">
+          <h2 class="text-xl font-semibold text-gray-900 mb-2">
+            <span class="mr-2">📝</span>
+            Notes additionnelles (optionnel)
+          </h2>
+          <p class="text-gray-600">Ajoutez des informations supplémentaires pour votre partenaire</p>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
+              Notes
+            </label>
+            <textarea 
+              id="description"
+              formControlName="description"
+              rows="4"
+              placeholder="Matériel à préparer, sujets spécifiques à aborder, questions particulières..."
+              maxlength="500"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none">
+            </textarea>
+            
+            <div class="flex justify-between items-center mt-2">
+              <span class="text-sm text-gray-500">
+                {{ sessionForm.get('description')?.value?.length || 0 }}/500 caractères
+              </span>
+              @if (getFieldError('description')) {
+                <p class="text-red-600 text-sm">{{ getFieldError('description') }}</p>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Récapitulatif et soumission -->
+      <div class="bg-gradient-to-r from-green-50 to-green-50 rounded-xl shadow-lg border border-gray-200 p-6">
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Récapitulatif de votre session</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div class="space-y-2">
+              <p class="text-gray-600"><strong>Partenaire:</strong> {{ getPartnerName() }}</p>
+              <p class="text-gray-600"><strong>Club:</strong> {{ getClubName() }}</p>
+              <p class="text-gray-600"><strong>Date:</strong> {{ sessionForm.get('dateSession')?.value | date:'dd MMM yyyy à HH:mm' }}</p>
+            </div>
+            <div class="space-y-2">
+              <p class="text-gray-600"><strong>Durée:</strong> {{ formatDuration(sessionForm.get('dureeMinutes')?.value) }}</p>
+              <p class="text-gray-600"><strong>Sujet:</strong> {{ sessionForm.get('sujet')?.value || 'Non défini' }}</p>
+              <p class="text-gray-600"><strong>Lieu:</strong> {{ sessionForm.get('lieu')?.value || 'Non défini' }}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flex flex-col sm:flex-row gap-4">
+          <button 
+            type="button"
+            (click)="goBack()"
+            class="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-medium">
+            Annuler
+          </button>
+          <button 
+            type="submit"
+            [disabled]="!isFormValid()"
+            class="flex-1 px-8 py-3 bg-gradient-to-r from-green-600 to-green-600 text-white rounded-lg hover:from-green-700 hover:to-green-700 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+            @if (submitting) {
+              <span class="animate-spin mr-2">⏳</span>
+              Planification en cours...
+            } @else {
+              <span class="mr-2">📅</span>
+              Planifier la session
+            }
+          </button>
+        </div>
+      </div>
+    </form>
+  }
+
+  <!-- Success State -->
+  @if (success) {
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md mx-4">
+        <div class="text-center">
+          <div class="text-6xl mb-4">✅</div>
+          <h2 class="text-2xl font-bold text-gray-900 mb-2">Session planifiée avec succès !</h2>
+          <p class="text-gray-600 mb-6">
+            Votre session avec <strong>{{ getPartnerName() }}</strong> a bien été planifiée.<br>
+            Vous allez être redirigé vers la page des sessions...
+          </p>
+          <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+            <div class="text-sm text-green-800">
+              <p><strong>📅 Date:</strong> {{ sessionForm.get('dateSession')?.value | date:'dd MMM yyyy à HH:mm' }}</p>
+              <p><strong>⏱️ Durée:</strong> {{ formatDuration(sessionForm.get('dureeMinutes')?.value) }}</p>
+              <p><strong>🎯 Sujet:</strong> {{ sessionForm.get('sujet')?.value }}</p>
+            </div>
+          </div>
+          <div class="text-sm text-gray-500">
+            Redirection automatique dans <span id="countdown">2</span> secondes...
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

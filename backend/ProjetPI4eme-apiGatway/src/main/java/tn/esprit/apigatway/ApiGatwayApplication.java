@@ -22,6 +22,27 @@ public class ApiGatwayApplication {
 	@Bean
 	public RouteLocator gatewayRoutes(RouteLocatorBuilder builder) {
 		return builder.routes()
+				// GestionCours routes
+				.route(r -> r.path("/api/courses")
+						.uri("lb://gestioncours"))
+				.route(r -> r.path("/api/courses/**")
+						.uri("lb://gestioncours"))
+				.route(r -> r.path("/api/v1/onlinecourses/**")
+						.uri("lb://gestioncours"))
+				.route(r -> r.path("/api/v1/onsitecourses/**")
+						.uri("lb://gestioncours"))
+				.route(r -> r.path("/api/v1/online-sessions/**")
+						.uri("lb://gestioncours"))
+				.route(r -> r.path("/api/v1/onsite-sessions/**")
+						.uri("lb://gestioncours"))
+				.route(r -> r.path("/api/v1/online-bookings/**")
+						.uri("lb://gestioncours"))
+				.route(r -> r.path("/api/v1/onsite-bookings/**")
+						.uri("lb://gestioncours"))
+				.route(r -> r.path("/api/v1/classrooms/**")
+						.uri("lb://gestioncours"))
+				.route(r -> r.path("/api/advanced/**")
+						.uri("lb://gestioncours"))
 				// Event Service routes (must be before generic /api/**)
 				.route(r -> r.path("/api/events/**")
 						.uri("lb://event"))
@@ -111,6 +132,34 @@ public class ApiGatwayApplication {
 
 				.route(r -> r.path("/api/choix-reponses/**")
 						.uri("lb://pidraft"))
+
+				// Jungledraft (clubs) routes
+				.route(r -> r.path("/api/clubs/**")
+						.uri("lb://jungledraft"))
+
+				.route(r -> r.path("/api/clubMessages/**")
+						.uri("lb://jungledraft"))
+
+				.route(r -> r.path("/api/comments/**")
+						.uri("lb://jungledraft"))
+
+				.route(r -> r.path("/api/memberships/**")
+						.uri("lb://jungledraft"))
+
+				.route(r -> r.path("/api/buddyPairs/**")
+						.uri("lb://jungledraft"))
+
+				.route(r -> r.path("/api/buddySessions/**")
+						.uri("lb://jungledraft"))
+
+				.route(r -> r.path("/api/calendrier/**")
+						.uri("lb://jungledraft"))
+
+				.route(r -> r.path("/api/vision/**")
+						.uri("lb://jungledraft"))
+
+				.route(r -> r.path("/api/notifications/**")
+						.uri("lb://jungledraft"))
 
 				// Generic fallback for any other /api/** routes to PiDraft
 				.route(r -> r.path("/api/**")

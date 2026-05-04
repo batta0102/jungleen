@@ -1,0 +1,133 @@
+<div class="forum-notifications-container">
+  <!-- Bouton de notification -->
+  <button 
+    (click)="toggleNotifications()" 
+    class="notification-button"
+    [class.active]="isOpen"
+  >
+    <span class="notification-icon">🔔</span>
+    <span 
+      *ngIf="unreadCount > 0" 
+      class="notification-badge"
+      [class.pulse]="unreadCount > 0"
+    >
+      {{ unreadCount > 99 ? '99+' : unreadCount }}
+    </span>
+  </button>
+
+  <!-- Panneau des notifications -->
+  <div 
+    *ngIf="isOpen" 
+    class="notifications-panel"
+  >
+    <!-- Header -->
+    <div class="notifications-header">
+      <h3 class="notifications-title">
+        <span class="title-icon">🔔</span>
+        Notifications
+        <span *ngIf="unreadCount > 0" class="unread-count">({{ unreadCount }})</span>
+      </h3>
+      <div class="header-actions">
+        <button 
+          (click)="markAllAsRead()" 
+          class="btn-icon-only btn-mark-read"
+          title="Tout marquer comme lu"
+          [disabled]="unreadCount === 0"
+        >
+          <span>✅</span>
+        </button>
+        <button 
+          (click)="clearAllNotifications()" 
+          class="btn-icon-only btn-clear"
+          title="Effacer tout"
+        >
+          <span>🗑️</span>
+        </button>
+        <button 
+          (click)="closeNotifications()" 
+          class="btn-icon-only btn-close"
+          title="Fermer"
+        >
+          <span>✖️</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Liste des notifications -->
+    <div class="notifications-list">
+      <!-- Loading state -->
+      <div *ngIf="loading" class="loading-state">
+        <div class="loading-spinner"></div>
+        <span>Chargement...</span>
+      </div>
+
+      <!-- Empty state -->
+      <div *ngIf="!loading && notifications.length === 0" class="empty-state">
+        <div class="empty-icon">📭</div>
+        <p class="empty-text">Aucune notification</p>
+        <p class="empty-description">Vous serez notifié des nouvelles activités dans le forum</p>
+      </div>
+
+      <!-- Notifications -->
+      <div 
+        *ngFor="let notification of notifications; trackBy: trackByNotificationId"
+        class="notification-item"
+        [class.unread]="!notification.read"
+        (click)="goToNotification(notification)"
+      >
+        <div class="notification-avatar">
+          {{ notification.userAvatar || '👤' }}
+        </div>
+        <div class="notification-content">
+          <div class="notification-header">
+            <span class="notification-type-icon">
+              {{ getNotificationIcon(notification.type) }}
+            </span>
+            <span class="notification-text">
+              {{ getNotificationText(notification) }}
+            </span>
+            <span *ngIf="!notification.read" class="unread-indicator"></span>
+          </div>
+          <div class="notification-details">
+            <p class="notification-message">
+              {{ notification.messageContent || notification.commentContent }}
+            </p>
+            <div class="notification-meta">
+              <span class="notification-club">{{ notification.clubName }}</span>
+              <span class="notification-date">{{ formatDate(notification.createdAt) }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="notification-actions">
+          <button 
+            (click)="markAsRead(notification.id); $event.stopPropagation()"
+            class="btn-icon-only btn-mark-single"
+            title="Marquer comme lu"
+            [disabled]="notification.read"
+          >
+            <span>{{ notification.read ? '📖' : '📕' }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="notifications-footer" *ngIf="notifications.length > 0">
+      <button 
+        (click)="markAllAsRead()" 
+        class="btn btn-secondary btn-sm"
+        [disabled]="unreadCount === 0"
+      >
+        <span class="btn-icon">✅</span>
+        Tout marquer comme lu
+      </button>
+    </div>
+  </div>
+
+  <!-- Overlay pour fermer -->
+  <div 
+    *ngIf="isOpen" 
+    class="notifications-overlay"
+    (click)="closeNotifications()"
+  ></div>
+</div>

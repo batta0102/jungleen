@@ -20,6 +20,11 @@ export const FRONT_ROUTES: Routes = [
 		loadComponent: () => import('./pages/auth/login.page').then((m) => m.LoginPage)
 	},
 	{
+		path: 'user-selection',
+		title: 'User Selection | Jungle in English',
+		loadComponent: () => import('./pages/user-selection/user-selection.page').then((m) => m.UserSelectionPage)
+	},
+	{
 		path: 'signup',
 		title: 'Sign up | Jungle in English',
 		loadComponent: () => import('./pages/auth/signup.page').then((m) => m.SignupPage)
@@ -38,6 +43,18 @@ export const FRONT_ROUTES: Routes = [
 		path: 'clubs/:clubId',
 		title: 'Club Details | Jungle in English',
 		loadComponent: () => import('./pages/clubs/club-detail.page').then((m) => m.ClubDetailPage)
+	},
+	{
+		path: 'clubs/:id',
+		title: 'Club Details | Jungle in English',
+		canActivate: [authGuard],
+		loadComponent: () => import('./pages/club-detail/club-detail-simple.component').then((m) => m.ClubDetailSimpleComponent)
+	},
+	{
+		path: 'clubs/:clubId/messages/:messageId',
+		title: 'Message du forum',
+		canActivate: [authGuard],
+		loadComponent: () => import('./pages/message-detail/message-detail.component').then((m) => m.MessageDetailComponent)
 	},
 	{
 		path: 'trainings',

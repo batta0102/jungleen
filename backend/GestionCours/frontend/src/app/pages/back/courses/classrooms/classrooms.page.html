@@ -1,0 +1,121 @@
+<div class="page">
+  <header class="page-header">
+    <h1 class="title">Salles (3D Sketchfab)</h1>
+    <p class="subtitle">
+      Les salles viennent de ton API. La recherche passe par le backend (<code>GET /api/v1/3d-models/search</code>) puis le viewer charge l’UID sélectionné.
+    </p>
+  </header>
+
+  @if (errorMessage(); as err) {
+    <div class="alert alert-error" role="alert">{{ err }}</div>
+  }
+
+  <section class="card search-card">
+    <h2 class="card-title">Recherche modèles 3D (Sketchfab Data API v3)</h2>
+    <p class="search-hint">Ex. <code>classroom</code>, <code>premium classroom</code>, <code>meeting room</code></p>
+    <div class="search-row">
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Mot-clé…"
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+        (keydown.enter)="searchSketchfabModels()" />
+      <button type="button" class="btn btn-secondary" (click)="searchSketchfabModels()" [disabled]="searchLoading()">
+        {{ searchLoading() ? 'Recherche…' : 'Rechercher' }}
+      </button>
+    </div>
+    @if (searchError(); as se) {
+      <div class="alert alert-error" role="alert">{{ se }}</div>
+    }
+    @if (searchResults().length > 0) {
+      <ul class="search-results">
+        @for (m of searchResults(); track m.uid) {
+          <li>
+            <button type="button" class="result-tile" (click)="previewSearchResult(m)">
+              @if (m.thumbnailUrl) {
+                <img [src]="m.thumbnailUrl" alt="" class="result-thumb" width="96" height="72" />
+              } @else {
+                <div class="result-thumb placeholder">3D</div>
+              }
+              <div class="result-text">
+                <span class="result-name">{{ m.name }}</span>
+                <span class="result-uid">{{ m.uid }}</span>
+              </div>
+            </button>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
+  @if (loading()) {
+    <div class="card card-loading">Chargement des salles…</div>
+  } @else if (classrooms().length === 0) {
+    <div class="card">Aucune salle en base.</div>
+  } @else {
+    <div class="layout">
+      <aside class="card list-card">
+        <h2 class="card-title">Salles</h2>
+        <ul class="room-list">
+          @for (c of classrooms(); track c.id) {
+            <li>
+              <button
+                type="button"
+                class="room-btn"
+                [class.active]="selected()?.id === c.id"
+                (click)="selectClassroom(c)">
+                <span class="room-name">{{ c.name }}</span>
+                <span class="room-meta">{{ c.type }} · {{ c.capacity }} places</span>
+              </button>
+            </li>
+          }
+        </ul>
+      </aside>
+
+      <section class="card detail-card">
+        @if (selected(); as room) {
+          <h2 class="card-title">{{ room.name }}</h2>
+          <dl class="meta">
+            <dt>Type</dt><dd>{{ room.type }}</dd>
+            <dt>Capacité</dt><dd>{{ room.capacity }}</dd>
+            <dt>Sketchfab UID (salle)</dt><dd>{{ room.sketchfabModelUid || '—' }}</dd>
+            @if (activeViewerUid()) {
+              <dt>UID affiché (viewer)</dt><dd>{{ activeViewerUid() }}</dd>
+            }
+            @if (room.featuresDescription) {
+              <dt>Équipements</dt><dd>{{ room.featuresDescription }}</dd>
+            }
+          </dl>
+        } @else {
+          <h2 class="card-title">Détails salle</h2>
+          <p class="hint">Sélectionnez une salle à gauche pour afficher ses informations.</p>
+        }
+
+        @if (viewerError(); as verr) {
+          <div class="alert alert-error" role="alert">{{ verr }}</div>
+        }
+
+        @if (activeViewerUid()) {
+          <div class="viewer-wrap">
+            <iframe
+              #sketchfabFrame
+              title="Modèle 3D Sketchfab"
+              src="about:blank"
+              allow="autoplay; fullscreen; xr-spatial-tracking"
+              width="100%"
+              height="520"
+              loading="lazy"></iframe>
+          </div>
+        } @else if (selected(); as r2) {
+          @if (!r2.sketchfabModelUid && !activeViewerUid()) {
+            <p class="hint">
+              Pas d’UID en base pour cette salle : recherche Sketchfab ci-dessus puis clique un résultat, ou mets à jour
+              <code>sketchfabModelUid</code> côté API / BDD.
+            </p>
+          }
+        }
+      </section>
+    </div>
+  }
+</div>

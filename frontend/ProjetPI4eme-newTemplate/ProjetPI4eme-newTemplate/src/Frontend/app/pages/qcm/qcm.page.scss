@@ -726,6 +726,105 @@
 }
 
 /* =====================================================
+   PRE-QUIZ INTEGRITY WARNING MODAL
+   ===================================================== */
+.warning-modal {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 3rem 2.5rem;
+  width: 90%;
+  max-width: 520px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25);
+  animation: slideUp 0.4s ease;
+  border: 3px solid #ffc107;
+  border-top: 6px solid #ffc107;
+
+  h2 {
+    margin: 1rem 0 0;
+    font-size: 1.75rem;
+    color: #d4781f;
+    font-weight: 800;
+  }
+}
+
+.warning-icon {
+  font-size: 4rem;
+  margin-bottom: 0.5rem;
+}
+
+.warning-content {
+  text-align: left;
+  margin: 2rem 0;
+  
+  > p {
+    font-size: 1rem;
+    color: #333;
+    margin: 1rem 0;
+    line-height: 1.6;
+  }
+}
+
+.rules-list {
+  background: #fffaeb;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  border-left: 4px solid #ffc107;
+}
+
+.rule-item {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+  
+  .rule-number {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+  
+  p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #333;
+    line-height: 1.5;
+  }
+}
+
+.warning-highlight {
+  background: #f0f8ff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  border-left: 4px solid #17a2b8;
+  
+  p {
+    margin: 0.5rem 0;
+    font-size: 0.95rem;
+    color: #0c5460;
+    line-height: 1.5;
+    
+    &:first-child {
+      margin-top: 0;
+    }
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+    
+    strong {
+      font-weight: 700;
+    }
+  }
+}
+
+/* =====================================================
    CERTIFICATE CONGRATULATIONS MODAL
    ===================================================== */
 .cert-modal-overlay {

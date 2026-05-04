@@ -1,25 +1,29 @@
 import { NgOptimizedImage } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { timeout, finalize } from 'rxjs/operators';
 
-import { DataService } from '../../core/data/data.service';
-import { TrainingModel } from '../../core/data/models';
-import { EnrollmentMode, UserContextService } from '../../core/user/user-context.service';
-import { downloadTextFile } from '../../shared/utils/download';
+import { CourseApiService } from '../../../../core/api/services/course-api.service';
+import { BookingApiService } from '../../../../core/api/services/booking-api.service';
+import { SessionApiService } from '../../../../core/api/services/session-api.service';
+import { ClassroomApiService } from '../../../../core/api/services/classroom-api.service';
+import { Course, Session, Classroom } from '../../../../core/api/models';
+import { UserContextService } from '../../core/user/user-context.service';
+import { CourseService } from '../../core/services/course.service';
 
-type LevelFilter = 'Beginner' | 'Intermediate' | 'Advanced';
-type CategoryFilter = 'General English' | 'Business English' | 'Exam Preparation' | 'Conversation';
-type FormatFilter = 'Online' | 'On-site';
-type PriceFilter = 'Under 600 TND' | '600–799 TND' | '800+ TND';
+const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+const TYPES = ['Online', 'On-site'];
 
-type SortMode = 'Popular' | 'Newest' | 'Price (Low)' | 'Price (High)' | 'A–Z';
-
-const LEVELS: LevelFilter[] = ['Beginner', 'Intermediate', 'Advanced'];
-const CATEGORIES: CategoryFilter[] = ['General English', 'Business English', 'Exam Preparation', 'Conversation'];
-const FORMATS: FormatFilter[] = ['Online', 'On-site'];
-const PRICES: PriceFilter[] = ['Under 600 TND', '600–799 TND', '800+ TND'];
-const SORTS: SortMode[] = ['Popular', 'Newest', 'Price (Low)', 'Price (High)', 'A–Z'];
+/** Fallback when API is down or returns empty — so the page is never blank. */
+const SAMPLE_COURSES: Course[] = [
+  { id: 'demo-1', title: 'A2 Foundations', instructor: 'Dr. Sarah Martin', description: 'Build your basics: greetings, daily life, simple past and future.', level: 'A2', type: 'Online', priceOnline: 450, priceOnsite: 600, rating: 4.5, reviewCount: 120 },
+  { id: 'demo-2', title: 'B1 Business English', instructor: 'Prof. Jean Dubois', description: 'Emails, meetings, and professional vocabulary.', level: 'B1', type: 'On-site', priceOnline: 650, priceOnsite: 800, rating: 4.7, reviewCount: 89 },
+  { id: 'demo-3', title: 'B2 Conversation & Debate', instructor: 'Dr. Alice Chen', description: 'Fluency and argumentation in real-life situations.', level: 'B2', type: 'Online', priceOnline: 750, priceOnsite: 900, rating: 4.6, reviewCount: 64 },
+  { id: 'demo-4', title: 'C1 Advanced Writing', instructor: 'Dr. Mark Lee', description: 'Essays, reports, and formal writing.', level: 'C1', type: 'On-site', priceOnline: 850, priceOnsite: 1000, rating: 4.8, reviewCount: 42 },
+  { id: 'demo-5', title: 'IELTS Preparation', instructor: 'Dr. Sarah Martin', description: 'Strategies and practice for the IELTS exam.', level: 'B2', type: 'Online', priceOnline: 700, priceOnsite: 850, rating: 4.9, reviewCount: 156 },
+  { id: 'demo-6', title: 'English for Beginners (A1)', instructor: 'Dr. Alice Chen', description: 'Your first steps: alphabet, numbers, simple phrases.', level: 'A1', type: 'Online', priceOnline: 350, priceOnsite: 500, rating: 4.4, reviewCount: 203 },
+];
 
 @Component({
   selector: 'app-trainings-page',
@@ -28,255 +32,199 @@ const SORTS: SortMode[] = ['Popular', 'Newest', 'Price (Low)', 'Price (High)', '
   styleUrl: './trainings.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TrainingsPage {
-  private readonly data = inject(DataService);
+export class TrainingsPage implements OnInit {
+  private readonly courseApi = inject(CourseApiService);
+  private readonly courseService = inject(CourseService);
+  private readonly bookingApi = inject(BookingApiService);
+  private readonly sessionApi = inject(SessionApiService);
+  private readonly classroomApi = inject(ClassroomApiService);
   private readonly user = inject(UserContextService);
 
-  readonly trainings = this.data.trainings;
-  readonly participation = this.user.participation;
-  readonly enrollmentModes = this.user.trainingEnrollmentModes;
   readonly role = this.user.role;
+  readonly participation = this.user.participation;
+  readonly enrollTraining = (id: string, mode: 'online' | 'onsite') => this.user.enrollTraining(id, mode);
+
+  /** Toujours afficher au moins les cours de démo si l'API est vide ou indisponible. */
+  readonly courses = signal<Course[]>(SAMPLE_COURSES);
+  readonly sessions = signal<Session[]>([]);
+  readonly classrooms = signal<Classroom[]>([]);
+  readonly loading = signal(false);
+  readonly error = signal<string | null>(null);
+  readonly usingFallback = signal(true);
+
+  /** Sessions grouped by courseId for display on each course card. */
+  readonly sessionsByCourseId = computed(() => {
+    const map: Record<string, Session[]> = {};
+    this.sessions().forEach((s) => {
+      const key = String(s.courseId);
+      if (!map[key]) map[key] = [];
+      map[key].push(s);
+    });
+    return map;
+  });
+  readonly classroomNameById = computed(() => {
+    const map: Record<string, string> = {};
+    this.classrooms().forEach((c) => (map[String(c.id)] = c.name ?? '-'));
+    return map;
+  });
+
+  readonly search = signal('');
+  readonly filterLevel = signal<string>('');
+  readonly filterType = signal<string>('');
+  readonly sortBy = signal<'title' | 'rating' | 'price'>('title');
 
   readonly levels = LEVELS;
-  readonly categories = CATEGORIES;
-  readonly formats = FORMATS;
-  readonly prices = PRICES;
-  readonly sorts = SORTS;
+  readonly types = TYPES;
 
-  readonly query = signal('');
-  readonly sortMode = signal<SortMode>('Popular');
+  readonly filteredCourses = computed(() => {
+    const list = this.courses();
+    let q = this.search().trim().toLowerCase();
+    const level = this.filterLevel();
+    const type = this.filterType();
+    let out = list;
+    if (q) out = out.filter((c) => (c.title ?? '').toLowerCase().includes(q));
+    if (level) out = out.filter((c) => (c.level ?? '') === level);
+    if (type) out = out.filter((c) => (c.type ?? '').toString() === type);
+    const sort = this.sortBy();
+    out = [...out].sort((a, b) => {
+      if (sort === 'title') return (a.title ?? '').localeCompare(b.title ?? '');
+      if (sort === 'rating') return (b.rating ?? 0) - (a.rating ?? 0);
+      const pa = a.priceOnline ?? a.priceOnsite ?? 0;
+      const pb = b.priceOnline ?? b.priceOnsite ?? 0;
+      return pa - pb;
+    });
+    return out;
+  });
 
-  readonly draftLevels = signal<LevelFilter[]>([]);
-  readonly draftCategories = signal<CategoryFilter[]>([]);
-  readonly draftFormats = signal<FormatFilter[]>([]);
-  readonly draftPrices = signal<PriceFilter[]>([]);
-
-  readonly selectedLevels = signal<LevelFilter[]>([]);
-  readonly selectedCategories = signal<CategoryFilter[]>([]);
-  readonly selectedFormats = signal<FormatFilter[]>([]);
-  readonly selectedPrices = signal<PriceFilter[]>([]);
-
-  readonly page = signal(1);
   readonly pageSize = 6;
-
-  readonly certificateViewId = signal<string | null>(null);
-
-  readonly earnedCertificates = computed(() => {
-    // Use enrolled trainings as the basis for “earned certificates”.
-    const enrolled = this.participation().enrolledTrainingIds;
-
-    const certs = this.trainings()
-      .filter((t) => enrolled.includes(t.id))
-      .map((t) => {
-        const progress = this.getProgress(t);
-        return { training: t, progress };
-      })
-      .filter((row) => row.progress.total > 0 && row.progress.percent >= 100)
-      .sort((a, b) => a.training.name.localeCompare(b.training.name));
-
-    return certs;
+  readonly page = signal(1);
+  readonly pageCount = computed(() => Math.max(1, Math.ceil(this.filteredCourses().length / this.pageSize)));
+  readonly pagedCourses = computed(() => {
+    const start = (this.page() - 1) * this.pageSize;
+    return this.filteredCourses().slice(start, start + this.pageSize);
   });
-
-  readonly filteredTrainings = computed(() => {
-    const q = this.query().trim().toLowerCase();
-    const levels = this.selectedLevels();
-    const categories = this.selectedCategories();
-    const formats = this.selectedFormats();
-    const prices = this.selectedPrices();
-    const sortMode = this.sortMode();
-
-    const rows = this.trainings().map((t) => {
-      const level = this.getLevel(t);
-      const category = this.getCategory(t);
-      const pricesTnd = this.getPricesTnd(t);
-      const bannerSrc = this.courseBannerSrc(t.id);
-      const rating = this.getRating(t);
-      const reviews = this.getReviewsCount(t);
-      const createdSeed = this.seedNumber(t.id, 0, 1000);
-      return {
-        training: t,
-        level,
-        category,
-        prices: pricesTnd,
-        bannerSrc,
-        rating,
-        reviews,
-        createdSeed
-      };
-    });
-
-    const filtered = rows.filter((row) => {
-      if (q && !row.training.name.toLowerCase().includes(q)) return false;
-      if (levels.length > 0 && !levels.includes(row.level)) return false;
-      if (categories.length > 0 && !categories.includes(row.category)) return false;
-
-      if (formats.length > 0) {
-        // All courses support both modes; treat this as a preference filter.
-        // If only one format is selected, keep rows but we'll highlight the matching price in UI.
-        // So we don't filter out anything here.
-      }
-
-      if (prices.length > 0) {
-        const minPrice = Math.min(row.prices.online, row.prices.onsite);
-        const match = prices.some((p) => {
-          if (p === 'Under 600 TND') return minPrice < 600;
-          if (p === '600–799 TND') return minPrice >= 600 && minPrice < 800;
-          return minPrice >= 800;
-        });
-        if (!match) return false;
-      }
-
-      return true;
-    });
-
-    const sorted = [...filtered].sort((a, b) => {
-      if (sortMode === 'A–Z') return a.training.name.localeCompare(b.training.name);
-      if (sortMode === 'Price (Low)') return Math.min(a.prices.online, a.prices.onsite) - Math.min(b.prices.online, b.prices.onsite);
-      if (sortMode === 'Price (High)') return Math.min(b.prices.online, b.prices.onsite) - Math.min(a.prices.online, a.prices.onsite);
-      if (sortMode === 'Newest') return b.createdSeed - a.createdSeed;
-      return b.rating - a.rating;
-    });
-
-    return sorted;
-  });
-
-  readonly pageCount = computed(() => Math.max(1, Math.ceil(this.filteredTrainings().length / this.pageSize)));
-
-  readonly pagedTrainings = computed(() => {
-    const page = Math.min(Math.max(1, this.page()), this.pageCount());
-    const start = (page - 1) * this.pageSize;
-    return this.filteredTrainings().slice(start, start + this.pageSize);
-  });
-
   readonly pages = computed(() => Array.from({ length: this.pageCount() }, (_, i) => i + 1));
 
-  applyFilters(): void {
-    this.selectedLevels.set(this.draftLevels());
-    this.selectedCategories.set(this.draftCategories());
-    this.selectedFormats.set(this.draftFormats());
-    this.selectedPrices.set(this.draftPrices());
-    this.page.set(1);
+  ngOnInit(): void {
+    this.loadCourses();
   }
 
-  toggleDraftLevel(level: LevelFilter): void {
-    this.draftLevels.update((prev) => (prev.includes(level) ? prev.filter((x) => x !== level) : [...prev, level]));
+  loadCourses(): void {
+    this.loading.set(true);
+    this.error.set(null);
+    console.log('[TrainingsPage] Calling API... loadCourses() → CourseService.getAllCourses()');
+    this.courseService
+      .getAllCourses()
+      .pipe(
+        timeout(15000),
+        finalize(() => {
+          this.loading.set(false);
+          console.log('[TrainingsPage] loadCourses() finalize → loading.set(false)');
+        })
+      )
+      .subscribe({
+        next: (list) => {
+          const data = this.normalizeCourseList(list);
+          console.log('[TrainingsPage] API next: count=', data.length, 'body=', list, 'normalized=', data);
+          if (data.length > 0) {
+            this.courses.set(data);
+            this.usingFallback.set(false);
+          } else {
+            this.courses.set(SAMPLE_COURSES);
+            this.usingFallback.set(true);
+          }
+        },
+        error: (err) => {
+          const status = err?.status ?? err?.error?.status;
+          const message = err?.message ?? err?.error?.message ?? 'Unknown error';
+          const body = err?.error ?? err?.body;
+          console.error('[TrainingsPage] API error: status=', status, 'message=', message, 'body=', body, 'full err=', err);
+          this.courses.set(SAMPLE_COURSES);
+          this.usingFallback.set(true);
+          this.error.set(err?.message ?? 'Unable to load courses right now.');
+        }
+      });
+    this.sessionApi.getSessions().subscribe({
+      next: (list) => this.sessions.set(this.normalizeList(list)),
+      error: () => this.sessions.set([])
+    });
+    this.classroomApi.getClassrooms().subscribe({
+      next: (list) => this.classrooms.set(this.normalizeList(list)),
+      error: () => this.classrooms.set([])
+    });
   }
 
-  toggleDraftCategory(category: CategoryFilter): void {
-    this.draftCategories.update((prev) =>
-      prev.includes(category) ? prev.filter((x) => x !== category) : [...prev, category]
-    );
+  /** Accepte tableau direct ou réponse Spring { content: [] } / { data: [] }. */
+  private normalizeCourseList(raw: unknown): Course[] {
+    if (Array.isArray(raw)) return raw as Course[];
+    if (raw && typeof raw === 'object') {
+      const o = raw as Record<string, unknown>;
+      if (Array.isArray(o['content'])) return o['content'] as Course[];
+      if (Array.isArray(o['data'])) return o['data'] as Course[];
+    }
+    return [];
   }
 
-  toggleDraftFormat(format: FormatFilter): void {
-    this.draftFormats.update((prev) => (prev.includes(format) ? prev.filter((x) => x !== format) : [...prev, format]));
+  private normalizeList<T>(raw: unknown): T[] {
+    if (Array.isArray(raw)) return raw as T[];
+    if (raw && typeof raw === 'object') {
+      const o = raw as Record<string, unknown>;
+      if (Array.isArray(o['content'])) return o['content'] as T[];
+      if (Array.isArray(o['data'])) return o['data'] as T[];
+    }
+    return [];
   }
 
-  toggleDraftPrice(price: PriceFilter): void {
-    this.draftPrices.update((prev) => (prev.includes(price) ? prev.filter((x) => x !== price) : [...prev, price]));
+  getSessionsForCourse(courseId: string | number): Session[] {
+    return this.sessionsByCourseId()[String(courseId)] ?? [];
   }
 
-  clearAll(): void {
-    this.query.set('');
-    this.sortMode.set('Popular');
-    this.draftLevels.set([]);
-    this.draftCategories.set([]);
-    this.draftFormats.set([]);
-    this.draftPrices.set([]);
-    this.applyFilters();
+  getClassroomName(id: string | number | undefined): string {
+    if (id == null) return '-';
+    return this.classroomNameById()[String(id)] ?? '-';
   }
 
-  setPage(page: number): void {
-    this.page.set(Math.min(Math.max(1, page), this.pageCount()));
+  formatSessionDate(s: Session): string {
+    const d = s.startDate ?? s.startTime;
+    if (!d) return '-';
+    try {
+      return new Date(d).toLocaleDateString(undefined, { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    } catch {
+      return String(d);
+    }
   }
 
-  prevPage(): void {
-    this.setPage(this.page() - 1);
+  enroll(courseId: string | number, type: 'Online' | 'On-site'): void {
+    const idStr = String(courseId);
+    const mode = type === 'Online' ? 'online' : 'onsite';
+    if (this.usingFallback()) {
+      this.user.enrollTraining(idStr, mode);
+      return;
+    }
+    this.bookingApi.createBooking({ courseId: courseId, type }).subscribe({
+      next: () => this.user.enrollTraining(idStr, mode),
+      error: (err) => this.error.set(err?.message ?? 'Enrollment failed')
+    });
   }
 
-  nextPage(): void {
-    this.setPage(this.page() + 1);
+  isEnrolled(courseId: string | number): boolean {
+    return this.participation().enrolledTrainingIds.includes(String(courseId));
   }
 
-  enroll(trainingId: string, mode: EnrollmentMode): void {
-    this.user.enrollTraining(trainingId, mode);
+  setPage(p: number): void {
+    this.page.set(Math.max(1, Math.min(p, this.pageCount())));
   }
 
-  toggleCertificateView(trainingId: string): void {
-    this.certificateViewId.set(this.certificateViewId() === trainingId ? null : trainingId);
+  trackById(_: number, c: Course): string {
+    return String(c.id);
   }
 
-  certificateContent(trainingId: string): string {
-    const t = this.data.getTrainingById(trainingId);
-    if (!t) return '';
-    const { percent } = this.getProgress(t);
-    const date = new Date().toISOString().slice(0, 10);
-    return `Jungle in English\n\nCertificate of Completion\n\nThis certifies that the learner has completed:\n${t.name}\n\nProgress: ${percent}%\n\nIssued on: ${date}\n`;
-  }
-
-  downloadCertificate(trainingId: string): void {
-    const t = this.data.getTrainingById(trainingId);
-    if (!t) return;
-    const { percent } = this.getProgress(t);
-    if (percent < 100) return;
-    downloadTextFile(`certificate-${t.id}.txt`, this.certificateContent(t.id));
-  }
-
-  trackTrainingId = (_: number, row: { training: TrainingModel }): string => row.training.id;
-
-  private getLevel(training: TrainingModel): LevelFilter {
-    const raw = `${training.id} ${training.name}`.toLowerCase();
-    if (raw.includes('a1') || raw.includes('a2')) return 'Beginner';
-    if (raw.includes('b1') || raw.includes('b2')) return 'Intermediate';
-    if (raw.includes('c1') || raw.includes('c2')) return 'Advanced';
-    return 'Beginner';
-  }
-
-  private getCategory(training: TrainingModel): CategoryFilter {
-    const raw = training.name.toLowerCase();
-    if (raw.includes('business')) return 'Business English';
-    if (raw.includes('ielts') || raw.includes('toeic') || raw.includes('exam')) return 'Exam Preparation';
-    if (raw.includes('speaking') || raw.includes('conversation')) return 'Conversation';
-    return 'General English';
-  }
-
-  private getPricesTnd(training: TrainingModel): { online: number; onsite: number } {
-    const level = this.getLevel(training);
-    const online = level === 'Beginner' ? 450 : level === 'Intermediate' ? 650 : 850;
-    const onsite = online + 150;
-    return { online, onsite };
-  }
-
-  private getRating(training: TrainingModel): number {
-    const seed = training.id.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
-    const rating = 4.1 + ((seed % 9) / 10);
-    return Math.min(4.9, Math.max(4.1, Number(rating.toFixed(1))));
-  }
-
-  private getReviewsCount(training: TrainingModel): number {
-    const seed = training.name.length * 37 + training.chapters.length * 13;
-    return 120 + (seed % 420);
-  }
-
-  private seedNumber(seed: string, min: number, max: number): number {
-    const n = seed.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
-    return min + (n % Math.max(1, max - min + 1));
-  }
-
-  private courseBannerSrc(trainingId: string): string {
-    const images = ['/englishimg1.jpg', '/englishimg2.png', '/jungleabout.png'];
-    const idx = this.seedNumber(trainingId, 0, images.length - 1);
-    return images[idx];
-  }
-
-  private getProgress(training: TrainingModel): { completed: number; total: number; percent: number } {
-    const total = training.chapters.reduce((acc, ch) => acc + ch.sections.length, 0);
-    if (total === 0) return { completed: 0, total: 0, percent: 0 };
-    const completed = training.chapters.reduce(
-      (acc, ch) => acc + ch.sections.filter((s) => this.data.isSectionComplete(training.id, ch.id, s.id)).length,
-      0
-    );
-    const percent = Math.round((completed / total) * 100);
-    return { completed, total, percent };
+  /** For tutor: navigate to sessions (if you add a route). */
+  mySessions(): void {
+    this.sessionApi.getSessions({ tutorId: 'me' }).subscribe({
+      next: () => {},
+      error: () => {}
+    });
+    // If you have a /front/trainings/sessions page, router.navigate(['/front/trainings', 'sessions'])
   }
 }

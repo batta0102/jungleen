@@ -1,0 +1,232 @@
+<div class="admin-monitoring-container p-6">
+  <!-- Back Button -->
+  <div class="mb-6">
+    <a 
+      (click)="goBackToClubs()" 
+      class="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors group cursor-pointer">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 transform group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+      Back to Clubs
+    </a>
+  </div>
+
+  <!-- Header -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-2">Buddy Monitoring</h1>
+    <p class="text-gray-600">Overview of the buddy system monitoring</p>
+  </div>
+
+  <!-- Statistiques principales -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white rounded-lg shadow p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-600 mb-1">Total Buddies</p>
+          <p class="text-2xl font-bold text-gray-800">{{ stats.totalBuddies }}</p>
+        </div>
+        <div class="bg-blue-100 rounded-full p-3">
+          <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-600 mb-1">Buddies Actifs</p>
+          <p class="text-2xl font-bold text-green-600">{{ stats.activeBuddies }}</p>
+        </div>
+        <div class="bg-green-100 rounded-full p-3">
+          <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-600 mb-1">Pending</p>
+          <p class="text-2xl font-bold text-yellow-600">{{ stats.pendingRequests }}</p>
+        </div>
+        <div class="bg-yellow-100 rounded-full p-3">
+          <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-600 mb-1">Sessions/Mois</p>
+          <p class="text-2xl font-bold text-purple-600">{{ stats.sessionsThisMonth }}</p>
+        </div>
+        <div class="bg-purple-100 rounded-full p-3">
+          <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+    <!-- Status Chart -->
+    <div class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-lg font-semibold text-gray-800 mb-4">Status Distribution</h2>
+      <div class="h-64">
+        @if (!loading && stats.totalBuddies > 0) {
+          <canvas id="statusChart"></canvas>
+        } @else if (loading) {
+          <div class="flex items-center justify-center h-full text-gray-500">
+            <div class="text-center">
+              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+              <p>Loading chart...</p>
+            </div>
+          </div>
+        } @else {
+          <div class="flex items-center justify-center h-full text-gray-500">
+            <div class="text-center">
+              <div class="text-4xl mb-2">📊</div>
+              <p>No data available</p>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Sessions Chart -->
+    <div class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-lg font-semibold text-gray-800 mb-4">Sessions by Period</h2>
+      <div class="h-64">
+        @if (!loading && stats.totalSessions > 0) {
+          <canvas id="sessionsChart"></canvas>
+        } @else if (loading) {
+          <div class="flex items-center justify-center h-full text-gray-500">
+            <div class="text-center">
+              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+              <p>Loading chart...</p>
+            </div>
+          </div>
+        } @else {
+          <div class="flex items-center justify-center h-full text-gray-500">
+            <div class="text-center">
+              <div class="text-4xl mb-2">📈</div>
+              <p>No session data</p>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Clubs Chart -->
+    <div class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-lg font-semibold text-gray-800 mb-4">Buddy Distribution</h2>
+      <div class="h-64">
+        @if (!loading && activeBuddies.length > 0) {
+          <canvas id="clubsChart"></canvas>
+        } @else if (loading) {
+          <div class="flex items-center justify-center h-full text-gray-500">
+            <div class="text-center">
+              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+              <p>Loading chart...</p>
+            </div>
+          </div>
+        } @else {
+          <div class="flex items-center justify-center h-full text-gray-500">
+            <div class="text-center">
+              <div class="text-4xl mb-2">🏢</div>
+              <p>No club data</p>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Tableau des buddies actifs -->
+  <div class="bg-white rounded-lg shadow">
+    <div class="p-6 border-b border-gray-200">
+      <h2 class="text-lg font-semibold text-gray-800">Active Buddies</h2>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User 1</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User 2</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Club</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sessions</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Session</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Average Duration</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <tr *ngFor="let buddy of activeBuddies">
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center">
+                <div class="flex-shrink-0 h-10 w-10">
+                  <img class="h-10 w-10 rounded-full" [src]="buddy.user1Avatar || 'https://via.placeholder.com/40'" alt="">
+                </div>
+                <div class="ml-4">
+                  <div class="text-sm font-medium text-gray-900">{{ buddy.user1Name }}</div>
+                  <div class="text-sm text-gray-500">{{ buddy.user1Email }}</div>
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center">
+                <div class="flex-shrink-0 h-10 w-10">
+                  <img class="h-10 w-10 rounded-full" [src]="buddy.user2Avatar || 'https://via.placeholder.com/40'" alt="">
+                </div>
+                <div class="ml-4">
+                  <div class="text-sm font-medium text-gray-900">{{ buddy.user2Name }}</div>
+                  <div class="text-sm text-gray-500">{{ buddy.user2Email }}</div>
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ buddy.clubName }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ buddy.sessionCount || 0 }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              {{ buddy.lastSessionDate ? (buddy.lastSessionDate | date:'dd/MM/yyyy') : 'N/A' }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              {{ buddy.averageSessionDuration ? buddy.averageSessionDuration + ' min' : 'N/A' }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- État de chargement -->
+  <div *ngIf="loading" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 flex items-center space-x-3">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <span class="text-gray-700">Loading data...</span>
+    </div>
+  </div>
+
+  <!-- Message d'erreur -->
+  <div *ngIf="error" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 max-w-md">
+      <div class="flex items-center space-x-3 text-red-600 mb-4">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <span class="font-semibold">Error</span>
+      </div>
+      <p class="text-gray-700 mb-4">{{ error }}</p>
+      <button (click)="loadMonitoringData()" class="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors">
+        Retry
+      </button>
+    </div>
+  </div>
+</div>

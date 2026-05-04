@@ -10,6 +10,10 @@
   },
   "include": [
     "src/**/*.d.ts",
-    "src/**/*.spec.ts"
+    "src/Frontend/app/app.spec.ts",
+    "src/Frontend/app/shared/product/product.spec.ts",
+    "src/Frontend/app/core/auth/auth.guard.spec.ts",
+    "src/Backend/app/core/events/event-admin-api.service.spec.ts",
+    "src/Backend/app/components/create-event-modal/create-event-modal.component.spec.ts"
   ]
 }

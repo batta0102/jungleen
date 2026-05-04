@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal, effect, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
@@ -8,6 +9,26 @@ import { DataService } from '../../core/data/data.service';
 import { TrainingModel, TrainingSection } from '../../core/data/models';
 import { EnrollmentMode, UserContextService } from '../../core/user/user-context.service';
 import { downloadTextFile } from '../../shared/utils/download';
+import { CourseApiService } from '../../../../core/api/services/course-api.service';
+
+function courseToTraining(c: { id: string | number; title?: string; instructor?: string }): TrainingModel {
+  return {
+    id: String(c.id),
+    name: c.title ?? 'Course',
+    learningObjectives: c.instructor ? [c.instructor] : [],
+    chapters: []
+  };
+}
+
+/** Fallback for demo courses when API is not available (same ids as SAMPLE_COURSES on list page). */
+const DEMO_TRAININGS: Record<string, TrainingModel> = {
+  'demo-1': courseToTraining({ id: 'demo-1', title: 'A2 Foundations', instructor: 'Dr. Sarah Martin' }),
+  'demo-2': courseToTraining({ id: 'demo-2', title: 'B1 Business English', instructor: 'Prof. Jean Dubois' }),
+  'demo-3': courseToTraining({ id: 'demo-3', title: 'B2 Conversation & Debate', instructor: 'Dr. Alice Chen' }),
+  'demo-4': courseToTraining({ id: 'demo-4', title: 'C1 Advanced Writing', instructor: 'Dr. Mark Lee' }),
+  'demo-5': courseToTraining({ id: 'demo-5', title: 'IELTS Preparation', instructor: 'Dr. Sarah Martin' }),
+  'demo-6': courseToTraining({ id: 'demo-6', title: 'English for Beginners (A1)', instructor: 'Dr. Alice Chen' }),
+};
 
 @Component({
   selector: 'app-training-detail-page',
@@ -22,13 +43,40 @@ export class TrainingDetailPage {
   readonly data = inject(DataService);
   private readonly user = inject(UserContextService);
   private readonly fb = inject(FormBuilder);
+  private readonly courseApi = inject(CourseApiService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly trainingId = toSignal(
     this.route.paramMap.pipe(map((p) => p.get('trainingId') ?? '')),
     { initialValue: '' }
   );
 
-  readonly training = computed<TrainingModel | undefined>(() => this.data.getTrainingById(this.trainingId()));
+  readonly apiCourse = signal<TrainingModel | null>(null);
+
+  constructor() {
+    effect(() => {
+      const id = this.trainingId();
+      this.apiCourse.set(null);
+      if (!id) return;
+      if (this.data.getTrainingById(id)) return;
+      if (id.startsWith('demo-') && DEMO_TRAININGS[id]) {
+        this.apiCourse.set(DEMO_TRAININGS[id]);
+        return;
+      }
+      this.courseApi
+        .getCourseById(id)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (course) => this.apiCourse.set(courseToTraining(course)),
+          error: () => this.apiCourse.set(null)
+        });
+    });
+  }
+
+  readonly training = computed<TrainingModel | undefined>(() => {
+    const id = this.trainingId();
+    return this.data.getTrainingById(id) ?? this.apiCourse() ?? undefined;
+  });
   readonly role = this.user.role;
   readonly enrolled = computed(() => this.user.participation().enrolledTrainingIds.includes(this.trainingId()));
   readonly enrollmentMode = computed(() => {

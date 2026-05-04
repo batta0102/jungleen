@@ -1,0 +1,173 @@
+<div class="buddy-system-card">
+  <div class="card-header">
+    <div class="flex items-center justify-between">
+      <h3 class="card-title">
+        <span class="mr-2">👥</span>
+        Buddy System
+      </h3>
+      <div class="flex items-center space-x-2">
+        <button 
+          (click)="goToMonitoring()"
+          class="text-sm text-gray-600 hover:text-gray-900 transition-colors">
+          Monitoring
+        </button>
+        <button 
+          (click)="goToBuddyRequests()"
+          class="text-sm text-indigo-600 hover:text-indigo-800 font-medium transition-colors">
+          Gérer →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  @if (isLoading) {
+    <div class="card-content">
+      <div class="flex flex-col items-center justify-center py-8">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mb-4"></div>
+        <p class="text-gray-600 text-sm">Chargement des données...</p>
+      </div>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (error) {
+    <div class="card-content">
+      <div class="flex items-center justify-center py-8">
+        <div class="text-center">
+          <div class="text-red-600 text-2xl mb-2">❌</div>
+          <p class="text-red-800 text-sm">{{ error }}</p>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Content -->
+  @if (!isLoading && !error) {
+    <div class="card-content">
+      <!-- Statistiques principales -->
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-icon pending">
+            <span>⏳</span>
+          </div>
+          <div class="stat-info">
+            <p class="stat-value" [class]="getPendingRequestsColor()">
+              {{ stats.pendingRequests }}
+            </p>
+            <p class="stat-label">En attente</p>
+          </div>
+        </div>
+
+        <div class="stat-item">
+          <div class="stat-icon active">
+            <span>✅</span>
+          </div>
+          <div class="stat-info">
+            <p class="stat-value text-green-600">{{ stats.activeBuddies }}</p>
+            <p class="stat-label">Actifs</p>
+          </div>
+        </div>
+
+        <div class="stat-item">
+          <div class="stat-icon sessions">
+            <span>📅</span>
+          </div>
+          <div class="stat-info">
+            <p class="stat-value text-blue-600">{{ stats.totalSessions }}</p>
+            <p class="stat-label">Sessions</p>
+          </div>
+        </div>
+
+        <div class="stat-item">
+          <div class="stat-icon completed">
+            <span>🏁</span>
+          </div>
+          <div class="stat-info">
+            <p class="stat-value text-purple-600">{{ stats.completedBuddies }}</p>
+            <p class="stat-label">Terminés</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alertes pour les demandes en attente -->
+      @if (hasPendingRequests()) {
+        <div class="alert-section">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <span class="alert-icon">⚠️</span>
+              <div>
+                <p class="alert-title">{{ getPendingRequestsAlert() }}</p>
+                <p class="alert-description">
+                  {{ stats.pendingRequests }} demande{{ stats.pendingRequests > 1 ? 's' : '' }} en attente de validation
+                </p>
+              </div>
+            </div>
+            <button 
+              (click)="goToBuddyRequests()"
+              class="alert-button">
+              Traiter
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- Activités récentes -->
+      <div class="activities-section">
+        <div class="activities-header">
+          <h4 class="activities-title">
+            <span class="mr-2">📊</span>
+            Activités récentes
+          </h4>
+          <button 
+            (click)="goToMonitoring()"
+            class="activities-link">
+            Voir tout
+          </button>
+        </div>
+
+        <div class="activities-list">
+          @for (activity of recentActivities.slice(0, 3); track activity.id) {
+            <div class="activity-item">
+              <div class="activity-icon" [class]="getActivityColor(activity.type)">
+                <span>{{ getActivityIcon(activity.type) }}</span>
+              </div>
+              <div class="activity-content">
+                <p class="activity-title">{{ activity.title }}</p>
+                <p class="activity-description">{{ activity.description }}</p>
+                <div class="activity-meta">
+                  <span class="activity-time">{{ formatRelativeTime(activity.timestamp) }}</span>
+                  @if (activity.clubName) {
+                    <span class="activity-club">{{ activity.clubName }}</span>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Actions rapides -->
+      <div class="actions-section">
+        <div class="actions-grid">
+          <button 
+            (click)="goToBuddyRequests()"
+            class="action-button primary">
+            <span class="action-icon">📝</span>
+            <span class="action-text">Demandes</span>
+            @if (stats.pendingRequests > 0) {
+              <span class="action-badge">{{ stats.pendingRequests }}</span>
+            }
+          </button>
+
+          <button 
+            (click)="goToMonitoring()"
+            class="action-button secondary">
+            <span class="action-icon">📊</span>
+            <span class="action-text">Monitoring</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

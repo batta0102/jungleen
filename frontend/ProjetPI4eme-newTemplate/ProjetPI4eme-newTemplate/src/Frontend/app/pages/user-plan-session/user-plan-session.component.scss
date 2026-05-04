@@ -1,0 +1,417 @@
+// Styles pour le composant UserPlanSession
+// Utilisation de Tailwind CSS principalement, avec quelques personnalisations
+
+.container {
+  min-height: calc(100vh - 200px);
+}
+
+// Animation pour les cards
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Appliquer l'animation aux cards
+.form-card {
+  animation: slideInUp 0.5s ease-out;
+}
+
+// Animation pour les étapes
+@keyframes fadeInStep {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.step-card {
+  animation: fadeInStep 0.6s ease-out;
+}
+
+// Effet de shimmer pendant le chargement
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.loading-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  h1 {
+    font-size: 2rem;
+  }
+}
+
+// Personnalisation des boutons de durée
+.duration-button {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  &.selected {
+    border-color: #3b82f6;
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+    transform: scale(1.05);
+  }
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(59, 130, 246, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+  }
+  
+  &:hover::before {
+    width: 100px;
+    height: 100px;
+  }
+}
+
+// Animation pour le succès
+@keyframes successAnimation {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.success-card {
+  animation: successAnimation 0.6s ease-out;
+}
+
+// Styles pour les champs de formulaire
+.form-field {
+  transition: all 0.3s ease;
+  
+  &:focus {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+  }
+}
+
+// Personnalisation du datetime-local
+input[type="datetime-local"] {
+  &::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    filter: invert(0.5);
+  }
+  
+  &::-webkit-inner-spin-button {
+    display: none;
+  }
+}
+
+// Animation pour les suggestions
+@keyframes slideInSuggestion {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.suggestion-button {
+  animation: slideInSuggestion 0.3s ease-out;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// Styles pour le textarea
+.session-textarea {
+  resize: none;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f8fafc;
+  
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f8fafc;
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+}
+
+// Animation pour le récapitulatif
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.summary-card {
+  animation: slideUp 0.8s ease-out;
+}
+
+// Personnalisation des boutons de soumission
+.submit-button {
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+  }
+  
+  &:hover::before {
+    width: 300px;
+    height: 300px;
+  }
+  
+  &:disabled {
+    &::before {
+      display: none;
+    }
+  }
+}
+
+// Animation pour les messages d'avertissement
+@keyframes pulseWarning {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+.warning-message {
+  animation: pulseWarning 2s infinite;
+}
+
+// Responsive pour les boutons de durée
+@media (max-width: 640px) {
+  .duration-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+  
+  .duration-button {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+    
+    .icon {
+      font-size: 1.5rem;
+    }
+  }
+}
+
+// Animation pour le chargement
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+// Effet de glassmorphism pour le header
+.header-glass {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(139, 92, 246, 0.9));
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+// Personnalisation des transitions
+.transition-all {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+// Styles pour les états désactivés
+.disabled-state {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+// Animation pour les messages d'erreur
+@keyframes fadeInError {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.error-message {
+  animation: fadeInError 0.3s ease-out;
+}
+
+// Styles pour les compteurs de caractères
+.character-counter {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.05em;
+  font-size: 0.875rem;
+}
+
+// Personnalisation des badges de suggestion
+.suggestion-badge {
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+  }
+  
+  &:hover::after {
+    transform: scaleX(1);
+  }
+}
+
+// Animation pour le récapitulatif
+@keyframes fadeInSummary {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.summary-item {
+  animation: fadeInSummary 0.5s ease-out;
+}
+
+// Styles pour les alertes info
+.info-alert {
+  border-left: 4px solid #3b82f6;
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  
+  &.warning {
+    border-left-color: #f59e0b;
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+  }
+}
+
+// Personnalisation des champs avec erreurs
+.field-error {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+  
+  &:focus {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+  }
+}
+
+// Animation pour les boutons suggérés
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.suggestion-group {
+  .suggestion-button {
+    animation: bounceIn 0.5s ease-out;
+    
+    @for $i from 1 through 8 {
+      &:nth-child(#{$i}) {
+        animation-delay: #{$i * 0.1}s;
+      }
+    }
+  }
+}

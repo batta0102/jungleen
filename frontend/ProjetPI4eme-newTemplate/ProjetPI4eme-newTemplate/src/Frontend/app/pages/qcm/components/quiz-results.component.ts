@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
-import { AdmissionApiService, QcmDto, QuestionDto, ChoiceDto } from '../../../core/services/admission-api.service';
+import { ChangeDetectionStrategy, Component, computed, input, output, signal, effect } from '@angular/core';
+import { AdmissionApiService, QcmDto, QuestionDto, ChoiceDto, ReponseDonneeWithChoicesDto } from '../../../core/services/admission-api.service';
 import { inject } from '@angular/core';
 
 interface ReviewQuestion {
@@ -28,29 +28,40 @@ export class QuizResultsComponent {
   readonly percentage = input.required<number>();
   readonly timeTaken = input.required<number>();
   readonly sessionId = input.required<number>();
+  readonly cheatingDetected = input(false);
   
   readonly closed = output<void>();
 
+  // Track actual responses from backend
+  readonly responses = signal<Map<number, ReponseDonneeWithChoicesDto>>(new Map());
+  readonly loadingResponses = signal(true);
+
   readonly reviewQuestions = computed(() => {
     const questions = this.quiz().questions ?? [];
+    const responsesMap = this.responses();
+
     return questions.map((q, idx) => {
       const correctIds = (q.choix ?? [])
         .filter(c => c.estCorrect)
         .map(c => c.id)
         .sort((a, b) => a - b);
 
-      // This is placeholder - in real app, would fetch actual responses from backend
+      // Get the response for this question from the backend data
+      const response = responsesMap.get(q.id);
+      const selectedIds = response?.choixSelectionnes?.map(c => c.id) ?? [];
+
       return {
         id: q.id,
         content: q.contenu,
         choices: (q.choix ?? []).sort((a, b) => a.ordre - b.ordre),
-        selectedChoiceIds: [] as number[],
-        isCorrect: false
+        selectedChoiceIds: selectedIds,
+        isCorrect: response?.estCorrect ?? false
       };
     });
   });
 
   readonly gradeLetter = computed(() => {
+    if (this.cheatingDetected()) return 'F';
     const pct = this.percentage();
     if (pct >= 90) return 'A';
     if (pct >= 80) return 'B';
@@ -60,6 +71,7 @@ export class QuizResultsComponent {
   });
 
   readonly gradeColor = computed(() => {
+    if (this.cheatingDetected()) return 'danger';
     const pct = this.percentage();
     if (pct >= 80) return 'success';
     if (pct >= 60) return 'warning';
@@ -67,6 +79,31 @@ export class QuizResultsComponent {
   });
 
   readonly expandedQuestion = signal<number | null>(null);
+
+  constructor() {
+    // Load responses when session ID changes
+    effect(() => {
+      this.loadingResponses.set(true);
+      const sessionId = this.sessionId();
+      this.admissionApi.getReponsesBySession(sessionId).subscribe({
+        next: (responses) => {
+          const map = new Map<number, ReponseDonneeWithChoicesDto>();
+          responses.forEach(r => {
+            if (r.question?.id) {
+              map.set(r.question.id, r);
+            }
+          });
+          this.responses.set(map);
+          this.loadingResponses.set(false);
+          console.log('✅ Loaded responses for session:', sessionId, map);
+        },
+        error: (err) => {
+          console.error('❌ Error loading responses:', err);
+          this.loadingResponses.set(false);
+        }
+      });
+    });
+  }
 
   formatTime(seconds: number): string {
     const mins = Math.floor(seconds / 60);

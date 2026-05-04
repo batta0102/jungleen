@@ -96,6 +96,232 @@
   cursor: not-allowed;
 }
 
+// Styles pour les onglets
+.tabs-nav {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem 0;
+  border-bottom: 2px solid var(--jie-border);
+  margin-bottom: 2rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: transparent;
+  border: none;
+  border-radius: 0.5rem 0.5rem 0 0;
+  color: var(--jie-text);
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  position: relative;
+
+  &:hover {
+    background: color-mix(in srgb, var(--jie-bg) 20%, transparent);
+  }
+
+  &.active {
+    background: var(--jie-bg);
+    color: var(--jie-teal);
+    font-weight: 600;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--jie-teal);
+      border-radius: 1px;
+    }
+  }
+
+  .tab-icon {
+    font-size: 1rem;
+  }
+}
+
+.tabs-content {
+  min-height: 400px;
+}
+
+.tab-panel {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.panel-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.panel-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--jie-text);
+  margin: 0 0 1rem 0;
+}
+
+.panel-description {
+  color: var(--jie-text);
+  opacity: 0.8;
+  margin: 0 0 2rem 0;
+  font-size: 1rem;
+}
+
+// Contenu de l'onglet Détails
+.club-description {
+  background: var(--jie-bg);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border: 1px solid var(--jie-border);
+
+  p {
+    color: var(--jie-text);
+    line-height: 1.6;
+    margin: 0;
+  }
+}
+
+.club-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.info-item {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  border: 1px solid var(--jie-border);
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--jie-shadow);
+  }
+}
+
+.info-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--jie-text);
+  margin: 0 0 0.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.info-text {
+  color: var(--jie-text);
+  opacity: 0.8;
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+// Contenu de l'onglet Buddies
+.buddies-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  background: var(--jie-bg);
+  border-radius: 1rem;
+  border: 1px solid var(--jie-border);
+}
+
+.placeholder-icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+  opacity: 0.6;
+}
+
+.placeholder-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--jie-text);
+  margin: 0 0 1rem 0;
+}
+
+.placeholder-text {
+  color: var(--jie-text);
+  opacity: 0.8;
+  margin: 0 0 2rem 0;
+  max-width: 400px;
+  line-height: 1.6;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .btn-icon {
+    font-size: 1rem;
+  }
+
+  &.btn-primary {
+    background: var(--jie-teal);
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    &:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+  }
+
+  &.btn-ghost {
+    background: transparent;
+    color: var(--jie-text);
+    border: 1px solid var(--jie-border);
+
+    &:hover {
+      background: var(--jie-bg);
+    }
+  }
+}
+
+// Animation
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive design
 @media (max-width: 680px) {
   .club-title {
     font-size: 1.6rem;
@@ -107,5 +333,67 @@
 
   .nav-btn.right {
     right: 0.6rem;
+  }
+
+  .tabs-nav {
+    gap: 0.25rem;
+    padding: 0.75rem 0;
+  }
+
+  .tab-btn {
+    padding: 0.625rem 1rem;
+    font-size: 0.8rem;
+  }
+
+  .panel-content {
+    padding: 0 0.5rem;
+  }
+
+  .club-info-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .info-item {
+    padding: 1rem;
+  }
+
+  .buddies-placeholder {
+    padding: 2rem 1rem;
+  }
+
+  .placeholder-icon {
+    font-size: 3rem;
+  }
+
+  .placeholder-title {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .club-title {
+    font-size: 1.4rem;
+  }
+
+  .tab-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .tab-icon {
+    font-size: 0.875rem;
+  }
+
+  .panel-title {
+    font-size: 1.25rem;
+  }
+
+  .info-item {
+    padding: 0.75rem;
+  }
+
+  .placeholder-icon {
+    font-size: 2.5rem;
   }
 }

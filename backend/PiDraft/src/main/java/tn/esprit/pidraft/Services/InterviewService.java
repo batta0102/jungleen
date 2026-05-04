@@ -21,50 +21,24 @@ public class InterviewService {
     public Interview add(Interview i){
         System.out.println("🔔 InterviewService.add() called");
         
-        // Validate and fetch the full Candidature from DB
-        if (i.getCandidature() == null || i.getCandidature().getId() == null) {
-            throw new IllegalArgumentException("Candidature ID is required");
+        // Fetch the full Candidature from DB so we have email, name, etc.
+        if (i.getCandidature() != null && i.getCandidature().getId() != null) {
+            Candidature fullCandidature = candidatureRepository.findById(i.getCandidature().getId())
+                    .orElse(null);
+            if (fullCandidature != null) {
+                i.setCandidature(fullCandidature);
+                System.out.println("✅ Loaded full candidature: " + fullCandidature.getNom() + " / " + fullCandidature.getEmail());
+            }
         }
         
-        Candidature fullCandidature = candidatureRepository.findById(i.getCandidature().getId())
-                .orElseThrow(() -> new IllegalArgumentException("Candidature not found with ID: " + i.getCandidature().getId()));
+        Interview savedInterview = repository.save(i);
+        System.out.println("✅ Interview saved with ID: " + savedInterview.getId());
         
-        i.setCandidature(fullCandidature);
-        System.out.println("✅ Loaded full candidature: " + fullCandidature.getNom() + " / " + fullCandidature.getEmail());
+        // Send email notification after saving interview
+        System.out.println("🔔 Interview saved, triggering email...");
+        sendInterviewEmail(savedInterview);
         
-        // Set default values for potentially null fields
-        if (i.getDateInterview() == null) {
-            i.setDateInterview(java.time.LocalDateTime.now().plusDays(7));
-        }
-        if (i.getType() == null || i.getType().isEmpty()) {
-            i.setType("EN_LIGNE");
-        }
-        if (i.getResultat() == null || i.getResultat().isEmpty()) {
-            i.setResultat("EN_ATTENTE");
-        }
-        if (i.getCommentaire() == null) {
-            i.setCommentaire("");
-        }
-        if (i.getMeetLink() == null) {
-            i.setMeetLink("");
-        }
-        
-        System.out.println("📝 Interview details - Type: " + i.getType() + ", Date: " + i.getDateInterview() + ", Candidate: " + fullCandidature.getNom());
-        
-        try {
-            Interview savedInterview = repository.save(i);
-            System.out.println("✅ Interview saved with ID: " + savedInterview.getId());
-            
-            // Send email notification after saving interview
-            System.out.println("🔔 Interview saved, email notifications temporarily disabled");
-            // sendInterviewEmail(savedInterview);
-            
-            return savedInterview;
-        } catch (Exception e) {
-            System.err.println("❌ Error saving interview: " + e.getMessage());
-            e.printStackTrace();
-            throw new RuntimeException("Failed to save interview: " + e.getMessage(), e);
-        }
+        return savedInterview;
     }
 
     private void sendInterviewEmail(Interview interview) {
@@ -81,16 +55,16 @@ public class InterviewService {
                 
                 // Null-check candidate email before sending
                 if (candidateEmail != null && !candidateEmail.isEmpty()) {
+                    // Format interview date nicely
+                    String formattedDate = interview.getDateInterview() != null ?
+                        interview.getDateInterview().format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy 'at' h:mm a")) :
+                        "TBD";
+                    
+                    String interviewType = interview.getType();
+                    String meetLink = interview.getMeetLink();
+                    
+                    System.out.println("📧 Calling EmailService.sendInterviewEmail()");
                     try {
-                        // Format interview date nicely
-                        String formattedDate = interview.getDateInterview() != null ?
-                            interview.getDateInterview().format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy 'at' h:mm a")) :
-                            "TBD";
-                        
-                        String interviewType = interview.getType();
-                        String meetLink = interview.getMeetLink();
-                        
-                        System.out.println("📧 Calling EmailService.sendInterviewEmail()");
                         emailService.sendInterviewEmail(
                             candidateEmail,   // ✅ Real candidate email
                             candidateName,
@@ -100,10 +74,9 @@ public class InterviewService {
                             meetLink
                         );
                         System.out.println("✅ Email sent to real candidate: " + candidateEmail);
-                    } catch (Exception mailException) {
-                        // Log email error but don't fail the interview creation
-                        System.err.println("⚠️ Failed to send email to " + candidateEmail + ": " + mailException.getMessage());
-                        mailException.printStackTrace();
+                    } catch (Exception emailEx) {
+                        System.err.println("⚠️ Email notification failed (non-blocking): " + emailEx.getMessage());
+                        // Do not throw - email is a nice-to-have, not required for the interview to be created
                     }
                 } else {
                     System.out.println("❌ No email found for candidate: " + candidateName);
@@ -112,7 +85,7 @@ public class InterviewService {
                 System.out.println("⚠️ Cannot send email - interview has no candidature");
             }
         } catch (Exception e) {
-            System.err.println("❌ Unexpected error in sendInterviewEmail: " + e.getMessage());
+            System.err.println("❌ Failed to process interview email: " + e.getMessage());
             e.printStackTrace();
         }
     }

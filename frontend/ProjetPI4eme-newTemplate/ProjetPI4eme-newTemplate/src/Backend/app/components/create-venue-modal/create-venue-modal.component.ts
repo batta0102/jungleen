@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AppModalComponent } from '../ui/modal.component';
+import { VenueMapPickerComponent } from '../venue-map-picker/venue-map-picker.component';
 
 export interface VenueFormData {
 	name: string;
@@ -21,7 +22,7 @@ export interface VenueFormData {
 @Component({
 	selector: 'app-create-venue-modal',
 	standalone: true,
-	imports: [CommonModule, FormsModule, AppModalComponent],
+	imports: [CommonModule, FormsModule, AppModalComponent, VenueMapPickerComponent],
 	template: `
 		<app-modal [isOpen]="isOpen" [title]="title" (close)="close()" [maxWidth]="'700px'">
 			<form (ngSubmit)="handleSubmit()" class="space-y-5">
@@ -141,29 +142,13 @@ export interface VenueFormData {
 
 					<!-- Right Column -->
 					<div class="space-y-4">
-						<!-- Map Placeholder -->
-						<div class="relative">
-							<div class="h-32 bg-gray-100 rounded-lg overflow-hidden border border-border">
-								<div class="w-full h-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center relative">
-									<!-- Map placeholder with location marker -->
-									<div class="absolute inset-0 opacity-30">
-										<svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 400 200">
-											<rect fill="#e8f5e9" width="400" height="200"/>
-											<path d="M0 100 Q100 50 200 100 T400 100" stroke="#c8e6c9" fill="none" stroke-width="2"/>
-											<path d="M0 150 Q100 100 200 150 T400 150" stroke="#c8e6c9" fill="none" stroke-width="2"/>
-										</svg>
-									</div>
-									<div class="relative z-10 text-center">
-										<div class="w-8 h-8 bg-primary rounded-full mx-auto flex items-center justify-center shadow-lg">
-											<span class="text-white text-sm">📍</span>
-										</div>
-										<p class="text-xs text-secondary mt-1">{{ form.city || 'Hinsdale, OH' }}</p>
-									</div>
-								</div>
-							</div>
-							<button type="button" class="absolute top-2 right-2 text-xs bg-white px-2 py-1 rounded border border-border text-primary hover:bg-light">
-								📍 Set Location
-							</button>
+						<!-- Interactive Map -->
+						<div>
+							<label class="block text-sm font-medium text-text mb-2">Location Map</label>
+							<app-venue-map-picker 
+								[initialLocation]="form"
+								(locationSelected)="onLocationSelected($event)"
+							></app-venue-map-picker>
 						</div>
 
 						<!-- Venue Type -->
@@ -385,6 +370,15 @@ export class CreateVenueModalComponent {
 			items.splice(idx, 1);
 		}
 		this.form.equipmentCsv = items.join(', ');
+	}
+
+	onLocationSelected(location: any): void {
+		this.form.address = location.address;
+		this.form.city = location.city;
+		this.form.country = location.country;
+		this.form.postalCode = location.postalCode;
+		this.form.latitude = location.latitude;
+		this.form.longitude = location.longitude;
 	}
 
 	close(): void {

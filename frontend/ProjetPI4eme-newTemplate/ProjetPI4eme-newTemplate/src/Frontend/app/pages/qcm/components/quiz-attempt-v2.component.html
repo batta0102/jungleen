@@ -1,4 +1,13 @@
 <div class="quiz-attempt-container">
+  <!-- Toast Notification for Tab Switching Alerts -->
+  <app-toast-notification
+    [message]="toastMessage()"
+    [type]="toastType()"
+    [isVisible]="toastVisible()"
+    [duration]="toastDuration()"
+    (closed)="closeToast()"
+  />
+
   <!-- Timer Bar -->
   <div class="timer-bar" [class.warning]="isTimeWarning()" [class.critical]="isTimeCritical()">
     <div class="timer-display">

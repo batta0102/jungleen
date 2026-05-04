@@ -7,7 +7,13 @@
     </div>
     
     <div class="results-summary">
-      <h1 class="results-title">Quiz Complete! 🎉</h1>
+      <h1 class="results-title">
+        @if (cheatingDetected()) {
+          Quiz Failed - Integrity Violation
+        } @else {
+          Quiz Complete! 🎉
+        }
+      </h1>
       <p class="results-quiz-name">{{ quiz().titre }}</p>
       
       <div class="stats-grid">
@@ -29,21 +35,25 @@
 
   <!-- Performance Feedback -->
   <section class="feedback-section" [class]="'feedback-' + gradeColor()">
-    @switch (gradeLetter()) {
-      @case ('A') {
-        <p><strong>Excellent!</strong> You demonstrated strong mastery of this material. Keep up the great work!</p>
-      }
-      @case ('B') {
-        <p><strong>Well done!</strong> You have a solid understanding of the concepts. Review any incorrect answers to strengthen your knowledge.</p>
-      }
-      @case ('C') {
-        <p><strong>Good effort!</strong> You're making progress. Consider reviewing the material and retaking the quiz to improve your score.</p>
-      }
-      @case ('D') {
-        <p><strong>Almost there!</strong> You're getting closer. Take time to study the material carefully and try again.</p>
-      }
-      @case ('F') {
-        <p><strong>Keep learning!</strong> Don't be discouraged. Review the material thoroughly and practice more before retaking the quiz.</p>
+    @if (cheatingDetected()) {
+      <p><strong>Caught cheating.</strong> You switched tabs multiple times, so this attempt was automatically submitted and marked as failed.</p>
+    } @else {
+      @switch (gradeLetter()) {
+        @case ('A') {
+          <p><strong>Excellent!</strong> You demonstrated strong mastery of this material. Keep up the great work!</p>
+        }
+        @case ('B') {
+          <p><strong>Well done!</strong> You have a solid understanding of the concepts. Review any incorrect answers to strengthen your knowledge.</p>
+        }
+        @case ('C') {
+          <p><strong>Good effort!</strong> You're making progress. Consider reviewing the material and retaking the quiz to improve your score.</p>
+        }
+        @case ('D') {
+          <p><strong>Almost there!</strong> You're getting closer. Take time to study the material carefully and try again.</p>
+        }
+        @case ('F') {
+          <p><strong>Keep learning!</strong> Don't be discouraged. Review the material thoroughly and practice more before retaking the quiz.</p>
+        }
       }
     }
   </section>

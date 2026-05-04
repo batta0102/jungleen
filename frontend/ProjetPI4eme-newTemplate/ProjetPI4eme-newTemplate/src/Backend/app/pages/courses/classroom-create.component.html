@@ -1,0 +1,67 @@
+<main class="courses-page mx-auto max-w-5xl px-6 py-8">
+  <nav class="course-switcher" aria-label="Course admin sections">
+    @for (tab of tabs; track tab.label) {
+      <a class="course-switcher__tab" [routerLink]="tab.link">{{ tab.label }}</a>
+    }
+  </nav>
+
+  <section class="form-shell">
+    <header class="form-header">
+      <div>
+        <p class="eyebrow">GestionCours</p>
+        <h1 class="page-title">{{ headerTitle() }}</h1>
+        <p class="form-lead">Create or update classrooms for the course administration flow.</p>
+      </div>
+
+      <button type="button" class="nav-button nav-button--ghost" (click)="cancel()">Back to classrooms</button>
+    </header>
+
+    <section *ngIf="loading()" class="route-context">
+      <p class="route-title">Loading</p>
+      <p class="route-copy">Loading the selected classroom from GestionCours...</p>
+    </section>
+
+    <section *ngIf="error()" class="route-context route-context--error">
+      <p class="route-title">Error</p>
+      <p class="route-copy">{{ error() }}</p>
+    </section>
+
+    <form class="course-form" (ngSubmit)="save()">
+      <div class="form-grid">
+        <label class="field field--full">
+          <span>Name</span>
+          <input [ngModel]="form().name" (ngModelChange)="setName($event)" name="name" type="text" placeholder="Room 101" />
+        </label>
+
+        <label class="field">
+          <span>Capacity</span>
+          <input [ngModel]="form().capacity" (ngModelChange)="setCapacity($event)" name="capacity" type="number" min="1" />
+        </label>
+
+        <label class="field">
+          <span>Type</span>
+          <select [ngModel]="form().type" (ngModelChange)="setType($event)" name="type">
+            @for (type of types; track type) {
+              <option [value]="type">{{ type }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="field field--full">
+          <span>Features description</span>
+          <textarea [ngModel]="form().featuresDescription" (ngModelChange)="setFeaturesDescription($event)" name="featuresDescription" rows="4" placeholder="Projector, whiteboard, flexible layout"></textarea>
+        </label>
+
+        <label class="field field--full">
+          <span>Sketchfab model UID</span>
+          <input [ngModel]="form().sketchfabModelUid" (ngModelChange)="setSketchfabModelUid($event)" name="sketchfabModelUid" type="text" placeholder="7d8f1234abcd" />
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="nav-button nav-button--ghost" (click)="cancel()">Cancel</button>
+        <button type="submit" class="nav-button nav-button--primary" [disabled]="saving() || loading()">{{ submitLabel() }}</button>
+      </div>
+    </form>
+  </section>
+</main>

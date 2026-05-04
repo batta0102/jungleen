@@ -1,0 +1,103 @@
+{
+  "info": {
+    "name": "Advanced API - Attendance & Progress",
+    "description": "Marquer 5 présences (PRESENT/ABSENT/PRESENT/PRESENT/EXCUSED) puis appeler /advanced/progress → 80% eligible=true",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8098" },
+    { "key": "courseType", "value": "ONSITE" },
+    { "key": "courseId", "value": "1" },
+    { "key": "studentId", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "1 - Mark PRESENT (session 1)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sessionType\": \"ONSITE\",\n  \"sessionId\": 1,\n  \"studentId\": 1,\n  \"status\": \"PRESENT\",\n  \"note\": \"\"\n}"
+        },
+        "url": "{{baseUrl}}/advanced/attendance/mark",
+        "description": "Présent session 1"
+      }
+    },
+    {
+      "name": "2 - Mark ABSENT (session 2)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sessionType\": \"ONSITE\",\n  \"sessionId\": 2,\n  \"studentId\": 1,\n  \"status\": \"ABSENT\",\n  \"note\": \"\"\n}"
+        },
+        "url": "{{baseUrl}}/advanced/attendance/mark",
+        "description": "Absent session 2"
+      }
+    },
+    {
+      "name": "3 - Mark PRESENT (session 3)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sessionType\": \"ONSITE\",\n  \"sessionId\": 3,\n  \"studentId\": 1,\n  \"status\": \"PRESENT\",\n  \"note\": \"\"\n}"
+        },
+        "url": "{{baseUrl}}/advanced/attendance/mark",
+        "description": "Présent session 3"
+      }
+    },
+    {
+      "name": "4 - Mark PRESENT (session 4)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sessionType\": \"ONSITE\",\n  \"sessionId\": 4,\n  \"studentId\": 1,\n  \"status\": \"PRESENT\",\n  \"note\": \"\"\n}"
+        },
+        "url": "{{baseUrl}}/advanced/attendance/mark",
+        "description": "Présent session 4"
+      }
+    },
+    {
+      "name": "5 - Mark EXCUSED (session 5)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sessionType\": \"ONSITE\",\n  \"sessionId\": 5,\n  \"studentId\": 1,\n  \"status\": \"EXCUSED\",\n  \"note\": \"\"\n}"
+        },
+        "url": "{{baseUrl}}/advanced/attendance/mark",
+        "description": "Excusé session 5"
+      }
+    },
+    {
+      "name": "6 - GET Progress (80% eligible)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 200', function() { pm.response.to.have.status(200); });",
+              "var j = pm.response.json();",
+              "pm.test('totalSessions = 5', function() { pm.expect(j.totalSessions).to.eql(5); });",
+              "pm.test('presentOrExcused = 4', function() { pm.expect(j.presentOrExcused).to.eql(4); });",
+              "pm.test('attendanceRate = 80', function() { pm.expect(j.attendanceRate).to.eql(80); });",
+              "pm.test('eligible = true', function() { pm.expect(j.eligible).to.eql(true); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/advanced/progress?courseType=ONSITE&courseId=1&studentId=1",
+        "description": "Après les 5 marquages: 4/5 PRESENT ou EXCUSED → 80% → eligible=true"
+      }
+    }
+  ]
+}

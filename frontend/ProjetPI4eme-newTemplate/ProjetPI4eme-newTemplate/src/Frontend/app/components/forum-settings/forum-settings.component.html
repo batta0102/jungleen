@@ -1,0 +1,228 @@
+<div class="forum-settings-container">
+  <!-- Header -->
+  <div class="settings-header">
+    <h3 class="settings-title">
+      <span class="title-icon">⚙️</span>
+      Paramètres du forum
+    </h3>
+    <div class="header-actions">
+      <button 
+        (click)="saveSettings()" 
+        class="btn btn-primary"
+        [disabled]="loading"
+      >
+        <span class="btn-icon">💾</span>
+        Sauvegarder
+      </button>
+      <button 
+        (click)="resetToDefaults()" 
+        class="btn btn-secondary"
+        [disabled]="loading"
+      >
+        <span class="btn-icon">🔄</span>
+        Réinitialiser
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading state -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="loading-spinner"></div>
+    <span>Chargement des paramètres...</span>
+  </div>
+
+  <!-- Settings form -->
+  <div *ngIf="!loading" class="settings-form">
+    <!-- Section Fonctionnalités -->
+    <div class="settings-section">
+      <h4 class="section-title">
+        <span class="section-icon">🚀</span>
+        Fonctionnalités avancées
+      </h4>
+      
+      <div class="settings-grid">
+        <!-- Infinite Scroll -->
+        <div class="setting-item">
+          <div class="setting-info">
+            <label class="setting-label">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="settings.infiniteScroll"
+                (change)="updateSetting('infiniteScroll', settings.infiniteScroll)"
+                class="setting-checkbox"
+              >
+              <span class="checkbox-text">
+                <span class="feature-icon">📜</span>
+                Défilement infini
+              </span>
+            </label>
+            <p class="setting-description">
+              Charge automatiquement les messages lors du défilement pour une navigation continue
+            </p>
+          </div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="setting-item">
+          <div class="setting-info">
+            <label class="setting-label">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="settings.notifications"
+                (change)="updateSetting('notifications', settings.notifications)"
+                class="setting-checkbox"
+              >
+              <span class="checkbox-text">
+                <span class="feature-icon">🔔</span>
+                Notifications
+              </span>
+            </label>
+            <p class="setting-description">
+              Recevez des alertes quand quelqu'un commente ou aime vos messages
+            </p>
+          </div>
+        </div>
+
+        <!-- Édition -->
+        <div class="setting-item">
+          <div class="setting-info">
+            <label class="setting-label">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="settings.editing"
+                (change)="updateSetting('editing', settings.editing)"
+                class="setting-checkbox"
+              >
+              <span class="checkbox-text">
+                <span class="feature-icon">✏️</span>
+                Édition de messages
+              </span>
+            </label>
+            <p class="setting-description">
+              Permet aux auteurs de modifier leurs messages et commentaires
+            </p>
+          </div>
+        </div>
+
+        <!-- Signalement -->
+        <div class="setting-item">
+          <div class="setting-info">
+            <label class="setting-label">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="settings.reporting"
+                (change)="updateSetting('reporting', settings.reporting)"
+                class="setting-checkbox"
+              >
+              <span class="checkbox-text">
+                <span class="feature-icon">🚨</span>
+                Signalement
+              </span>
+            </label>
+            <p class="setting-description">
+              Permet de signaler les messages inappropriés pour modération
+            </p>
+          </div>
+        </div>
+
+        <!-- Badges -->
+        <div class="setting-item">
+          <div class="setting-info">
+            <label class="setting-label">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="settings.badges"
+                (change)="updateSetting('badges', settings.badges)"
+                class="setting-checkbox"
+              >
+              <span class="checkbox-text">
+                <span class="feature-icon">🏆</span>
+                Badges utilisateur
+              </span>
+            </label>
+            <p class="setting-description">
+              Affiche les badges et récompenses pour les utilisateurs actifs
+            </p>
+          </div>
+        </div>
+
+        <!-- Recherche -->
+        <div class="setting-item">
+          <div class="setting-info">
+            <label class="setting-label">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="settings.search"
+                (change)="updateSetting('search', settings.search)"
+                class="setting-checkbox"
+              >
+              <span class="checkbox-text">
+                <span class="feature-icon">🔍</span>
+                Recherche
+              </span>
+            </label>
+            <p class="setting-description">
+              Permet de rechercher dans les messages du forum
+            </p>
+          </div>
+        </div>
+
+        <!-- Épinglage -->
+        <div class="setting-item">
+          <div class="setting-info">
+            <label class="setting-label">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="settings.pinning"
+                (change)="updateSetting('pinning', settings.pinning)"
+                class="setting-checkbox"
+              >
+              <span class="checkbox-text">
+                <span class="feature-icon">📌</span>
+                Épinglage (admin)
+              </span>
+            </label>
+            <p class="setting-description">
+              Permet aux administrateurs d'épingler les messages importants
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section Affichage -->
+    <div class="settings-section">
+      <h4 class="section-title">
+        <span class="section-icon">🎨</span>
+        Affichage
+      </h4>
+      
+      <div class="setting-item">
+        <div class="setting-info">
+          <label class="setting-label">
+            <span class="feature-icon">📊</span>
+            Éléments par page
+          </label>
+          <select 
+            [(ngModel)]="settings.itemsPerPage"
+            (change)="updateSetting('itemsPerPage', settings.itemsPerPage)"
+            class="setting-select"
+          >
+            <option *ngFor="let option of getItemsPerPageOptions()" [value]="option">
+              {{ option }} messages
+            </option>
+          </select>
+          <p class="setting-description">
+            Nombre de messages affichés par page dans le forum
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Saved feedback -->
+  <div *ngIf="saved" class="saved-feedback">
+    <span class="feedback-icon">✅</span>
+    Paramètres sauvegardés avec succès
+  </div>
+</div>

@@ -6,7 +6,6 @@ import { AppTabsComponent, type Tab } from '../../components/ui/tabs.component';
 import { AppBadgeComponent } from '../../components/ui/badge.component';
 import { AssessmentService, BackQcmDto, BackQuestionDto, BackResultatDto, BackSessionTestDto } from '../../services/assessment.service';
 import { AdmissionAnalyticsComponent } from '../../components/analytics/admission-analytics.component';
-import { PaginationComponent } from '../../shared/pagination/pagination.component';
 
 interface Assessment {
   id: number;
@@ -40,7 +39,7 @@ interface EditableQuestion {
 @Component({
   selector: 'app-assessments',
   standalone: true,
-  imports: [CommonModule, FormsModule, AppTabsComponent, AppBadgeComponent, AdmissionAnalyticsComponent, PaginationComponent],
+  imports: [CommonModule, FormsModule, AppTabsComponent, AppBadgeComponent, AdmissionAnalyticsComponent],
   templateUrl: './assessments.component.html',
   styleUrls: ['./assessments.component.scss']
 })
@@ -136,36 +135,6 @@ export class AssessmentsComponent {
     if (rows.length === 0) return 0;
     return Number((rows.reduce((sum, row) => sum + row.pourcentage, 0) / rows.length).toFixed(1));
   });
-
-  // Pagination for assessments
-  readonly assessmentsPage = signal(1);
-  readonly assessmentsPageSize = 3;
-  readonly assessmentsPageCount = computed(() => Math.max(1, Math.ceil(this.assessments().length / this.assessmentsPageSize)));
-  readonly pagedAssessments = computed(() => {
-    const start = (this.assessmentsPage() - 1) * this.assessmentsPageSize;
-    return this.assessments().slice(start, start + this.assessmentsPageSize);
-  });
-
-  setAssessmentsPage(p: number): void {
-    if (p >= 1 && p <= this.assessmentsPageCount()) {
-      this.assessmentsPage.set(p);
-    }
-  }
-
-  // Pagination for results
-  readonly resultsPage = signal(1);
-  readonly resultsPageSize = 10;
-  readonly resultsPageCount = computed(() => Math.max(1, Math.ceil(this.results().length / this.resultsPageSize)));
-  readonly pagedResults = computed(() => {
-    const start = (this.resultsPage() - 1) * this.resultsPageSize;
-    return this.results().slice(start, start + this.resultsPageSize);
-  });
-
-  setResultsPage(p: number): void {
-    if (p >= 1 && p <= this.resultsPageCount()) {
-      this.resultsPage.set(p);
-    }
-  }
 
   constructor() {
     this.loadData();

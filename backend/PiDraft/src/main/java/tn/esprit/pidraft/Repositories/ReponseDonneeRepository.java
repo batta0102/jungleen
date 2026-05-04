@@ -2,6 +2,7 @@ package tn.esprit.pidraft.Repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import tn.esprit.pidraft.entities.ReponseDonnee;
 import tn.esprit.pidraft.dto.analytics.FailedQuestionStatDto;
 import tn.esprit.pidraft.dto.analytics.WeakAreaStatDto;
@@ -9,6 +10,8 @@ import tn.esprit.pidraft.dto.analytics.WeakAreaStatDto;
 import java.util.List;
 
 public interface ReponseDonneeRepository extends JpaRepository<ReponseDonnee, Long> {
+
+	List<ReponseDonnee> findBySessionTestId(Long sessionTestId);
 
 	@Query("""
 			select new tn.esprit.pidraft.dto.analytics.FailedQuestionStatDto(

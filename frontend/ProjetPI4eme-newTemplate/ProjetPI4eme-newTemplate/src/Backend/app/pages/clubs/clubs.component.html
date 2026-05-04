@@ -1,75 +1,152 @@
 <main class="mx-auto max-w-7xl px-6 py-8">
-  <header class="mb-8 flex items-start justify-between">
-    <div>
-      <h1 class="font-serif text-5xl font-semibold text-text">Language Clubs</h1>
-      <p class="mt-2 text-secondary">Learning communities and extracurricular activities.</p>
-    </div>
-    <button class="inline-flex items-center gap-3 bg-primary text-white px-5 py-3 rounded-lg shadow-md hover:bg-primary-hover">
-      <span class="text-xl">+</span>
-      Create Club
-    </button>
-  </header>
 
-  <div class="border-b border-border pb-4 mb-6">
-    <nav class="flex gap-8 text-sm text-secondary">
-      <a class="border-b-2 border-primary pb-2 text-primary font-semibold">Active Clubs</a>
-      <a class="pb-2 hover:text-text">Activities</a>
-      <a class="pb-2 hover:text-text">Members</a>
-    </nav>
+
+  <!-- LOADING SPINNER - AJOUTÉ ICI -->
+  <div *ngIf="isLoading" class="text-center py-8">
+    <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
+    <p class="mt-2 text-secondary">Loading clubs...</p>
   </div>
 
-  <div class="grid grid-cols-1 gap-4 md:grid-cols-3 items-center mb-6">
-    <div class="md:col-span-2">
-      <div class="relative w-full">
-        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-secondary">🔍</span>
-        <input placeholder="Search clubs..." class="w-full pl-12 pr-4 py-3 rounded-lg border border-border placeholder-secondary" />
+  <!-- CONTENU PRINCIPAL - visible seulement quand isLoading = false -->
+  <div *ngIf="!isLoading">
+    <header class="mb-8 flex items-start justify-between">
+      <div>
+        <h1 class="font-serif text-5xl font-semibold text-text">Language Clubs</h1>
+        <p class="mt-2 text-secondary">Learning communities and extracurricular activities.</p>
+      </div>
+      <div class="flex gap-3">
+        <button
+          class="inline-flex items-center gap-3 bg-primary text-white px-5 py-3 rounded-lg shadow-md hover:bg-primary-hover"
+          (click)="navigateToCreateClub()">
+          <span class="text-xl">+</span>
+          <span>Create Club</span>
+        </button>
+        <a
+          routerLink="/admin/membership-management"
+          class="inline-flex items-center gap-3 bg-primary text-white px-6 py-3 rounded-xl shadow-lg hover:bg-primary-hover transition-all duration-300 transform hover:-translate-y-0.5">
+          <span class="text-xl">👥</span>
+          <span>Manage Memberships</span>
+        </a>
+        <a
+          routerLink="/admin/buddies/requests"
+          (click)="logNavigation('admin/buddies/requests')"
+          class="inline-flex items-center gap-3 bg-primary text-white px-6 py-3 rounded-xl shadow-lg hover:bg-primary-hover transition-all duration-300 transform hover:-translate-y-0.5">
+          <span class="text-xl">👥</span>
+          <span>Manage Buddy Requests</span>
+        </a>
+        <a
+          routerLink="/admin/buddies/monitoring"
+          (click)="logNavigation('admin/buddies/monitoring')"
+          class="inline-flex items-center gap-3 bg-primary text-white px-6 py-3 rounded-xl shadow-lg hover:bg-primary-hover transition-all duration-300 transform hover:-translate-y-0.5">
+          <span class="text-xl">📊</span>
+          <span>Monitoring</span>
+        </a>
+      </div>
+    </header>
+
+    <div class="border-b border-border pb-4 mb-6">
+      <nav class="flex gap-8 text-sm text-secondary">
+        <a class="border-b-2 border-primary pb-2 text-primary font-semibold">Active Clubs</a>
+        <a class="pb-2 hover:text-text">Activities</a>
+        <a class="pb-2 hover:text-text">Members</a>
+      </nav>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-3 items-center mb-6">
+      <div class="md:col-span-2">
+        <div class="relative w-full">
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-secondary">🔍</span>
+          <input 
+            placeholder="Search clubs..." 
+            [(ngModel)]="searchTerm"
+            (input)="onSearchChange()"
+            class="w-full pl-12 pr-4 py-3 rounded-lg border border-border placeholder-secondary" />
+        </div>
+      </div>
+      <div class="flex gap-4 justify-end">
+        <select class="px-4 py-3 rounded-lg border border-border bg-white">
+          <option>All Types</option>
+        </select>
       </div>
     </div>
-    <div class="flex gap-4 justify-end">
-      <select class="px-4 py-3 rounded-lg border border-border bg-white">
-        <option>All Types</option>
-      </select>
-    </div>
-  </div>
 
-  <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-    <div class="lg:col-span-2">
-      <div class="space-y-6">
-        <app-club-card *ngFor="let club of clubs" [title]="club.title" [description]="club.description" [icon]="club.icon" [members]="club.members" [location]="club.location" [color]="club.color"></app-club-card>
-      </div>
-    </div>
+    <!-- Clubs -->
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <!-- Colonne des clubs -->
+      <div class="lg:col-span-2">
+        <div class="space-y-6">
+          <!-- Affichage des clubs filtrés -->
+          <div *ngFor="let club of filteredClubs || []" class="bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-lg transition-shadow">
+            <div class="flex items-start gap-4">
+              <!-- Icon -->
+              <div class="text-4xl w-16 h-16 flex items-center justify-center bg-gray-50 rounded-full">
+                {{ getIconForLevel(club?.niveau) }}
+              </div>
 
-    <div class="space-y-6">
-      <!-- Upcoming Meetups -->
-      <div app-card>
-        <h3 class="font-serif text-lg font-semibold text-text mb-4">Upcoming Meetups</h3>
-        <div class="space-y-4">
-          <div *ngFor="let event of upcomingEvents" class="flex items-start justify-between">
-            <div>
-              <p class="text-sm font-medium text-text">{{ event.title }}</p>
-              <p class="text-xs text-secondary">{{ event.time }}</p>
+              <!-- Contenu -->
+              <div class="flex-1">
+                <h3 class="text-xl font-semibold text-gray-900">{{ club.nom }}</h3>
+                <p class="text-gray-600 mt-2 line-clamp-2">{{ club.description }}</p>
+
+                <!-- Métadonnées -->
+                <div class="flex flex-wrap gap-4 mt-4 text-sm text-gray-500">
+                  <span class="flex items-center gap-1">
+                    <span class="text-lg">👥</span>
+                    {{ club.capacityMax || 0 }} places
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <span class="text-lg">📍</span>
+                    {{ getLocationForLevel(club.niveau) }}
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <span class="text-lg">🎯</span>
+                    {{ club.niveau }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Badge de couleur -->
+              <div class="w-2 h-16 rounded-full"
+                   [ngStyle]="{'background-color': getColorHex(getColorForIndex(club.idClub))}">
+              </div>
             </div>
-            <span class="text-xs text-secondary bg-light px-3 py-1 rounded-full">RSVP</span>
+
+            <!-- Boutons Delete, Update et Forum -->
+            <div class="mt-4 flex justify-end gap-3">
+              <button (click)="viewForum(club.idClub)"
+                      class="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                <span class="text-lg">💬</span>
+                Forum
+              </button>
+              <button (click)="deleteClub(club.idClub)"
+                      class="inline-flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                <span class="text-lg">🗑️</span>
+                Delete
+              </button>
+              <button (click)="updateClub(club.idClub)"
+                      class="inline-flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors"
+                      style="background: linear-gradient(135deg, #22C55E, #16A34A); hover:opacity-90;">
+                <span class="text-lg">✏️</span>
+                Update
+              </button>
+            </div>
+          </div>
+
+          <!-- Message si aucun club après chargement ou recherche -->
+          <div *ngIf="filteredClubs.length === 0" class="text-center py-8 text-secondary">
+            <p *ngIf="searchTerm">No clubs found matching "{{ searchTerm }}"</p>
+            <p *ngIf="!searchTerm">No clubs available</p>
           </div>
         </div>
       </div>
 
-      <!-- Recent Activity -->
-      <div app-card>
-        <h3 class="font-serif text-lg font-semibold text-text mb-4">Recent Activity</h3>
-        <div class="space-y-4">
-          <div *ngFor="let activity of recentActivities" class="flex items-start gap-3">
-            <span class="text-primary font-bold text-lg">•</span>
-            <div>
-              <p class="text-sm font-medium text-text">{{ activity.title }}</p>
-              <p class="text-xs text-secondary">{{ activity.desc }}</p>
-              <p class="text-xs text-secondary mt-1">{{ activity.time }}</p>
-            </div>
-          </div>
-        </div>
       </div>
-    </div>
-  </div>
 
-  <app-empty-state *ngIf="clubs.length === 0" title="No clubs found" description="Be the first to create a club" emoji="🎭"></app-empty-state>
+    <!-- Empty state (si pas de clubs filtrés) -->
+    <app-empty-state *ngIf="filteredClubs.length === 0"
+                     title="No clubs found"
+                     description="Be the first to create a club"
+                     emoji="🎭">
+    </app-empty-state>
+  </div>
 </main>

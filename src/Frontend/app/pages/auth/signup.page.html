@@ -1,0 +1,23 @@
+<div class="container auth-wrap">
+  <div class="card auth-card">
+    <div class="card-body">
+      <div class="auth-head">
+        <div class="auth-title">Create your account</div>
+        <div class="muted">Continue to the secure Keycloak registration page.</div>
+      </div>
+
+      @if (error(); as msg) {
+        <div class="alert" role="alert">{{ msg }}</div>
+      }
+
+      <button class="btn btn-primary" type="button" (click)="submit()" [disabled]="busy()">
+        Sign up with Keycloak
+      </button>
+
+      <div class="muted auth-foot">
+        Already have an account?
+        <a routerLink="/front/login">Log in</a>
+      </div>
+    </div>
+  </div>
+</div>

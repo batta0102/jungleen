@@ -1,0 +1,338 @@
+// Styles pour le composant UserBuddyRequest
+// Utilisation de Tailwind CSS principalement, avec quelques personnalisations
+
+.container {
+  min-height: calc(100vh - 200px);
+}
+
+// Animation pour les cards
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Appliquer l'animation aux cards
+.form-card {
+  animation: slideInUp 0.5s ease-out;
+}
+
+// Personnalisation des radio buttons
+input[type="radio"]:checked + label {
+  border-color: #3b82f6;
+  background-color: #eff6ff;
+}
+
+// Animation pour les étapes
+@keyframes fadeInStep {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.step-card {
+  animation: fadeInStep 0.6s ease-out;
+}
+
+// Effet de shimmer pendant le chargement
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.loading-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  h1 {
+    font-size: 2rem;
+  }
+}
+
+// Personnalisation des labels de radio
+.radio-label {
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  &.selected {
+    border-color: #3b82f6;
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  }
+}
+
+// Animation pour le succès
+@keyframes successAnimation {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.success-card {
+  animation: successAnimation 0.6s ease-out;
+}
+
+// Styles pour les avatars
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-weight: bold;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+// Animation pour les boutons
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
+}
+
+.submit-button {
+  animation: pulse 2s infinite;
+  
+  &:hover {
+    animation: none;
+  }
+}
+
+// Personnalisation des badges
+.role-badge {
+  background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+  border: 1px solid #d1d5db;
+  font-weight: 500;
+}
+
+// Effet de focus pour les champs
+.form-field {
+  transition: all 0.3s ease;
+  
+  &:focus {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+  }
+}
+
+// Animation pour les erreurs
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+}
+
+.error-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+// Styles pour les étapes
+.step-indicator {
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 100%;
+    width: 100%;
+    height: 2px;
+    background: #e5e7eb;
+    z-index: -1;
+  }
+  
+  &.completed::before {
+    background: #10b981;
+  }
+  
+  &.active::before {
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  }
+}
+
+// Personnalisation du textarea
+.message-textarea {
+  resize: none;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f8fafc;
+  
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f8fafc;
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+}
+
+// Animation pour le récapitulatif
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.summary-card {
+  animation: slideUp 0.8s ease-out;
+}
+
+// Styles pour les niveaux
+.niveau-option {
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+    transition: left 0.5s ease;
+  }
+  
+  &:hover::before {
+    left: 100%;
+  }
+}
+
+// Responsive pour les cards
+@media (max-width: 640px) {
+  .form-card {
+    padding: 1rem;
+  }
+  
+  .radio-label {
+    padding: 0.75rem;
+  }
+  
+  .avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+}
+
+// Animation pour le chargement
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+// Effet de glassmorphism pour le succès
+.success-glass {
+  background: rgba(16, 185, 129, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+// Personnalisation des transitions
+.transition-all {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+// Styles pour l'état désactivé
+.disabled-state {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+// Animation pour les messages d'erreur
+@keyframes fadeInError {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.error-message {
+  animation: fadeInError 0.3s ease-out;
+}
+
+// Styles pour le compteur de caractères
+.character-counter {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.05em;
+}

@@ -1,0 +1,53 @@
+/* Bell + list: read vs unread contrast */
+
+.nb-host {
+  display: block;
+}
+
+.nb-list {
+  scrollbar-width: thin;
+}
+
+/* Badge always visible — strong red if any unread, softer red so "0" stays readable on green nav */
+.nb-badge {
+  background: rgb(220 38 38 / 0.85);
+  color: #fff;
+}
+
+.nb-badge.nb-badge--has-unread {
+  background: #dc2626;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.5);
+}
+
+.nb-trigger--loading {
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+.nb-item--unread {
+  cursor: pointer;
+  background: linear-gradient(90deg, rgb(14 165 233 / 0.12) 0%, rgb(241 245 249) 100%);
+  border-color: rgb(14 165 233 / 0.45) !important;
+  border-left-width: 4px;
+  border-left-color: rgb(2 132 199) !important;
+}
+
+.nb-item--unread:hover {
+  background: linear-gradient(90deg, rgb(14 165 233 / 0.2) 0%, rgb(226 232 240) 100%);
+}
+
+.nb-item--read {
+  cursor: default;
+  background: rgb(248 250 252);
+  border-color: rgb(226 232 240) !important;
+  opacity: 0.92;
+}
+
+.nb-item--read:hover {
+  background: rgb(241 245 249);
+}
+
+.nb-item.nb-item--clickable:focus-visible {
+  outline: 2px solid rgb(2 132 199);
+  outline-offset: 2px;
+}

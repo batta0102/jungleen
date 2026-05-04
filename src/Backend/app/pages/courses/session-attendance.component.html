@@ -1,0 +1,58 @@
+<main class="mx-auto max-w-4xl px-6 py-8">
+  <header class="mb-6 flex items-center justify-between">
+    <div>
+      <h1 class="font-serif text-3xl font-semibold text-text">Session Attendance</h1>
+      <p class="mt-1 text-secondary">
+        Review and mark attendance for this session.
+      </p>
+    </div>
+    <button
+      type="button"
+      (click)="backToCourseAttendance()"
+      class="px-4 py-2 rounded-lg border border-border text-sm text-secondary hover:bg-gray-50"
+    >
+      ← Back to course sessions
+    </button>
+  </header>
+
+  <section class="mb-4 text-sm text-secondary space-y-1">
+    <div>Course ID: <span class="font-mono">{{ courseId() }}</span></div>
+    <div>Course Type: <span class="font-mono uppercase">{{ courseType() }}</span></div>
+    <div>Session ID: <span class="font-mono">{{ sessionId() }}</span></div>
+  </section>
+
+  @if (error()) {
+    <div class="mb-4 p-4 rounded-lg bg-red-50 text-red-800 flex items-center justify-between">
+      <span>{{ error() }}</span>
+      <button
+        type="button"
+        (click)="loadAttendance(sessionId())"
+        class="px-3 py-1 rounded bg-red-200 hover:bg-red-300"
+      >
+        Retry
+      </button>
+    </div>
+  }
+
+  @if (loading()) {
+    <p class="text-secondary">Loading attendance data...</p>
+  }
+
+  @if (!loading() && attendance()) {
+    <section class="mb-6 rounded-lg border border-border bg-white p-4">
+      <h2 class="text-sm font-semibold text-text mb-2">Current attendance snapshot</h2>
+      <pre class="text-xs bg-gray-50 rounded p-3 overflow-auto">{{ attendance() | json }}</pre>
+    </section>
+  }
+
+  <section class="mt-4">
+    <button
+      type="button"
+      (click)="markAttendance()"
+      class="px-4 py-2 rounded-lg bg-primary text-white text-sm hover:bg-primary-hover"
+    >
+      Mark Attendance (session)
+    </button>
+  </section>
+</main>
+

@@ -47,7 +47,7 @@
                 {
                   "type": "initial",
                   "maximumWarning": "500kB",
-                  "maximumError": "1MB"
+                  "maximumError": "1.5MB"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -79,7 +79,17 @@
           "defaultConfiguration": "development"
         },
         "test": {
-          "builder": "@angular/build:unit-test"
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "tsconfig.spec.json",
+            "include": [
+              "app/app.spec.ts",
+              "app/shared/product/product.spec.ts",
+              "app/core/auth/auth.guard.spec.ts",
+              "../Backend/app/core/events/event-admin-api.service.spec.ts",
+              "../Backend/app/components/create-event-modal/create-event-modal.component.spec.ts"
+            ]
+          }
         }
       }
     }

@@ -31,9 +31,14 @@ public class SessionTest {
     private Double pourcentage;
     private Long tempsPasseSecondes;
 
+    // Tab switch detection & integrity tracking
+    private Integer tabSwitchCount = 0;
+    private Boolean suspiciousBehavior = false;
+
     // User identification
     private String userName;
     private String userEmail;
+    private Long userId; // Link to user-service
 
     @ManyToOne
     @JsonIgnoreProperties({"questions"})
@@ -42,4 +47,8 @@ public class SessionTest {
     @OneToMany(mappedBy = "sessionTest", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<ReponseDonnee> reponses;
+
+    @OneToMany(mappedBy = "sessionTest", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<QuizEvent> quizEvents;
 }

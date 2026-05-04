@@ -144,13 +144,108 @@
             <div class="mt-2">
               <p class="text-sm font-medium text-secondary mb-1">CV:</p>
               @if (isCvFile(candidature.cv)) {
-                <button class="inline-flex items-center gap-2 bg-primary text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90" type="button" (click)="downloadCV(candidature.cv)">
-                  📄 Download CV - {{ getCvName(candidature.cv) }}
-                </button>
+                <div class="flex flex-wrap gap-2">
+                  <button class="inline-flex items-center gap-2 bg-primary text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90" type="button" (click)="downloadCV(candidature.cv)">
+                    📄 Download CV - {{ getCvName(candidature.cv) }}
+                  </button>
+                  <button 
+                    class="inline-flex items-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 disabled:opacity-60 disabled:cursor-not-allowed" 
+                    type="button" 
+                    (click)="analyzeCv(candidature.id)"
+                    [disabled]="analysisInProgress()">
+                    {{ analysisInProgress() && selectedAnalysisId() === candidature.id ? '⏳ Analyzing...' : '🤖 Analyze CV' }}
+                  </button>
+                </div>
               } @else {
                 <p class="text-sm text-secondary">{{ candidature.cv }}</p>
               }
             </div>
+
+            <!-- CV Analysis Results -->
+            @if (getAnalysisResult(candidature.id); as analysis) {
+              <div class="mt-4 p-4 rounded-lg border-2" [style.border-color]="getDecisionColor(analysis.decision)">
+                <div class="flex items-center justify-between mb-3">
+                  <h4 class="font-semibold text-text">CV Analysis Results</h4>
+                  <button 
+                    class="text-xs px-2 py-1 rounded border border-secondary text-secondary hover:bg-light"
+                    (click)="toggleAnalysisDetails(candidature.id)">
+                    {{ selectedAnalysisId() === candidature.id ? 'Hide' : 'Show' }} Details
+                  </button>
+                </div>
+
+                <!-- Score Badge -->
+                <div class="flex items-center gap-3 mb-3">
+                  <div class="text-center">
+                    <div class="text-3xl font-bold text-text">{{ analysis.score.toFixed(1) }}/100</div>
+                    <div class="text-xs text-secondary">Overall Score</div>
+                  </div>
+                  <div 
+                    class="px-4 py-2 rounded-full text-white font-semibold"
+                    [style.background-color]="getDecisionColor(analysis.decision)">
+                    {{ analysis.decision }}
+                  </div>
+                </div>
+
+                <!-- Score Breakdown -->
+                <div class="grid grid-cols-3 gap-2 mb-3 text-sm">
+                  <div class="bg-light p-2 rounded text-center">
+                    <div class="font-semibold text-text">{{ analysis.experienceScore.toFixed(0) }}%</div>
+                    <div class="text-xs text-secondary">Experience</div>
+                  </div>
+                  <div class="bg-light p-2 rounded text-center">
+                    <div class="font-semibold text-text">{{ analysis.skillsScore.toFixed(0) }}%</div>
+                    <div class="text-xs text-secondary">Skills</div>
+                  </div>
+                  <div class="bg-light p-2 rounded text-center">
+                    <div class="font-semibold text-text">{{ analysis.educationScore.toFixed(0) }}%</div>
+                    <div class="text-xs text-secondary">Education</div>
+                  </div>
+                </div>
+
+                <!-- Details (collapsible) -->
+                @if (selectedAnalysisId() === candidature.id) {
+                  <div class="space-y-3 p-3 bg-light rounded">
+                    <!-- Explanation -->
+                    <div>
+                      <h5 class="font-medium text-text mb-2 text-sm">Key Findings:</h5>
+                      <ul class="text-sm text-secondary space-y-1">
+                        @for (point of analysis.explanation; track point) {
+                          <li>{{ point }}</li>
+                        }
+                      </ul>
+                    </div>
+
+                    <!-- Matched Skills -->
+                    @if (analysis.matchedSkills.length > 0) {
+                      <div>
+                        <h5 class="font-medium text-text mb-2 text-sm">✓ Matched Skills:</h5>
+                        <div class="flex flex-wrap gap-2">
+                          @for (skill of analysis.matchedSkills; track skill) {
+                            <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">
+                              {{ skill }}
+                            </span>
+                          }
+                        </div>
+                      </div>
+                    }
+
+                    <!-- Missing Skills -->
+                    @if (analysis.missingSkills.length > 0) {
+                      <div>
+                        <h5 class="font-medium text-text mb-2 text-sm">✗ Missing Skills:</h5>
+                        <div class="flex flex-wrap gap-2">
+                          @for (skill of analysis.missingSkills; track skill) {
+                            <span class="inline-block bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-medium">
+                              {{ skill }}
+                            </span>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
 
             <label class="field mt-3">
               Admin comment

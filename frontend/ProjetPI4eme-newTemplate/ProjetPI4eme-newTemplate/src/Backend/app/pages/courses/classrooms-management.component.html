@@ -1,0 +1,80 @@
+<main class="courses-page mx-auto max-w-6xl px-6 py-8">
+  <nav class="course-switcher" aria-label="Course admin sections">
+    @for (tab of tabs; track tab.label) {
+      <a class="course-switcher__tab" [routerLink]="tab.link">{{ tab.label }}</a>
+    }
+  </nav>
+
+  <section class="page-shell">
+    <header class="hero-row">
+      <div>
+        <p class="eyebrow">GestionCours</p>
+        <h1 class="page-title">Classrooms</h1>
+        <p class="page-lead">Manage classrooms and their backend metadata from the Spring Boot service.</p>
+      </div>
+
+      <button type="button" class="nav-button nav-button--primary" (click)="createClassroom()">Add Classroom</button>
+    </header>
+
+    <section class="stats-grid">
+      <article class="stat-card"><span class="stat-label">TOTAL</span><strong>{{ totalCount() }}</strong></article>
+      <article class="stat-card"><span class="stat-label">PREMIUM</span><strong>{{ premiumCount() }}</strong></article>
+      <article class="stat-card stat-card--accent"><span class="stat-label">MEETING</span><strong>{{ meetingCount() }}</strong></article>
+    </section>
+
+    <section class="filters-row">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input [ngModel]="search()" (ngModelChange)="search.set($event)" type="text" class="search-input" placeholder="Search classrooms" name="search" />
+      </div>
+
+      <button type="button" class="nav-button nav-button--ghost" (click)="loadClassrooms()">Refresh</button>
+    </section>
+
+    <section *ngIf="loading()" class="route-context">
+      <p class="route-title">Loading</p>
+      <p class="route-copy">Loading classrooms from GestionCours...</p>
+    </section>
+
+    <section *ngIf="error()" class="route-context route-context--error">
+      <p class="route-title">Error</p>
+      <p class="route-copy">{{ error() }}</p>
+    </section>
+
+    <section class="table-shell">
+      <div class="table-wrap">
+        <table class="courses-table">
+          <thead>
+            <tr>
+              <th>NAME</th>
+              <th>CAPACITY</th>
+              <th>TYPE</th>
+              <th>FEATURES</th>
+              <th>MODEL UID</th>
+              <th>ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (classroom of filteredClassrooms(); track classroom.id) {
+              <tr>
+                <td><strong>{{ classroom.name }}</strong></td>
+                <td>{{ classroom.capacity }}</td>
+                <td>
+                  <span class="type-badge" [class.type-badge--online]="classroom.type === 'STANDARD'" [class.type-badge--onsite]="classroom.type !== 'STANDARD'">{{ classroom.type }}</span>
+                </td>
+                <td>{{ classroom.featuresDescription || '-' }}</td>
+                <td>{{ classroom.sketchfabModelUid || '-' }}</td>
+                <td>
+                  <div class="row-actions">
+                    <button type="button" class="action-btn action-btn--neutral" (click)="editClassroom(classroom)">Update</button>
+                    <button type="button" class="action-btn action-btn--danger" (click)="deleteClassroom(classroom)">Delete</button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </section>
+</main>

@@ -1,0 +1,77 @@
+<main class="mx-auto max-w-5xl px-6 py-8">
+  <header class="mb-6 flex items-center justify-between">
+    <div>
+      <h1 class="font-serif text-3xl font-semibold text-text">Course Attendance</h1>
+      <p class="mt-1 text-secondary">
+        Select a session of this course and mark attendance.
+      </p>
+    </div>
+    <button
+      type="button"
+      (click)="backToCourses()"
+      class="px-4 py-2 rounded-lg border border-border text-sm text-secondary hover:bg-gray-50"
+    >
+      ← Back to courses
+    </button>
+  </header>
+
+  <section class="mb-4 text-sm text-secondary">
+    <div>Course ID: <span class="font-mono">{{ courseId() }}</span></div>
+    <div>Type: <span class="font-mono uppercase">{{ courseType() }}</span></div>
+  </section>
+
+  @if (error()) {
+    <div class="mb-4 p-4 rounded-lg bg-red-50 text-red-800 flex items-center justify-between">
+      <span>{{ error() }}</span>
+      <button
+        type="button"
+        (click)="loadSessionsForCourse(courseId())"
+        class="px-3 py-1 rounded bg-red-200 hover:bg-red-300"
+      >
+        Retry
+      </button>
+    </div>
+  }
+
+  @if (loading()) {
+    <p class="text-secondary">Loading sessions for this course...</p>
+  }
+
+  @if (!loading() && sessions().length > 0) {
+    <div class="space-y-4">
+      @for (s of sessions(); track s.id) {
+        <div class="flex items-center justify-between rounded-lg border border-border bg-white px-4 py-3">
+          <div>
+            <div class="font-medium text-text">
+              {{ s.title || ('Session ' + s.id) }}
+            </div>
+            <div class="text-xs text-secondary">
+              {{ s.startDate || s.startTime || 'No date' }}
+              @if (s.type) {
+                • <span class="uppercase">{{ s.type }}</span>
+              }
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <button
+              type="button"
+              (click)="openSessionAttendance(s)"
+              class="px-3 py-1.5 rounded-lg bg-primary text-white text-sm hover:bg-primary-hover"
+            >
+              Mark
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  @if (!loading() && sessions().length === 0 && !error()) {
+    <div class="p-6 text-center rounded-lg border border-border bg-gray-50">
+      <p class="text-secondary">
+        No sessions found for this course.
+      </p>
+    </div>
+  }
+</main>
+

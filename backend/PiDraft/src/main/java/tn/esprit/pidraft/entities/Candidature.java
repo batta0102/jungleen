@@ -46,6 +46,8 @@ public class Candidature {
     @JoinColumn(name = "poste_id")
     @JsonIgnoreProperties({"candidatures"})
     private Poste poste;
+    
+    private Long userId; // Link to user-service
 
     // Helper method to get parsed CV data
     public CvData getCvData() {

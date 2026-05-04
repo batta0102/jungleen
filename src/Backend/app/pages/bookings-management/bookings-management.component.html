@@ -1,0 +1,54 @@
+<div class="mx-auto max-w-7xl px-6 py-8">
+  <header class="mb-8 flex items-start justify-between">
+    <div>
+      <h1 class="font-serif text-5xl font-semibold text-text">Bookings Management</h1>
+      <p class="mt-2 text-secondary">Manage course enrollments and bookings.</p>
+    </div>
+  </header>
+
+  @if (error()) {
+    <div class="mb-4 p-4 rounded-lg bg-red-50 text-red-800 flex items-center justify-between">
+      <span>{{ error() }}</span>
+      <button type="button" (click)="load()" class="px-3 py-1 rounded bg-red-200 hover:bg-red-300">Retry</button>
+    </div>
+  }
+
+  @if (loading()) {
+    <p class="text-secondary">Loading bookings...</p>
+  }
+
+  @if (!loading() && bookings().length > 0) {
+    <div class="overflow-x-auto rounded-lg border border-border bg-white">
+      <table class="w-full text-left">
+        <thead class="bg-gray-50 border-b border-border">
+          <tr>
+            <th class="px-4 py-3 font-semibold text-text">COURSE</th>
+            <th class="px-4 py-3 font-semibold text-text">TYPE</th>
+            <th class="px-4 py-3 font-semibold text-text">STATUS</th>
+            <th class="px-4 py-3 font-semibold text-text">DATE</th>
+            <th class="px-4 py-3 font-semibold text-text">ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (b of bookings(); track id(b)) {
+            <tr class="border-b border-border hover:bg-gray-50/50">
+              <td class="px-4 py-3">{{ courseMap()[String(b.courseId)] ?? '-' }}</td>
+              <td class="px-4 py-3">{{ b.type ?? '-' }}</td>
+              <td class="px-4 py-3">{{ b.status ?? '-' }}</td>
+              <td class="px-4 py-3">{{ b.bookedAt ?? '-' }}</td>
+              <td class="px-4 py-3">
+                <button type="button" (click)="deleteBooking(b.id!)" class="px-3 py-1 rounded border border-red-500 text-red-600 text-sm hover:bg-red-50">Delete</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (!loading() && bookings().length === 0 && !error()) {
+    <div class="p-8 text-center rounded-lg border border-border bg-gray-50">
+      <p class="text-secondary">No bookings yet.</p>
+    </div>
+  }
+</div>

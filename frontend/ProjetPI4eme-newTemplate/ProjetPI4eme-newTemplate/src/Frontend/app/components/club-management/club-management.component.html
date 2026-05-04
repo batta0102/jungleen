@@ -1,0 +1,303 @@
+<div class="club-management-container">
+  <!-- En-tête -->
+  <div class="header">
+    <h1>🏢 Gestion des Clubs</h1>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="showCreateForm()" [disabled]="isLoading">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Nouveau Club
+      </button>
+      <button class="btn btn-secondary" (click)="refreshClubs()" [disabled]="isLoading">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <polyline points="1 20 1 14 7 14"></polyline>
+          <path d="M20.49 9A9 9 0 0 0 0 5.64 5.64l1.27-1.27m4.16 4.16l1.27 1.27m3.36 3.36l1.27 1.27A9 9 0 0 0 1 20.49 9z"></path>
+        </svg>
+        Actualiser
+      </button>
+    </div>
+  </div>
+
+  <!-- Message d'erreur -->
+  @if (error) {
+    <div class="alert alert-error">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span>{{ error }}</span>
+      <button class="alert-close" (click)="error = null">×</button>
+    </div>
+  }
+
+  <!-- Formulaire -->
+  @if (showForm) {
+    <div class="form-overlay" (click)="hideForm()">
+      <div class="form-container" (click)="$event.stopPropagation()">
+        <div class="form-header">
+          <h2>{{ editingClub ? '✏️ Modifier Club' : '➕ Nouveau Club' }}</h2>
+          <button class="btn-close" (click)="hideForm()">×</button>
+        </div>
+
+        <form [formGroup]="clubForm" (ngSubmit)="onSubmit()" class="club-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="nom">Nom du club *</label>
+              <input 
+                type="text" 
+                id="nom" 
+                formControlName="nom" 
+                class="form-control"
+                [class.error]="hasError('nom', 'required') || hasError('nom', 'minlength')"
+                placeholder="Entrez le nom du club"
+              >
+              @if (hasError('nom', 'required')) {
+                <span class="error-message">{{ getErrorMessage('nom') }}</span>
+              }
+              @if (hasError('nom', 'minlength')) {
+                <span class="error-message">{{ getErrorMessage('nom') }}</span>
+              }
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="description">Description *</label>
+              <textarea 
+                id="description" 
+                formControlName="description" 
+                class="form-control"
+                [class.error]="hasError('description', 'required') || hasError('description', 'minlength')"
+                placeholder="Décrivez le club"
+                rows="3"
+              ></textarea>
+              @if (hasError('description', 'required')) {
+                <span class="error-message">{{ getErrorMessage('description') }}</span>
+              }
+              @if (hasError('description', 'minlength')) {
+                <span class="error-message">{{ getErrorMessage('description') }}</span>
+              }
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="adresse">Adresse *</label>
+              <input 
+                type="text" 
+                id="adresse" 
+                formControlName="adresse" 
+                class="form-control"
+                [class.error]="hasError('adresse', 'required')"
+                placeholder="Adresse complète"
+              >
+              @if (hasError('adresse', 'required')) {
+                <span class="error-message">{{ getErrorMessage('adresse') }}</span>
+              }
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ville">Ville *</label>
+              <input 
+                type="text" 
+                id="ville" 
+                formControlName="ville" 
+                class="form-control"
+                [class.error]="hasError('ville', 'required')"
+                placeholder="Ville"
+              >
+              @if (hasError('ville', 'required')) {
+                <span class="error-message">{{ getErrorMessage('ville') }}</span>
+              }
+            </div>
+            <div class="form-group">
+              <label for="pays">Pays *</label>
+              <input 
+                type="text" 
+                id="pays" 
+                formControlName="pays" 
+                class="form-control"
+                [class.error]="hasError('pays', 'required')"
+                placeholder="Pays"
+              >
+              @if (hasError('pays', 'required')) {
+                <span class="error-message">{{ getErrorMessage('pays') }}</span>
+              }
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="telephone">Téléphone</label>
+              <input 
+                type="tel" 
+                id="telephone" 
+                formControlName="telephone" 
+                class="form-control"
+                [class.error]="hasError('telephone', 'pattern')"
+                placeholder="+33 1 23 45 67 89"
+              >
+              @if (hasError('telephone', 'pattern')) {
+                <span class="error-message">{{ getErrorMessage('telephone') }}</span>
+              }
+            </div>
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input 
+                type="email" 
+                id="email" 
+                formControlName="email" 
+                class="form-control"
+                [class.error]="hasError('email', 'email')"
+                placeholder="contact@club.com"
+              >
+              @if (hasError('email', 'email')) {
+                <span class="error-message">{{ getErrorMessage('email') }}</span>
+              }
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="siteWeb">Site web</label>
+              <input 
+                type="url" 
+                id="siteWeb" 
+                formControlName="siteWeb" 
+                class="form-control"
+                [class.error]="hasError('siteWeb', 'pattern')"
+                placeholder="https://www.club.com"
+              >
+              @if (hasError('siteWeb', 'pattern')) {
+                <span class="error-message">{{ getErrorMessage('siteWeb') }}</span>
+              }
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" (click)="hideForm()">Annuler</button>
+            <button type="submit" class="btn btn-primary" [disabled]="clubForm.invalid">
+              {{ editingClub ? '✏️ Modifier' : '➕ Créer' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Loading -->
+  @if (isLoading) {
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Chargement des clubs...</p>
+    </div>
+  }
+
+  <!-- Liste des clubs -->
+  @if (!isLoading && clubs.length === 0) {
+    <div class="empty-state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v2a2 2 0 002 2h2a2 2 0 002-2v-2m0 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H7a2 2 0 01-2-2v-2"></path>
+      </svg>
+      <h3>Aucun club trouvé</h3>
+      <p>Commencez par créer votre premier club.</p>
+    </div>
+  }
+
+  @if (!isLoading && clubs.length > 0) {
+    <div class="clubs-grid">
+      @for (club of clubs; track club.idClub) {
+        <div class="club-card">
+          <div class="club-header">
+            <h3>{{ club.nom }}</h3>
+            <span class="club-status" [class.active]="club.actif">
+              {{ club.actif ? '✅ Actif' : '⏸️ Inactif' }}
+            </span>
+          </div>
+          
+          <div class="club-info">
+            @if (club.description) {
+              <p class="club-description">{{ club.description }}</p>
+            }
+            
+            <div class="club-details">
+              @if (club.adresse) {
+                <div class="detail-item">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s9-6 9-13-9-13-9-13z"></path>
+                    <polyline points="22 4 12 22 8 18 2"></polyline>
+                  </svg>
+                  <span>{{ club.adresse }}</span>
+                </div>
+              }
+              
+              @if (club.ville && club.pays) {
+                <div class="detail-item">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s9-6 9-13-9-13-9-13z"></path>
+                  </svg>
+                  <span>{{ club.ville }}, {{ club.pays }}</span>
+                </div>
+              }
+              
+              @if (club.telephone) {
+                <div class="detail-item">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 16.92v3a2 2 0 01-2.18 2H19.77a2 2 0 01-2-1.72l-4.6-4.6a2 2 0 01-2.18 0L6.08 16.92a2 2 0 01-2.18 2H4a2 2 0 01-2-2v-3a2 2 0 01.58-1.42L7 8.58A2 2 0 018.08 8H16a2 2 0 012 1.92v4.92a2 2 0 01-.58 1.42L7 20.08A2 2 0 018.08 22H4a2 2 0 01-2-2v-3z"></path>
+                  </svg>
+                  <span>{{ club.telephone }}</span>
+                </div>
+              }
+              
+              @if (club.email) {
+                <div class="detail-item">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                    <polyline points="22,6 12,13 2,9"></polyline>
+                  </svg>
+                  <span>{{ club.email }}</span>
+                </div>
+              }
+              
+              @if (club.siteWeb) {
+                <div class="detail-item">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="2" y1="12" x2="12" y2="12"></line>
+                    <path d="M12 2v10"></path>
+                  </svg>
+                  <a [href]="club.siteWeb" target="_blank" class="website-link">
+                    {{ club.siteWeb }}
+                  </a>
+                </div>
+              }
+            </div>
+          </div>
+          
+          <div class="club-actions">
+            <button class="btn btn-sm btn-secondary" (click)="showEditForm(club)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-1 4 9.5-9.5a2.121 2.121 0 01-3 0z"></path>
+              </svg>
+              Modifier
+            </button>
+            <button class="btn btn-sm btn-danger" (click)="deleteClub(club)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3,6 5,6 19,6"></polyline>
+                <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
+              </svg>
+              Supprimer
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

@@ -1,0 +1,111 @@
+<main class="mx-auto max-w-3xl px-6 py-8">
+  <h1 class="font-serif text-3xl font-semibold text-text mb-6">
+    {{ isEditMode() ? 'Edit Classroom' : 'New Classroom' }}
+  </h1>
+
+  @if (loading() && isEditMode()) {
+    <p class="mb-4 text-secondary">Loading classroom...</p>
+  }
+  @if (error()) {
+    <div class="mb-4 p-4 rounded-lg bg-red-50 text-red-800">{{ error() }}</div>
+  }
+  @if (success()) {
+    <div class="mb-4 p-4 rounded-lg bg-green-50 text-green-800">{{ success() }}</div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
+    <div>
+      <label for="name" class="block text-sm font-medium text-text mb-1">Name *</label>
+      <input
+        id="name"
+        type="text"
+        formControlName="name"
+        class="w-full pl-4 pr-4 py-3 rounded-lg border border-border"
+        [class.border-red-500]="isFieldInvalid('name')"
+        placeholder="e.g. Room 101"
+      />
+      @if (isFieldInvalid('name')) {
+        <p class="mt-1 text-sm text-red-600">{{ getFieldError('name') }}</p>
+      }
+    </div>
+
+    <div>
+      <label for="capacity" class="block text-sm font-medium text-text mb-1">Capacity *</label>
+      <input
+        id="capacity"
+        type="number"
+        formControlName="capacity"
+        class="w-full pl-4 pr-4 py-3 rounded-lg border border-border"
+        [class.border-red-500]="isFieldInvalid('capacity')"
+        min="1"
+      />
+      @if (isFieldInvalid('capacity')) {
+        <p class="mt-1 text-sm text-red-600">{{ getFieldError('capacity') }}</p>
+      }
+    </div>
+
+    <div>
+      <label for="type" class="block text-sm font-medium text-text mb-1">Type *</label>
+      <select
+        id="type"
+        formControlName="type"
+        class="w-full pl-4 pr-4 py-3 rounded-lg border border-border"
+      >
+        <option value="STANDARD">STANDARD</option>
+        <option value="PREMIUM">PREMIUM</option>
+        <option value="MEETING">MEETING</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="location" class="block text-sm font-medium text-text mb-1">Location (optional)</label>
+      <input
+        id="location"
+        type="text"
+        formControlName="location"
+        class="w-full pl-4 pr-4 py-3 rounded-lg border border-border"
+        placeholder="e.g. Building A, 1st floor"
+      />
+    </div>
+
+    <div>
+      <label for="sketchfabModelUid" class="block text-sm font-medium text-text mb-1">Sketchfab model (UID or URL)</label>
+      <input
+        id="sketchfabModelUid"
+        type="text"
+        formControlName="sketchfabModelUid"
+        class="w-full pl-4 pr-4 py-3 rounded-lg border border-border"
+        placeholder="e.g. d62883c59454412cba09c9fefb173d6a or full sketchfab.com model URL"
+      />
+      <p class="mt-1 text-xs text-secondary">Used by the classroom showroom (Sketchfab Viewer API). Public models only unless your Sketchfab account allows embedding.</p>
+    </div>
+
+    <div>
+      <label for="model3dUrl" class="block text-sm font-medium text-text mb-1">Legacy 3D URL (optional)</label>
+      <input
+        id="model3dUrl"
+        type="text"
+        formControlName="model3dUrl"
+        class="w-full pl-4 pr-4 py-3 rounded-lg border border-border"
+        placeholder="Direct .glb URL if you still use model-viewer elsewhere"
+      />
+    </div>
+
+    <div class="flex gap-4 pt-4">
+      <button
+        type="submit"
+        class="px-5 py-3 rounded-lg bg-primary text-white font-medium hover:bg-primary-hover disabled:opacity-50"
+        [disabled]="form.invalid || loading()"
+      >
+        {{ isEditMode() ? 'Update Classroom' : 'Create Classroom' }}
+      </button>
+      <button
+        type="button"
+        (click)="cancel()"
+        class="px-5 py-3 rounded-lg border border-border bg-white hover:bg-gray-50"
+      >
+        Cancel
+      </button>
+    </div>
+  </form>
+</main>

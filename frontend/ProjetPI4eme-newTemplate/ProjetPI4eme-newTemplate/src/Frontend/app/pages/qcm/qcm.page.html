@@ -165,6 +165,7 @@
           [percentage]="quizResult()!.percentage"
           [timeTaken]="quizResult()!.timeTaken"
           [sessionId]="quizResult()!.sessionId"
+          [cheatingDetected]="quizResult()!.cheatingDetected"
           (closed)="onResultsClosed()"
         />
 
@@ -265,6 +266,47 @@
             (click)="confirmUserInfo()"
           >
             Start Quiz →
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- PRE-QUIZ INTEGRITY WARNING MODAL -->
+  @if (showPreQuizWarning()) {
+    <div class="modal-overlay" (click)="cancelPreQuizWarning()">
+      <div class="warning-modal" (click)="$event.stopPropagation()">
+        <div class="warning-icon">⚠️</div>
+        <h2>Quiz Integrity Policy</h2>
+        
+        <div class="warning-content">
+          <p><strong>Important:</strong> During this quiz, we monitor for suspicious behavior to maintain test integrity.</p>
+          
+          <div class="rules-list">
+            <div class="rule-item">
+              <span class="rule-number">1️⃣</span>
+              <p><strong>Tab Switching:</strong> Leaving this tab will be detected.</p>
+            </div>
+            <div class="rule-item">
+              <span class="rule-number">2️⃣</span>
+              <p><strong>First Violation:</strong> You'll receive a warning message.</p>
+            </div>
+            <div class="rule-item">
+              <span class="rule-number">🚨</span>
+              <p><strong>Second Violation:</strong> Your quiz will automatically submit.</p>
+            </div>
+          </div>
+          
+          <div class="warning-highlight">
+            <p>✅ You can navigate freely <strong>within this page</strong> without triggering alerts.</p>
+            <p>❌ Switching to another tab/window will be flagged.</p>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn btn-secondary" (click)="cancelPreQuizWarning()">Cancel</button>
+          <button class="btn btn-primary" (click)="acknowledgePreQuizWarning()">
+            I Understand, Start Quiz →
           </button>
         </div>
       </div>

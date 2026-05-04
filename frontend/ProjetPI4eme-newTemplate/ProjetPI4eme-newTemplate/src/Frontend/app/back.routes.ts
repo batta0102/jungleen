@@ -3,6 +3,9 @@ import { Routes } from '@angular/router';
 // Backend (Admin) components
 import { DashboardComponent } from '../../Backend/app/pages/dashboard/dashboard.component';
 import { CoursesComponent } from '../../Backend/app/pages/courses/courses.component';
+import { CourseFormComponent } from '../../Backend/app/pages/courses/course-form.component';
+import { ClassroomsManagementComponent } from '../../Backend/app/pages/courses/classrooms-management.component';
+import { ClassroomCreateComponent } from '../../Backend/app/pages/courses/classroom-create.component';
 import { ClubsComponent } from '../../Backend/app/pages/clubs/clubs.component';
 import { EventsComponent } from '../../Backend/app/pages/events/events.component';
 import { AssessmentsComponent } from '../../Backend/app/pages/assessments/assessments.component';
@@ -17,6 +20,10 @@ import { GamesComponent } from '../../Backend/app/pages/games/games.component';
 import { NotificationsComponent } from '../../Backend/app/pages/notifications/notifications.component';
 import { AnalyticsComponent } from '../../Backend/app/pages/analytics/analytics.component';
 import { CareerCenterManagementComponent } from '../../Backend/app/pages/career-center-management/career-center-management.component';
+import { CreateClubComponent } from '../../Backend/app/pages/clubs/create-club/create-club.component';
+import { EditClubComponent } from '../../Backend/app/pages/clubs/edit-club/edit-club.component';
+import { ForumMessages } from '../../Backend/app/pages/clubs/forum-messages/forum-messages';
+import { MembershipManagementComponent } from '../../Backend/app/pages/membership-management/membership-management.component';
 
 /**
  * Backend (Admin) application routes
@@ -30,6 +37,46 @@ export const BACK_ROUTES: Routes = [
 		pathMatch: 'full'
 	},
 	{
+		path: 'courses/new',
+		component: CourseFormComponent
+	},
+	{
+		path: 'courses/create',
+		component: CourseFormComponent
+	},
+	{
+		path: 'courses/:id/edit',
+		component: CourseFormComponent
+	},
+	{
+		path: 'courses/classrooms',
+		component: ClassroomsManagementComponent
+	},
+	{
+		path: 'courses/classrooms/create',
+		component: ClassroomCreateComponent
+	},
+	{
+		path: 'courses/classrooms/:id/edit',
+		component: ClassroomCreateComponent
+	},
+	{
+		path: 'courses/sessions',
+		component: CoursesComponent
+	},
+	{
+		path: 'courses/bookings',
+		component: CoursesComponent
+	},
+	{
+		path: 'courses/:courseType/:courseId/attendance/:sessionId',
+		component: CoursesComponent
+	},
+	{
+		path: 'courses/:courseType/:courseId/attendance',
+		component: CoursesComponent
+	},
+	{
 		path: 'dashboard',
 		component: DashboardComponent
 	},
@@ -40,6 +87,22 @@ export const BACK_ROUTES: Routes = [
 	{
 		path: 'clubs',
 		component: ClubsComponent
+	},
+	{
+		path: 'clubs/create',
+		component: CreateClubComponent
+	},
+	{
+		path: 'clubs/edit/:id',
+		component: EditClubComponent
+	},
+	{
+		path: 'clubs/:id/forum',
+		component: ForumMessages
+	},
+	{
+		path: 'membership-management',
+		component: MembershipManagementComponent
 	},
 	{
 		path: 'events',

@@ -1,0 +1,377 @@
+<div class="container mx-auto px-4 py-8 max-w-6xl">
+  <!-- Header -->
+  <header class="mb-8">
+    <div class="flex items-center justify-between mb-6">
+      <button 
+        (click)="goBack()" 
+        class="flex items-center px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors">
+        <span class="mr-2">←</span>
+        Retour aux buddies
+      </button>
+      
+      <div class="flex gap-2">
+        <button 
+          (click)="refreshSessions()" 
+          class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+          <span class="mr-2">🔄</span>
+          Rafraîchir
+        </button>
+        
+        @if (buddy && buddy.status === BuddyMatchStatus.ACTIVE) {
+          <button 
+            (click)="planSession()" 
+            class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2">
+            <span>➕</span>
+            Planifier une session
+          </button>
+        }
+      </div>
+    </div>
+  </header>
+
+  <!-- Loading State -->
+  @if (loading) {
+    <div class="flex flex-col items-center justify-center py-12">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+      <p class="text-gray-600">Chargement des détails...</p>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (error) {
+    <div class="bg-red-50 border border-red-200 rounded-lg p-6 mb-8">
+      <div class="flex items-center">
+        <div class="text-red-600 text-xl mr-3">❌</div>
+        <div>
+          <h3 class="text-red-800 font-semibold">Erreur</h3>
+          <p class="text-red-700">{{ error }}</p>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Buddy Details -->
+  @if (!loading && !error && buddy) {
+    <!-- Buddy Info Card -->
+    <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden mb-8">
+      <div class="bg-gradient-to-r from-blue-500 to-purple-600 p-8">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center">
+            <div class="text-6xl mr-6">{{ getPartnerAvatar() }}</div>
+            <div class="text-white">
+              <h1 class="text-3xl font-bold mb-2">{{ getPartnerName() }}</h1>
+              <p class="text-blue-100 text-lg mb-1">{{ getPartnerEmail() }}</p>
+              <p class="text-blue-200">🏫 {{ buddy.club?.nom || 'Club non spécifié' }}</p>
+            </div>
+          </div>
+          
+          <div class="text-right">
+            <div class="bg-white/20 backdrop-blur-sm rounded-lg p-4">
+              <p class="text-white text-sm mb-1">Statut du buddy</p>
+              <p class="text-white font-bold text-lg">{{ buddy.status }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="p-6 bg-gray-50">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="text-center">
+            <p class="text-gray-600 text-sm mb-1">Date de création</p>
+            <p class="font-semibold text-gray-900">{{ buddy.dateCreation | date:'dd MMM yyyy' }}</p>
+          </div>
+          <div class="text-center">
+            <p class="text-gray-600 text-sm mb-1">ID du buddy</p>
+            <p class="font-semibold text-gray-900">#{{ buddy.idPair }}</p>
+          </div>
+          <div class="text-center">
+            <p class="text-gray-600 text-sm mb-1">Sessions totales</p>
+            <p class="font-semibold text-gray-900">{{ upcomingSessions.length + historicalSessions.length }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+      <!-- Tab Headers -->
+      <div class="border-b border-gray-200">
+        <nav class="flex -mb-px">
+          <button 
+            (click)="switchTab('upcoming')"
+            [class]="'flex-1 py-4 px-6 text-center font-medium transition-colors ' + 
+                   (activeTab === 'upcoming' ? 'border-b-2 border-blue-500 text-blue-600 bg-blue-50' : 'text-gray-500 hover:text-gray-700')">
+            <span class="flex items-center justify-center">
+              📅 Sessions à venir
+              <span class="ml-2 px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                {{ upcomingSessions.length }}
+              </span>
+            </span>
+          </button>
+          <button 
+            (click)="switchTab('history')"
+            [class]="'flex-1 py-4 px-6 text-center font-medium transition-colors ' + 
+                   (activeTab === 'history' ? 'border-b-2 border-blue-500 text-blue-600 bg-blue-50' : 'text-gray-500 hover:text-gray-700')">
+            <span class="flex items-center justify-center">
+              📚 Historique
+              <span class="ml-2 px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs">
+                {{ historicalSessions.length }}
+              </span>
+            </span>
+          </button>
+          <button 
+            (click)="switchTab('calendrier')"
+            [class]="'flex-1 py-4 px-6 text-center font-medium transition-colors ' + 
+                   (activeTab === 'calendrier' ? 'border-b-2 border-[#2D5757] text-[#2D5757] bg-[#F7EDE2]' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50')">
+            <span class="flex items-center justify-center gap-2">
+              <span class="text-xl">📅</span>
+              Calendrier partagé
+            </span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Tab Content -->
+      <div class="p-6">
+        <!-- Sessions à venir -->
+        @if (activeTab === 'upcoming') {
+          @if (upcomingSessions.length === 0) {
+            <div class="text-center py-12">
+              <div class="text-6xl mb-4">📅</div>
+              <h3 class="text-xl font-semibold text-gray-900 mb-2">Aucune session à venir</h3>
+              <p class="text-gray-600 mb-6">Planifiez votre prochaine session avec {{ getPartnerName() }}</p>
+              @if (buddy && buddy.status === BuddyMatchStatus.ACTIVE) {
+                <button 
+                  (click)="planSession()" 
+                  class="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                  <span class="mr-2">➕</span>
+                  Planifier une session
+                </button>
+              }
+            </div>
+          } @else {
+            <div class="space-y-4">
+              @for (session of upcomingSessions; track session.idSession) {
+                <div class="bg-gray-50 rounded-lg p-6 border border-gray-200 hover:shadow-md transition-shadow">
+                  <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center">
+                      <div class="text-3xl mr-4">{{ getSessionStatusIcon(session.status) }}</div>
+                      <div>
+                        <h4 class="font-semibold text-gray-900">Session du {{ session.date | date:'dd MMM yyyy à HH:mm' }}</h4>
+                        <p class="text-gray-600">Durée : {{ session.duree }} minutes</p>
+                        @if (session.lieu) {
+                          <p class="text-gray-600">📍 {{ session.lieu }}</p>
+                        }
+                        @if (session.description) {
+                          <p class="text-gray-700 mt-2">{{ session.description }}</p>
+                        }
+                      </div>
+                    </div>
+                    
+                    <div class="flex flex-col items-end gap-2">
+                      <span [class]="'px-3 py-1 rounded-full text-xs font-semibold border ' + getSessionStatusColor(session.status)">
+                        {{ getSessionStatusText(session.status) }}
+                      </span>
+                      
+                      <!-- Actions -->
+                      <div class="flex gap-2">
+                        @if (canConfirmSession(session) && !hasUserConfirmedSession(session)) {
+                          <button 
+                            (click)="openConfirmModal(session)"
+                            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm">
+                            ✅ Confirmer
+                          </button>
+                        }
+                        
+                        @if (hasUserConfirmedSession(session)) {
+                          <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
+                            ✅ Confirmé
+                          </span>
+                        }
+                        
+                        @if (session.status === SessionStatus.PLANIFIEE) {
+                          <button 
+                            (click)="cancelSession(session)"
+                            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm">
+                            ❌ Annuler
+                          </button>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Confirmations -->
+                  @if (session.confirmationUser1 || session.confirmationUser2) {
+                    <div class="border-t border-gray-200 pt-4 mt-4">
+                      <p class="text-sm text-gray-600 mb-2">Confirmations :</p>
+                      <div class="flex gap-4">
+                        @if (session.confirmationUser1) {
+                          <span class="text-sm text-green-600">✅ {{ buddy.user1?.nom }}</span>
+                        }
+                        @if (session.confirmationUser2) {
+                          <span class="text-sm text-green-600">✅ {{ buddy.user2?.nom }}</span>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        }
+
+        <!-- Historique -->
+        @if (activeTab === 'history') {
+          @if (historicalSessions.length === 0) {
+            <div class="text-center py-12">
+              <div class="text-6xl mb-4">📚</div>
+              <h3 class="text-xl font-semibold text-gray-900 mb-2">Aucun historique</h3>
+              <p class="text-gray-600">Vous n'avez pas encore de sessions terminées avec {{ getPartnerName() }}</p>
+            </div>
+          } @else {
+            <div class="space-y-4">
+              @for (session of historicalSessions; track session.idSession) {
+                <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                  <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center">
+                      <div class="text-3xl mr-4">{{ getSessionStatusIcon(session.status) }}</div>
+                      <div>
+                        <h4 class="font-semibold text-gray-900">Session du {{ session.date | date:'dd MMM yyyy à HH:mm' }}</h4>
+                        <p class="text-gray-600">Durée : {{ session.duree }} minutes</p>
+                        @if (session.lieu) {
+                          <p class="text-gray-600">📍 {{ session.lieu }}</p>
+                        }
+                        @if (session.description) {
+                          <p class="text-gray-700 mt-2">{{ session.description }}</p>
+                        }
+                      </div>
+                    </div>
+                    
+                    <div class="flex flex-col items-end gap-2">
+                      <span [class]="'px-3 py-1 rounded-full text-xs font-semibold border ' + getSessionStatusColor(session.status)">
+                        {{ getSessionStatusText(session.status) }}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <!-- Satisfaction -->
+                  <div class="border-t border-gray-200 pt-4 mt-4">
+                    <p class="text-sm text-gray-600 mb-3">Satisfaction :</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <!-- Satisfaction utilisateur 1 -->
+                      @if (session.satisfactionUser1) {
+                        <div class="bg-white rounded-lg p-3 border border-gray-200">
+                          <div class="flex items-center justify-between mb-2">
+                            <span class="font-medium text-gray-900">{{ buddy.user1?.nom }}</span>
+                            <span [class]="'px-2 py-1 rounded-full text-xs font-semibold border ' + getSatisfactionColor(session.satisfactionUser1!)">
+                              {{ getSatisfactionText(session.satisfactionUser1!) }}
+                            </span>
+                          </div>
+                          @if (session.commentaireUser1) {
+                            <p class="text-sm text-gray-600 italic">"{{ session.commentaireUser1 }}"</p>
+                          }
+                        </div>
+                      }
+                      
+                      <!-- Satisfaction utilisateur 2 -->
+                      @if (session.satisfactionUser2) {
+                        <div class="bg-white rounded-lg p-3 border border-gray-200">
+                          <div class="flex items-center justify-between mb-2">
+                            <span class="font-medium text-gray-900">{{ buddy.user2?.nom }}</span>
+                            <span [class]="'px-2 py-1 rounded-full text-xs font-semibold border ' + getSatisfactionColor(session.satisfactionUser2!)">
+                              {{ getSatisfactionText(session.satisfactionUser2!) }}
+                            </span>
+                          </div>
+                          @if (session.commentaireUser2) {
+                            <p class="text-sm text-gray-600 italic">"{{ session.commentaireUser2 }}"</p>
+                          }
+                        </div>
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        }
+
+        <!-- Calendrier partagé -->
+        @if (activeTab === 'calendrier') {
+          <div class="p-4 md:p-6">
+            <app-shared-calendar 
+              [buddyPairId]="buddy.idPair"
+              [userId1]="buddy.userID_1"
+              [userId2]="buddy.userID_2">
+            </app-shared-calendar>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Modal de confirmation de session -->
+  @if (selectedSession) {
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4">
+        <div class="p-6">
+          <h3 class="text-xl font-bold text-gray-900 mb-4">Confirmer la session</h3>
+          
+          <div class="mb-6">
+            <p class="text-gray-600 mb-2">
+              Session du {{ selectedSession.date | date:'dd MMM yyyy à HH:mm' }}
+            </p>
+            <p class="text-gray-600">
+              Durée : {{ selectedSession.duree }} minutes
+            </p>
+            @if (selectedSession.lieu) {
+              <p class="text-gray-600">📍 {{ selectedSession.lieu }}</p>
+            }
+          </div>
+          
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Votre satisfaction
+            </label>
+            <select 
+              [(ngModel)]="selectedSatisfaction"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+              @for (option of satisfactionOptions; track option) {
+                <option [value]="option">{{ getSatisfactionText(option) }}</option>
+              }
+            </select>
+          </div>
+          
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Commentaire (optionnel)
+            </label>
+            <textarea 
+              [(ngModel)]="selectedComment"
+              rows="3"
+              placeholder="Partagez votre expérience..."
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </textarea>
+          </div>
+          
+          <div class="flex gap-3">
+            <button 
+              (click)="confirmSession()"
+              [disabled]="confirmingSession"
+              class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50">
+              @if (confirmingSession) {
+                <span class="animate-spin">⏳</span>
+              }
+              Confirmer
+            </button>
+            <button 
+              (click)="closeConfirmModal()"
+              class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors">
+              Annuler
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+

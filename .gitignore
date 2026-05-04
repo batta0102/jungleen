@@ -1,9 +1,14 @@
-# OS
+# ==========================================================
+# OS files
+# ==========================================================
 .DS_Store
 Thumbs.db
 Desktop.ini
 
+
+# ==========================================================
 # IDEs / Editors
+# ==========================================================
 .idea/
 .vscode/
 *.iml
@@ -12,56 +17,120 @@ Desktop.ini
 *.swp
 *.swo
 
-# Java / Maven / Gradle
+# Eclipse / STS
+.project
+.classpath
+.settings/
+
+# NetBeans
+nbproject/private/
+nbbuild/
+nbdist/
+.nb-gradle/
+
+
+# ==========================================================
+# Java / Maven / Spring Boot microservices
+# ==========================================================
 target/
 **/target/
-build/
-**/build/
-out/
-**/out/
 *.class
 *.jar
 *.war
 *.ear
 
-# Maven wrapper / Gradle cache
+# Build output folders
+out/
+**/out/
+build/
+**/build/
+
+# Maven wrapper generated binary
 .mvn/wrapper/maven-wrapper.jar
+
+# Gradle cache, if some services use Gradle
 .gradle/
 
-# Angular / Node
+# Test reports
+surefire-reports/
+failsafe-reports/
+
+
+# ==========================================================
+# Frontend / Node / Angular / React
+# ==========================================================
 node_modules/
 **/node_modules/
+
 dist/
 **/dist/
+
 .angular/
 **/.angular/
+
+.cache/
+**/.cache/
+
 coverage/
 **/coverage/
-.cache/
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
 .npm/
 *.tsbuildinfo
 
+
+# ==========================================================
 # Logs
+# ==========================================================
 *.log
 logs/
-*.tmp
-*.bak
-*.old
+**/logs/
 
-# Environment / Secrets
+
+# ==========================================================
+# Environment variables / Secrets
+# ==========================================================
 .env
 .env.*
-*.local
-application-local.properties
-application-dev.properties
+*.env
 
+application-local.*
+application-secret.*
+
+# If your application-dev.* contains passwords, tokens, DB credentials,
+# uncomment the following line:
+# application-dev.*
+
+
+# ==========================================================
 # Generated / runtime data
+# ==========================================================
 tmp/
 temp/
+**/tmp/
+**/temp/
+
 *.pid
+*.sock
+
 hs_err_pid*
 replay_pid*
+
 *.h2.db
 *.mv.db
 *.sqlite
 *.sqlite3
+
+*.tmp
+*.bak
+*.old
+
+
+# ==========================================================
+# Docker temporary files
+# ==========================================================
+docker-compose.override.yml

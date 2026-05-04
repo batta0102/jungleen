@@ -1,0 +1,11 @@
+<div class="courses-container">
+  <nav class="flex gap-6 border-b border-border pb-4 mb-4 text-sm">
+    <a routerLink="/back/courses" routerLinkActive="border-b-2 border-primary text-primary font-semibold" [routerLinkActiveOptions]="{ exact: true }" class="pb-2 text-secondary hover:text-text">Courses</a>
+    <a routerLink="/back/courses/classrooms" routerLinkActive="border-b-2 border-primary text-primary font-semibold" class="pb-2 text-secondary hover:text-text">Classrooms</a>
+    <a routerLink="/back/courses/sessions" routerLinkActive="border-b-2 border-primary text-primary font-semibold" class="pb-2 text-secondary hover:text-text">Sessions</a>
+    <a routerLink="/back/courses/bookings" routerLinkActive="border-b-2 border-primary text-primary font-semibold" class="pb-2 text-secondary hover:text-text">Bookings</a>
+  </nav>
+  <div class="tab-content">
+    <router-outlet></router-outlet>
+  </div>
+</div>

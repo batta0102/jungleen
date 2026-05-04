@@ -37,6 +37,104 @@
         </button>
       </div>
     </section>
+
+    <!-- Onglets de navigation -->
+    <nav class="tabs-nav" aria-label="Club sections">
+      <button 
+        class="tab-btn" 
+        [class.active]="isTabActive('details')"
+        (click)="setActiveTab('details')"
+        type="button"
+      >
+        <span class="tab-icon">📋</span>
+        Détails
+      </button>
+      <button 
+        class="tab-btn" 
+        [class.active]="isTabActive('buddies')"
+        (click)="setActiveTab('buddies')"
+        type="button"
+      >
+        <span class="tab-icon">👥</span>
+        Buddies
+      </button>
+      <button 
+        class="tab-btn" 
+        [class.active]="isTabActive('forum')"
+        (click)="setActiveTab('forum')"
+        type="button"
+      >
+        <span class="tab-icon">💬</span>
+        Forum
+      </button>
+    </nav>
+
+    <!-- Contenu des onglets -->
+    <main class="tabs-content">
+      <!-- Onglet Détails -->
+      @if (isTabActive('details')) {
+        <section class="tab-panel" id="details-panel">
+          <div class="panel-content">
+            <h2 class="panel-title">À propos du club</h2>
+            <div class="club-description">
+              <p>{{ club.details }}</p>
+            </div>
+            
+            <div class="club-info-grid">
+              <div class="info-item">
+                <h3 class="info-title">📍 Localisation</h3>
+                <p class="info-text">Campus principal, Bâtiment A</p>
+              </div>
+              <div class="info-item">
+                <h3 class="info-title">📅 Fréquence</h3>
+                <p class="info-text">Hebdomadaire</p>
+              </div>
+              <div class="info-item">
+                <h3 class="info-title">👥 Membres</h3>
+                <p class="info-text">25 membres actifs</p>
+              </div>
+              <div class="info-item">
+                <h3 class="info-title">⭐ Niveau</h3>
+                <p class="info-text">Tous niveaux</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      }
+
+      <!-- Onglet Buddies -->
+      @if (isTabActive('buddies')) {
+        <section class="tab-panel" id="buddies-panel">
+          <div class="panel-content">
+            <h2 class="panel-title">Buddies du club</h2>
+            <p class="panel-description">
+              Trouvez un buddy pour pratiquer et progresser ensemble.
+            </p>
+            
+            <div class="buddies-placeholder">
+              <div class="placeholder-icon">👥</div>
+              <h3 class="placeholder-title">Système de Buddies</h3>
+              <p class="placeholder-text">
+                Le système de matching des buddies sera bientôt disponible pour ce club.
+              </p>
+              <button class="btn btn-primary" disabled>
+                <span class="btn-icon">🚧</span>
+                Bientôt disponible
+              </button>
+            </div>
+          </div>
+        </section>
+      }
+
+      <!-- Onglet Forum -->
+      @if (isTabActive('forum')) {
+        <section class="tab-panel" id="forum-panel">
+          <div class="panel-content">
+            <app-club-forum [clubId]="clubIdNumber()"></app-club-forum>
+          </div>
+        </section>
+      }
+    </main>
   } @else {
     <p class="muted">Club not found.</p>
   }

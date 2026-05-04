@@ -1,0 +1,328 @@
+<div class="admin-club-forum-container">
+  <!-- Header -->
+  <div class="admin-header">
+    <div class="header-actions">
+      <button (click)="goBack()" class="btn btn-secondary">
+        <span class="btn-icon">←</span>
+        Retour aux clubs
+      </button>
+    </div>
+    <div class="header-title">
+      <h1 class="title">
+        <span class="title-icon">💬</span>
+        Forum du Club #{{ clubId }}
+      </h1>
+      <p class="subtitle">Gestion administrative du forum</p>
+    </div>
+  </div>
+
+  <!-- Statistiques -->
+  <div class="stats-section">
+    <h2 class="section-title">
+      <span class="section-icon">📊</span>
+      Statistiques du forum
+    </h2>
+    
+    <!-- Loading stats -->
+    <div *ngIf="loadingStats" class="stats-loading">
+      <div class="loading-spinner"></div>
+      <span>Chargement des statistiques...</span>
+    </div>
+    
+    <!-- Stats grid -->
+    <div *ngIf="!loadingStats && stats" class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">📝</div>
+        <div class="stat-content">
+          <h3 class="stat-value">{{ stats.totalMessages }}</h3>
+          <p class="stat-label">Messages totaux</p>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">💬</div>
+        <div class="stat-content">
+          <h3 class="stat-value">{{ stats.totalComments }}</h3>
+          <p class="stat-label">Commentaires</p>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">❤️</div>
+        <div class="stat-content">
+          <h3 class="stat-value">{{ stats.totalLikes }}</h3>
+          <p class="stat-label">Likes totaux</p>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">📅</div>
+        <div class="stat-content">
+          <h3 class="stat-value">{{ stats.messagesPerDay }}</h3>
+          <p class="stat-label">Messages/jour (moyenne)</p>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-content">
+          <h3 class="stat-value">{{ stats.activeUsers }}</h3>
+          <p class="stat-label">Utilisateurs actifs</p>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">📈</div>
+        <div class="stat-content">
+          <h3 class="stat-value">{{ stats.messagesThisWeek }}</h3>
+          <p class="stat-label">Messages cette semaine</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <div class="filters-section">
+    <h3 class="section-title">
+      <span class="section-icon">🔍</span>
+      Filtres
+    </h3>
+    
+    <form [formGroup]="filterForm" class="filters-form">
+      <div class="filters-grid">
+        <div class="filter-group">
+          <label for="dateRange" class="filter-label">Période</label>
+          <select id="dateRange" formControlName="dateRange" class="filter-select">
+            <option value="all">Toutes périodes</option>
+            <option value="today">Aujourd'hui</option>
+            <option value="week">Cette semaine</option>
+            <option value="month">Ce mois</option>
+            <option value="quarter">Ce trimestre</option>
+            <option value="year">Cette année</option>
+          </select>
+        </div>
+        
+        <div class="filter-group">
+          <label for="userId" class="filter-label">ID Utilisateur</label>
+          <input id="userId" formControlName="userId" type="number" class="filter-input" placeholder="ID utilisateur">
+        </div>
+        
+        <div class="filter-group">
+          <label for="keywords" class="filter-label">Mots-clés</label>
+          <input id="keywords" formControlName="keywords" type="text" class="filter-input" placeholder="Rechercher...">
+        </div>
+        
+                
+        <div class="filter-group">
+          <label for="sortBy" class="filter-label">Trier par</label>
+          <select id="sortBy" formControlName="sortBy" class="filter-select">
+            <option value="date">Date</option>
+            <option value="likes">Likes</option>
+            <option value="comments">Commentaires</option>
+          </select>
+        </div>
+        
+        <div class="filter-group">
+          <label for="sortOrder" class="filter-label">Ordre</label>
+          <select id="sortOrder" formControlName="sortOrder" class="filter-select">
+            <option value="desc">Récent</option>
+            <option value="asc">Ancien</option>
+          </select>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Actions groupées -->
+  <div class="bulk-actions" *ngIf="selectedMessages.size > 0">
+    <div class="bulk-info">
+      <span class="bulk-count">{{ selectedMessages.size }}</span>
+      message(s) sélectionné(s)
+    </div>
+    <div class="bulk-buttons">
+      <button (click)="bulkAction('delete')" class="btn btn-danger">
+        <span class="btn-icon">🗑️</span>
+        Supprimer
+      </button>
+    </div>  
+    <button (click)="toggleSelectAll()" class="btn btn-secondary">
+        <span class="btn-icon">✖️</span>
+        Désélectionner tout
+      </button>
+  </div>
+
+  <!-- Messages -->
+  <div class="messages-section">
+    <div class="section-header">
+      <h2 class="section-title">
+        <span class="section-icon">📝</span>
+        Messages ({{ totalItems }})
+      </h2>
+      <div class="section-actions">
+        <button (click)="toggleSelectAll()" class="btn btn-secondary btn-sm">
+          <span class="btn-icon">☑️</span>
+          Tout sélectionner
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading messages -->
+    <div *ngIf="loadingMessages" class="messages-loading">
+      <div class="loading-spinner"></div>
+      <span>Chargement des messages...</span>
+    </div>
+
+    <!-- Error state -->
+    <div *ngIf="error && !loading" class="error-container">
+      <div class="error-icon">⚠️</div>
+      <p class="error-message">{{ error }}</p>
+      <button (click)="loadForumData()" class="btn btn-primary">
+        <span class="btn-icon">🔄</span>
+        Réessayer
+      </button>
+    </div>
+
+    <!-- Empty state -->
+    <div *ngIf="!loading && !error && messages.length === 0" class="empty-state">
+      <div class="empty-icon">📭</div>
+      <h3 class="empty-title">Aucun message trouvé</h3>
+      <p class="empty-description">
+        Aucun message ne correspond à vos critères de recherche.
+      </p>
+    </div>
+
+    <!-- Messages table -->
+    <div *ngIf="!loading && !error && messages.length > 0" class="messages-table-container">
+      <table class="messages-table">
+        <thead>
+          <tr>
+            <th class="checkbox-column">
+              <input 
+                type="checkbox" 
+                [checked]="selectedMessages.size === messages.length && messages.length > 0"
+                [indeterminate]="selectedMessages.size > 0 && selectedMessages.size < messages.length"
+                (change)="toggleSelectAll()"
+                class="checkbox"
+              >
+            </th>
+            <th class="id-column">ID</th>
+            <th class="author-column">Auteur</th>
+            <th class="content-column">Contenu</th>
+            <th class="date-column">Date</th>
+            <th class="likes-column">Likes</th>
+            <th class="comments-column">Commentaires</th>
+            <th class="actions-column">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr 
+            *ngFor="let message of paginatedMessages; trackBy: trackByMessageId"
+          >
+            <td class="checkbox-column">
+              <input 
+                type="checkbox" 
+                [checked]="isMessageSelected(getMessageId(message))"
+                (change)="toggleMessageSelection(getMessageId(message))"
+                class="checkbox"
+              >
+            </td>
+            <td class="id-column">
+              <span class="message-id">#{{ message.id }}</span>
+            </td>
+            <td class="author-column">
+              <div class="author-info">
+                <div class="author-avatar">{{ message.user?.avatar || '👤' }}</div>
+                <div class="author-details">
+                  <div class="author-name">{{ message.authorName }}</div>
+                  <div class="author-email">{{ message.authorEmail }}</div>
+                </div>
+              </div>
+            </td>
+            <td class="content-column">
+              <div class="message-content">
+                <p class="message-text">{{ truncateText(message.contenu, 100) }}</p>
+                <div class="message-preview" *ngIf="message.contenu.length > 100">
+                  <span class="preview-text">{{ truncateText(message.contenu, 200) }}</span>
+                </div>
+              </div>
+            </td>
+            <td class="date-column">
+              <span class="date-text">{{ formatDate(message.dateEnvoi) }}</span>
+            </td>
+            <td class="likes-column">
+              <span class="likes-count">
+                <span class="likes-icon">❤️</span>
+                {{ message.likes || 0 }}
+              </span>
+            </td>
+            <td class="comments-column">
+              <span class="comments-count">
+                <span class="comments-icon">💬</span>
+                {{ message.commentCount || 0 }}
+              </span>
+            </td>
+            <td class="actions-column">
+              <div class="action-buttons">
+                <button 
+                  (click)="viewMessage(getMessageId(message))" 
+                  class="btn-icon-only btn-view"
+                  title="Voir le message"
+                >
+                  <span>👁️</span>
+                </button>
+                <button 
+                  (click)="deleteMessage(getMessageId(message))" 
+                  class="btn-icon-only btn-delete"
+                  title="Supprimer le message"
+                  [disabled]="isDeletingMessage(getMessageId(message))"
+                >
+                  <span *ngIf="!isDeletingMessage(getMessageId(message))">🗑️</span>
+                  <span *ngIf="isDeletingMessage(getMessageId(message))" class="loading-icon">⏳</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="!loading && !error && messages.length > 0" class="pagination">
+      <span class="pagination-info">
+            {{ (currentPage - 1) * itemsPerPage + 1 }}-{{ Math.min(currentPage * itemsPerPage, stats?.totalMessages || 0) }} 
+            sur {{ stats?.totalMessages || 0 }} messages
+          </span>
+      </div>
+      <div class="pagination-controls">
+        <button 
+          (click)="changePage(currentPage - 1)" 
+          [disabled]="currentPage === 1"
+          class="btn btn-secondary btn-sm"
+        >
+          <span class="btn-icon">←</span>
+          Précédent
+        </button>
+        
+        <div class="page-numbers">
+          <span 
+            *ngFor="let page of getPageNumbers()" 
+            [class.active]="page === currentPage"
+            (click)="changePage(page)"
+            class="page-number"
+          >
+            {{ page }}
+          </span>
+        </div>
+        
+        <button 
+          (click)="changePage(currentPage + 1)" 
+          [disabled]="currentPage === totalPages"
+          class="btn btn-secondary btn-sm"
+        >
+          Suivant
+          <span class="btn-icon">→</span>
+        </button>
+      </div>
+    </div>
+  </div>
+

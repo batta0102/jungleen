@@ -1,0 +1,374 @@
+<div class="container mx-auto px-4 py-8 max-w-6xl">
+  <!-- Back Button -->
+  <div class="mb-6">
+    <a 
+      routerLink="/clubs/4" 
+      class="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors group">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 transform group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+      Back to Club
+    </a>
+  </div>
+
+  <!-- Header -->
+  <header class="mb-8">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">My Buddies</h1>
+        <p class="text-gray-600">Manage your learning partners and schedule sessions</p>
+      </div>
+      <button 
+        (click)="refreshBuddies()" 
+        class="px-4 py-2 text-white rounded-lg hover:opacity-90 transition-colors flex items-center gap-2"
+      [style.background-color]="'#2F5F5A'"
+        [disabled]="loading">
+        <span class="loading-spinner" *ngIf="loading"></span>
+        🔄 Refresh
+      </button>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600">Total Buddies</p>
+            <p class="text-2xl font-bold text-gray-900">{{ buddies.length }}</p>
+          </div>
+          <div class="text-3xl">👥</div>
+        </div>
+      </div>
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600">Active</p>
+            <p class="text-2xl font-bold text-green-600">{{ getBuddiesByStatus(BuddyMatchStatus.ACTIVE) }}</p>
+          </div>
+          <div class="text-3xl">✅</div>
+        </div>
+      </div>
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600">Pending</p>
+            <p class="text-2xl font-bold text-yellow-600">{{ getBuddiesByStatus(BuddyMatchStatus.PENDING) }}</p>
+          </div>
+          <div class="text-3xl">⏳</div>
+        </div>
+      </div>
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-600">Terminated</p>
+            <p class="text-2xl font-bold text-gray-600">{{ terminatedBuddies.length }}</p>
+          </div>
+          <div class="text-3xl">🏁</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Terminated Buddies Notification -->
+  @if (!loading && !error && terminatedBuddies.length > 0) {
+    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center">
+          <div class="text-gray-600 text-xl mr-3">🏁</div>
+          <div>
+            <h3 class="text-gray-800 font-semibold">Terminated Buddy(ies)</h3>
+            <p class="text-gray-600 text-sm">{{ terminatedBuddies.length }} buddy(ies) successfully terminated</p>
+          </div>
+        </div>
+        <div class="text-sm text-gray-500">
+          @for (terminatedBuddy of terminatedBuddies; track terminatedBuddy.idPair) {
+            <span class="inline-block bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-xs mr-1">
+              {{ getPartnerName(terminatedBuddy) }}
+            </span>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Loading State -->
+  @if (loading) {
+    <div class="flex flex-col items-center justify-center py-12">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 mb-4" [style.border-color]="'#2F5F5A'"></div>
+      <p class="text-gray-600">Loading your buddies...</p>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (error) {
+    <div class="bg-red-50 border border-red-200 rounded-lg p-6 mb-8">
+      <div class="flex items-center">
+        <div class="text-red-600 text-xl mr-3">❌</div>
+        <div>
+          <h3 class="text-red-800 font-semibold">Error</h3>
+          <p class="text-red-700">{{ error }}</p>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Empty State -->
+  @if (!loading && !error && buddies.length === 0) {
+    <div class="text-center py-12">
+      <div class="text-6xl mb-4">🔍</div>
+      <h3 class="text-xl font-semibold text-gray-900 mb-2">No buddies found</h3>
+      <p class="text-gray-600 mb-6">You don't have any learning partners yet.</p>
+      <a routerLink="/clubs" class="inline-flex items-center px-6 py-3 text-white rounded-lg hover:opacity-90 transition-colors" [style.background-color]="'#2F5F5A'">
+        <span class="mr-2">🚀</span>
+        Explore clubs
+      </a>
+    </div>
+  }
+
+  <!-- Buddies List -->
+  @if (!loading && !error && buddies.length > 0) {
+    <!-- Current Club Buddies -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-2xl font-bold text-gray-900 flex items-center">
+          <span class="mr-2">👥</span>
+          Current Club Buddies
+        </h2>
+        <span class="px-3 py-1 bg-[#2F5F5A]/10 text-[#2F5F5A] rounded-full text-sm font-medium">
+          {{ getCurrentClubBuddies().length }} buddies
+        </span>
+      </div>
+      
+      @if (getCurrentClubBuddies().length === 0) {
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
+          <div class="text-4xl mb-3">👥</div>
+          <h3 class="text-lg font-semibold text-gray-700 mb-2">No buddies in current club</h3>
+          <p class="text-gray-600">You don't have any learning partners in your current club.</p>
+        </div>
+      } @else {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          @for (buddy of getCurrentClubBuddies(); track buddy.idPair) {
+        <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-shadow">
+          <!-- Header Card -->
+          <div class="p-6" [style.background]="'linear-gradient(to right, #2F5F5A, #254E49)'">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center">
+                <div class="text-4xl mr-3">{{ getPartnerAvatar(buddy) }}</div>
+                <div>
+                  <h3 class="text-white font-bold text-lg">{{ getPartnerName(buddy) }}</h3>
+                  <p class="text-green-100 text-sm">{{ getPartnerEmail(buddy) }}</p>
+                </div>
+              </div>
+              <div class="flex flex-col items-end">
+                <span [class]="'px-3 py-1 rounded-full text-xs font-semibold border ' + getStatusColor(buddy.status)">
+                  {{ getStatusIcon(buddy.status) }} {{ getStatusText(buddy.status) }}
+                </span>
+              </div>
+            </div>
+            
+            <!-- Club Info -->
+            <div class="bg-white/20 backdrop-blur-sm rounded-lg p-3">
+              <div class="flex items-center text-white">
+                <span class="mr-2">🏫</span>
+                <span class="text-sm font-medium">{{ getClubName(buddy) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="p-6">
+            <div class="space-y-3">
+              <!-- Voir les sessions -->
+              <a 
+                [routerLink]="getSessionsUrl(buddy)" 
+                class="w-full flex items-center justify-center px-4 py-3 text-white rounded-lg hover:opacity-90 transition-colors font-medium"
+                [style.background-color]="'#10B981'">
+                <span class="mr-2">📅</span>
+                View sessions
+              </a>
+
+              <!-- Planifier une session (uniquement si actif) -->
+              @if (isBuddyActive(buddy)) {
+                <a 
+                  [routerLink]="getPlanSessionUrl(buddy)" 
+                  class="w-full flex items-center justify-center px-4 py-3 text-white rounded-lg hover:opacity-90 transition-colors font-medium"
+                  [style.background-color]="'#3B82F6'">
+                  <span class="mr-2">➕</span>
+                  Schedule a session
+                </a>
+              }
+
+              <!-- Actions de statut -->
+              @if (buddy.status === BuddyMatchStatus.PENDING) {
+                <div class="flex gap-2">
+                  <button 
+                    (click)="acceptBuddy(buddy)"
+                    class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">
+                    ✅ Accept
+                  </button>
+                  <button 
+                    (click)="rejectBuddy(buddy)"
+                    class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
+                    ❌ Reject
+                  </button>
+                </div>
+              }
+
+              @if (buddy.status === BuddyMatchStatus.ACTIVE) {
+                <button 
+                  (click)="terminateBuddy(buddy)"
+                  class="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium">
+                  🏁 Terminate buddy
+                </button>
+              }
+            </div>
+
+            <!-- Date de création -->
+            <div class="mt-4 pt-4 border-t border-gray-200">
+              <p class="text-xs text-gray-500 text-center">
+                Buddy created on {{ buddy.dateCreation | date:'dd MMM yyyy' }}
+              </p>
+            </div>
+          </div>
+        </div>
+      }
+        </div>
+      }
+    </div>
+
+    <!-- Other Clubs Buddies -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-2xl font-bold text-gray-900 flex items-center">
+          <span class="mr-2">🌍</span>
+          Other Clubs Buddies
+        </h2>
+        <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm font-medium">
+          {{ getOtherClubBuddies().length }} buddies
+        </span>
+      </div>
+      
+      @if (getOtherClubBuddies().length === 0) {
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
+          <div class="text-4xl mb-3">🌍</div>
+          <h3 class="text-lg font-semibold text-gray-700 mb-2">No buddies in other clubs</h3>
+          <p class="text-gray-600">You don't have any learning partners in other clubs.</p>
+        </div>
+      } @else {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          @for (buddy of getOtherClubBuddies(); track buddy.idPair) {
+      <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-shadow opacity-75">
+        <!-- Header Card -->
+        <div class="p-6" [style.background]="'linear-gradient(to right, #6B7280, #4B5563)'">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center">
+              <div class="text-4xl mr-3">{{ getPartnerAvatar(buddy) }}</div>
+              <div>
+                <h3 class="text-white font-bold text-lg">{{ getPartnerName(buddy) }}</h3>
+                <p class="text-green-100 text-sm">{{ getPartnerEmail(buddy) }}</p>
+              </div>
+            </div>
+            <div class="text-white">
+              <div class="text-xs uppercase tracking-wide mb-1">Club</div>
+              <div class="font-semibold">{{ getClubName(buddy) }}</div>
+            </div>
+          </div>
+          
+          <!-- Status Badge -->
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <span class="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-white text-sm font-medium flex items-center">
+                {{ getStatusIcon(buddy.status) }} {{ getStatusText(buddy.status) }}
+              </span>
+            </div>
+            <div class="text-white/80 text-sm">
+              Buddy since {{ buddy.dateCreation | date:'shortDate' }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions Section -->
+        <div class="p-4 space-y-3">
+          <!-- Action Buttons -->
+          <div class="flex gap-2">
+            <a 
+              [href]="getSessionsUrl(buddy)" 
+              class="flex-1 px-3 py-2 bg-[#2F5F5A] text-white rounded-lg hover:opacity-90 transition-colors text-center text-sm font-medium">
+              📅 Sessions
+            </a>
+            <a 
+              [href]="getPlanSessionUrl(buddy)" 
+              class="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-center text-sm font-medium"
+              [class.opacity-50]="!isBuddyActive(buddy)"
+              [class.pointer-events-none]="!isBuddyActive(buddy)">
+              ➕ Plan
+            </a>
+          </div>
+
+          <!-- Actions de statut -->
+          @if (buddy.status === BuddyMatchStatus.PENDING) {
+            <div class="flex gap-2">
+              <button 
+                (click)="acceptBuddy(buddy)"
+                class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">
+                ✅ Accept
+              </button>
+              <button 
+                (click)="rejectBuddy(buddy)"
+                class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
+                ❌ Reject
+              </button>
+            </div>
+          }
+
+          @if (buddy.status === BuddyMatchStatus.ACTIVE) {
+            <button 
+              (click)="terminateBuddy(buddy)"
+              class="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium">
+              🏁 Terminate buddy
+            </button>
+          }
+        </div>
+
+        <!-- Date de création -->
+        <div class="mt-4 pt-4 border-t border-gray-200">
+          <p class="text-xs text-gray-500 text-center">
+            Buddy created on {{ buddy.dateCreation | date:'dd MMM yyyy' }}
+          </p>
+        </div>
+      </div>
+    }
+        </div>
+      }
+    </div>
+  }
+
+  
+  
+  <!-- Footer Actions -->
+  @if (!loading && !error && buddies.length > 0) {
+    <div class="mt-12 text-center">
+      <a routerLink="/admin/buddies/requests" [queryParams]="{ clubId: 4 }" class="inline-flex items-center px-6 py-3 text-white rounded-lg hover:opacity-90 transition-colors" [style.background-color]="'#2F5F5A'">
+        <span class="mr-2">🎯</span>
+        Find new buddies
+      </a>
+    </div>
+  }
+</div>
+
+<!-- Loading Spinner Style -->
+<style>
+.loading-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+</style>

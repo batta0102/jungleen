@@ -1,0 +1,47 @@
+.auth-wrap {
+  padding: 2rem 0 3rem;
+  display: grid;
+  place-items: center;
+}
+
+.auth-card {
+  width: min(560px, 100%);
+}
+
+.auth-head {
+  margin-bottom: 1rem;
+}
+
+.auth-title {
+  font-weight: 900;
+  font-size: 1.35rem;
+}
+
+.role-row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.role {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.55rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid var(--jie-border);
+  background: color-mix(in srgb, var(--jie-bg) 35%, white);
+  font-weight: 800;
+}
+
+.auth-foot {
+  margin-top: 0.9rem;
+}
+
+.alert {
+  padding: 0.75rem 0.9rem;
+  border-radius: 12px;
+  border: 1px solid var(--jie-border);
+  background: color-mix(in srgb, var(--jie-bg) 60%, white);
+  margin: 0.75rem 0;
+}

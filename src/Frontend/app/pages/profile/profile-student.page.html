@@ -1,0 +1,138 @@
+<div class="container">
+  <header class="dash-hero" aria-label="Welcome">
+    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="hero-inner">
+      <h1 class="hero-title">Welcome back, {{ displayName() }}!</h1>
+      <p class="hero-sub">Here are your ongoing English courses.</p>
+    </div>
+  </header>
+
+  <div class="dash-grid" aria-label="Student dashboard">
+    <section class="dash-left" aria-label="Ongoing courses">
+      @for (c of ongoingCourses(); track c.id) {
+        <article class="card course-card">
+          <div class="course-banner">
+            <img class="course-banner-img" [ngSrc]="c.bannerSrc" width="780" height="210" alt="" [attr.priority]="$first ? '' : null" />
+            <div class="level-badge">{{ c.level }}</div>
+          </div>
+
+          <div class="card-body course-body">
+            <div class="course-title">{{ c.title }}</div>
+            <div class="course-lines">
+              <div class="line"><span class="muted">Format:</span> <strong>{{ c.formatLabel }}</strong></div>
+              <div class="line"><span class="muted">Tutor:</span> <span>{{ c.tutorLabel }}</span></div>
+            </div>
+
+            <div class="course-stats">
+              <span class="muted">{{ c.upcomingSessions }} Upcoming Sessions</span>
+              <span class="muted">|</span>
+              <span class="muted">{{ c.studentsCount }} Students</span>
+            </div>
+
+            <div class="course-actions">
+              <span class="pill">{{ c.chipLabel }}</span>
+              <a class="btn btn-primary" [routerLink]="['/trainings', c.id]">View Sessions</a>
+            </div>
+          </div>
+        </article>
+      }
+
+      @if (ongoingCourses().length === 0) {
+        <div class="card">
+          <div class="card-body">
+            <div class="panel-title">No ongoing courses</div>
+            <div class="muted">Visit Courses to enroll.</div>
+            <div style="margin-top: 0.75rem;">
+              <a class="btn btn-primary" [routerLink]="['/trainings']">Browse Courses</a>
+            </div>
+          </div>
+        </div>
+      }
+
+      <article class="card book-card" aria-label="Book a session">
+        <div class="card-body">
+          <div class="panel-title">Book a Session</div>
+          <div class="book-row">
+            <div class="book-info">
+              @if (nextBooking(); as b) {
+                <div class="book-title">{{ b.name }}</div>
+                <div class="muted">{{ b.date }} | {{ b.time }}</div>
+              } @else {
+                <div class="book-title">Upcoming session</div>
+                <div class="muted">Pick an upcoming event to book.</div>
+              }
+              <a class="btn btn-primary" [routerLink]="['/events']">Book Now</a>
+            </div>
+            <img class="book-img" [ngSrc]="'/englishimg2.png'" width="260" height="140" alt="" />
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <aside class="dash-right" aria-label="Sidebar panels">
+      <section class="card panel">
+        <div class="card-body">
+          <div class="panel-title">Upcoming Booking</div>
+          @if (nextBooking(); as b) {
+            <div class="panel-main">{{ b.name }}</div>
+            <div class="muted">{{ b.date }} | {{ b.time }}</div>
+            <div class="muted">{{ b.location }}</div>
+            <div style="margin-top: 0.75rem;">
+              <a class="btn btn-primary" [routerLink]="['/events']">Join Session</a>
+            </div>
+          } @else {
+            <div class="muted">No upcoming booking.</div>
+            <div style="margin-top: 0.75rem;">
+              <a class="btn" [routerLink]="['/events']">Browse events</a>
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="card panel">
+        <div class="card-body">
+          <div class="panel-title">Certifications Earned</div>
+          @if (earnedCertificates().length > 0) {
+            @for (cert of earnedCertificates(); track cert.trainingId) {
+              <div class="cert-row">
+                <span class="cert-check" aria-hidden="true">✓</span>
+                <div>
+                  <div class="panel-main">{{ cert.title }}</div>
+                  <div class="muted">Valid until {{ cert.validUntil }}</div>
+                </div>
+              </div>
+            }
+            <div style="margin-top: 0.75rem;">
+              <button
+                class="btn"
+                type="button"
+                (click)="downloadTrainingCertificate(earnedCertificates()[0].trainingId)"
+              >
+                Download certificate
+              </button>
+            </div>
+          } @else {
+            <div class="muted">No certificates earned yet.</div>
+          }
+        </div>
+      </section>
+
+      <section class="card panel">
+        <div class="card-body">
+          <div class="panel-title">Notifications</div>
+          <div class="notif-list">
+            @for (n of notifications(); track n.title) {
+              <div class="notif">
+                <span class="notif-dot" aria-hidden="true"></span>
+                <div>
+                  <div class="notif-title">{{ n.title }}</div>
+                  <div class="muted">{{ n.text }}</div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </section>
+    </aside>
+  </div>
+</div>

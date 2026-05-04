@@ -76,6 +76,11 @@ export interface ReponseDonneeDto {
   scoreObtenu: number;
 }
 
+export interface ReponseDonneeWithChoicesDto extends ReponseDonneeDto {
+  question?: { id: number };
+  choixSelectionnes?: Array<{ id: number }>;
+}
+
 export interface ResultatCreateRequest {
   score: number;
   noteSur: number;
@@ -156,6 +161,10 @@ export class AdmissionApiService {
 
   createReponse(payload: ReponseDonneeCreateRequest): Observable<ReponseDonneeDto> {
     return this.http.post<ReponseDonneeDto>('/api/reponses', payload);
+  }
+
+  getReponsesBySession(sessionId: number): Observable<ReponseDonneeWithChoicesDto[]> {
+    return this.http.get<ReponseDonneeWithChoicesDto[]>(`/api/reponses/session/${sessionId}`);
   }
 
   createResultat(payload: ResultatCreateRequest): Observable<ResultatDto> {

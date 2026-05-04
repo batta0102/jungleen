@@ -25,6 +25,8 @@ public class Interview {
     
     @Column(columnDefinition = "TEXT")
     private String meetLink; // Google Meet link for EN_LIGNE interviews
+    
+    private Long userId; // Link to user-service
 
     @OneToOne
     private Candidature candidature;

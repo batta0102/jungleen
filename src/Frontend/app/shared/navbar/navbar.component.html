@@ -1,0 +1,37 @@
+<header class="navbar">
+  <div class="container">
+    <div class="navbar-pill">
+      <a class="brand-link" [routerLink]="['/front']" aria-label="Jungle in English">
+        <span class="brand-badge" aria-hidden="true">
+          <img class="brand-logo" src="/logojungle.png" alt="Jungle in English" (error)="$any($event.target).style.display='none'" />
+        </span>
+        <span class="brand-text">Jungle in English</span>
+      </a>
+
+      <nav class="nav" aria-label="Primary">
+        <a class="nav-link" [routerLink]="['/front']" fragment="about" routerLinkActive="active">About</a>
+        <a class="nav-link" [routerLink]="['/front/trainings']" routerLinkActive="active">Training</a>
+        <a class="nav-link" [routerLink]="['/front/clubs']" routerLinkActive="active">Clubs</a>
+        <a class="nav-link" [routerLink]="['/front/events']" routerLinkActive="active">Events</a>
+        <a class="nav-link" [routerLink]="['/front/library']" routerLinkActive="active">Library</a>
+        <a class="nav-link" [routerLink]="['/front/qcm']" routerLinkActive="active">QCM</a>
+        <a class="nav-link" [routerLink]="['/front/evaluations']" routerLinkActive="active">Evaluations</a>
+        <a class="nav-link" [routerLink]="['/front/gamification']" routerLinkActive="active">Gamification</a>
+      </nav>
+
+      <div class="actions">
+        @if (isLoggedIn()) {
+          <a class="action action-outline" [routerLink]="[profileLink()]" aria-label="Open your space">
+            {{ spaceLabel() }}
+          </a>
+          <button class="action action-outline" type="button" (click)="logout()">Logout</button>
+        } @else {
+          <button class="action action-outline" type="button" (click)="login()">Login</button>
+          <button class="action action-solid" type="button" (click)="register()">Sign up</button>
+        }
+        <a class="action action-solid" [routerLink]="['/front']" fragment="contact">Contact</a>
+        <span class="lang" aria-label="Language: English">EN</span>
+      </div>
+    </div>
+  </div>
+</header>

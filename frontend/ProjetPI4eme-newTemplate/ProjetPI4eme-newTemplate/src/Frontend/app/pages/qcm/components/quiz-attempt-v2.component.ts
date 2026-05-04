@@ -1,10 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal, effect, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal, OnInit, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { interval, Subject, forkJoin } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { AdmissionApiService, ChoiceDto, QcmDto, QuestionDto } from '../../../core/services/admission-api.service';
+import { QuizIntegrityService, QuizIntegrityAlert } from '../../../core/services/quiz-integrity.service';
+import { ToastNotificationComponent } from '../../../shared/components/toast-notification.component';
 
 interface QuestionState {
   id: number;
@@ -18,13 +20,14 @@ interface QuestionState {
 @Component({
   selector: 'app-quiz-attempt',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ToastNotificationComponent],
   templateUrl: './quiz-attempt-v2.component.html',
   styleUrl: './quiz-attempt-v2.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class QuizAttemptComponent implements OnInit, OnDestroy {
   private readonly admissionApi = inject(AdmissionApiService);
+  private readonly quizIntegrity = inject(QuizIntegrityService);
   
   readonly quiz = input.required<QcmDto>();
   readonly sessionId = input.required<number>();
@@ -35,6 +38,7 @@ export class QuizAttemptComponent implements OnInit, OnDestroy {
     total: number;
     percentage: number;
     timeTaken: number;
+    cheatingDetected: boolean;
   }>();
   
   readonly attemptClosed = output<void>();
@@ -67,11 +71,92 @@ export class QuizAttemptComponent implements OnInit, OnDestroy {
     this.questionStates().filter(q => q.answered).length
   );
 
+  // Tab switching & integrity tracking
+  readonly toastMessage = signal('');
+  readonly toastType = signal<'warning' | 'critical' | 'info' | 'success'>('info');
+  readonly toastVisible = signal(false);
+  readonly toastDuration = signal(5000);
+  
+  private autoSubmitTriggered = false;
+  private integrityViolation = false;
   private destroy$ = new Subject<void>();
 
   ngOnInit(): void {
     this.initializeQuestions();
+    this.initializeQuizIntegrity();
+    this.setupIntegrityAlertListener();
     this.startTimer();
+  }
+
+  /**
+   * Initialize quiz integrity tracking (tab switching detection)
+   */
+  private initializeQuizIntegrity(): void {
+    // Get user info from mock auth (for development)
+    const userId = localStorage.getItem('jie_userId') || 'dev-user-123';
+    
+    this.quizIntegrity.initializeQuizTracking(
+      this.sessionId(),
+      userId,
+      this.quiz().id
+    );
+
+    console.log('🛡️ Quiz integrity tracking initialized');
+  }
+
+  /**
+   * Setup listener for integrity alerts
+   */
+  private setupIntegrityAlertListener(): void {
+    // Subscribe to integrity alerts from the service
+    this.quizIntegrity.integrityAlert
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((alert: QuizIntegrityAlert) => {
+        console.log('📢 [COMPONENT] Received integrity alert:', alert.type, alert.message);
+        this.showToast(alert.message, alert.type, alert.type === 'critical' ? 3000 : 5000);
+
+        // On critical alert (2nd tab switch), force submit
+        if (alert.type === 'critical' && !this.autoSubmitTriggered) {
+          this.autoSubmitTriggered = true;
+          this.integrityViolation = true;
+          console.error('🚨 [COMPONENT] CRITICAL ALERT - SCHEDULING AUTO-SUBMIT');
+          setTimeout(() => {
+            console.error('🚨 [COMPONENT] TIMEOUT FIRED - CALLING submitAttempt DIRECTLY');
+            this.showConfirmSubmit.set(false);
+            this.submitAttempt();
+          }, 1000);
+        }
+      });
+  }
+
+  /**
+   * Force submit quiz without any guards
+   */
+  private forceSubmitQuiz(): void {
+    console.error('💥 [COMPONENT] FORCE SUBMITTING - NO GUARDS - CALL submitAttempt');
+    this.submitAttempt();
+  }
+
+  /**
+   * Show toast notification
+   */
+  private showToast(message: string, type: 'warning' | 'critical' | 'info' | 'success' = 'info', duration = 5000): void {
+    this.toastMessage.set(message);
+    this.toastType.set(type);
+    this.toastDuration.set(duration);
+    this.toastVisible.set(true);
+
+    // Auto-hide after duration
+    setTimeout(() => {
+      this.toastVisible.set(false);
+    }, duration);
+  }
+
+  /**
+   * Handle toast close
+   */
+  closeToast(): void {
+    this.toastVisible.set(false);
   }
 
   private initializeQuestions(): void {
@@ -233,6 +318,8 @@ export class QuizAttemptComponent implements OnInit, OnDestroy {
   }
 
   submitAttempt(): void {
+    console.error('📤 [submitAttempt] CALLED - Starting submission process');
+    
     this.showConfirmSubmit.set(false);
     this.isSubmitting.set(true);
 
@@ -326,45 +413,64 @@ export class QuizAttemptComponent implements OnInit, OnDestroy {
     const endDate = new Date();
     const total = answers.length;
     const percentage = total > 0 ? Math.round((score / total) * 100) : 0;
+    const finalScore = this.integrityViolation ? 0 : score;
+    const finalPercentage = this.integrityViolation ? 0 : percentage;
+    const finalStatut = this.integrityViolation ? 'ANNULEE' : 'TERMINEE';
     const durationSeconds = Math.floor((endDate.getTime() - this.startTime().getTime()) / 1000);
 
-    console.log('📤 Submitting quiz:', { score, total, percentage, durationSeconds });
+    console.log('📤 Submitting quiz:', {
+      score: finalScore,
+      total,
+      percentage: finalPercentage,
+      durationSeconds,
+      integrityViolation: this.integrityViolation
+    });
 
     // Use forkJoin to wait for all responses to be created
     forkJoin(answerRequests).subscribe({
       next: () => {
         // All responses created successfully, now update session
-        const sessionUpdate = {
+        console.log('📤 All responses submitted, now updating session...');
+        
+        const sessionUpdate: any = {
           dateDebut: this.startTime().toISOString(),
           dateFin: endDate.toISOString(),
-          statut: 'TERMINEE',
-          scoreTotal: score,
-          pourcentage: percentage,
-          tempsPasseSecondes: durationSeconds,
-          qcm: { id: this.quiz().id }
+          statut: finalStatut,
+          scoreTotal: finalScore,
+          pourcentage: finalPercentage,
+          tempsPasseSecondes: durationSeconds
         };
         
+        console.log('📤 Session update payload:', sessionUpdate);
+        
         this.admissionApi.updateSessionTest(this.sessionId(), sessionUpdate).subscribe({
-          next: () => {
+          next: (updateResponse) => {
+            console.log('✅ Session updated successfully:', updateResponse);
             // Session updated, now create result
             const resultCreate = {
-              score,
+              score: finalScore,
               noteSur: total,
-              pourcentage: percentage,
+              pourcentage: finalPercentage,
               datePublicationResultat: new Date().toISOString(),
               session: { id: this.sessionId() }
             };
             
             this.admissionApi.createResultat(resultCreate).subscribe({
               next: () => {
-                console.log('✅ Quiz submitted successfully!', { score, total, percentage });
+                console.log('✅ Quiz submitted successfully!', {
+                  score: finalScore,
+                  total,
+                  percentage: finalPercentage,
+                  integrityViolation: this.integrityViolation
+                });
                 this.destroy$.next();
                 this.destroy$.complete();
                 this.attemptCompleted.emit({
-                  score,
+                  score: finalScore,
                   total,
-                  percentage,
-                  timeTaken: durationSeconds
+                  percentage: finalPercentage,
+                  timeTaken: durationSeconds,
+                  cheatingDetected: this.integrityViolation
                 });
               },
               error: (err) => {
@@ -373,9 +479,14 @@ export class QuizAttemptComponent implements OnInit, OnDestroy {
               }
             });
           },
-          error: (err) => {
+          error: (err: any) => {
             console.error('❌ Error updating session:', err);
+            console.error('❌ Status:', err.status);
+            console.error('❌ Status Text:', err.statusText);
+            console.error('❌ Error Body:', err.error);
+            console.error('❌ Full Error:', JSON.stringify(err, null, 2));
             this.isSubmitting.set(false);
+            alert('Failed to update session: ' + (err.error?.message || err.statusText || 'Unknown error'));
           }
         });
       },
@@ -395,5 +506,6 @@ export class QuizAttemptComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    this.quizIntegrity.cleanup();
   }
 }

@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
+import { AuthService } from '../../core/auth/auth.service';
 import { AdmissionApiService, QcmDto, SessionTestDto, CertificationCheckResponse } from '../../core/services/admission-api.service';
 import { AssessmentSyncService } from '../../core/services/assessment-sync.service';
 import { QuizAttemptComponent } from './components/quiz-attempt-v2.component';
@@ -33,6 +34,7 @@ interface QuizResultData {
   percentage: number;
   timeTaken: number;
   sessionId: number;
+  cheatingDetected: boolean;
 }
 
 @Component({
@@ -47,6 +49,7 @@ export class QcmPage {
   private readonly admissionApi = inject(AdmissionApiService);
   private readonly assessmentSync = inject(AssessmentSyncService);
   private readonly router = inject(Router);
+  private readonly auth = inject(AuthService);
 
   readonly qcms = signal<QcmDto[]>([]);
   readonly quizHistory = signal<QuizHistory[]>([]);
@@ -60,6 +63,7 @@ export class QcmPage {
   readonly userName = signal(this.loadSaved('jie_userName') || '');
   readonly userEmail = signal(this.loadSaved('jie_userEmail') || '');
   readonly showUserPrompt = signal(false);
+  readonly showPreQuizWarning = signal(false);
   private pendingQuiz: QcmDto | null = null;
 
   // Certification state
@@ -68,6 +72,31 @@ export class QcmPage {
   readonly certProgress = signal<{qualifyingQuizzes: number; requiredQuizzes: number; quizScores: any[]} | null>(null);
 
   constructor() {
+    effect(() => {
+      const currentUser = this.auth.currentUser();
+
+      if (!currentUser) {
+        return;
+      }
+
+      const currentEmail = currentUser.email ?? '';
+      const currentName = currentUser.name ?? '';
+
+      if (currentEmail && this.userEmail() !== currentEmail) {
+        this.userEmail.set(currentEmail);
+        this.saveSaved('jie_userEmail', currentEmail);
+      }
+
+      if (currentName && this.userName() !== currentName) {
+        this.userName.set(currentName);
+        this.saveSaved('jie_userName', currentName);
+      }
+
+      if (currentEmail) {
+        this.loadCertProgress();
+      }
+    });
+
     this.loadQcms();
     this.loadHistory();
     this.loadCertProgress();
@@ -168,6 +197,20 @@ export class QcmPage {
   }
 
   private doStartQuiz(quiz: QcmDto): void {
+    // Show integrity warning first
+    this.pendingQuiz = quiz;
+    this.showPreQuizWarning.set(true);
+  }
+
+  /**
+   * Acknowledge pre-quiz warning and proceed with creating session
+   */
+  acknowledgePreQuizWarning(): void {
+    this.showPreQuizWarning.set(false);
+    
+    if (!this.pendingQuiz) return;
+
+    const quiz = this.pendingQuiz;
     const now = new Date();
     const inDuration = new Date(now.getTime() + (quiz.dureeMinutes ?? 30) * 60 * 1000);
 
@@ -199,7 +242,15 @@ export class QcmPage {
       });
   }
 
-  onAttemptCompleted(result: { score: number; total: number; percentage: number; timeTaken: number }): void {
+  /**
+   * Cancel pre-quiz warning and stay on catalog
+   */
+  cancelPreQuizWarning(): void {
+    this.showPreQuizWarning.set(false);
+    this.pendingQuiz = null;
+  }
+
+  onAttemptCompleted(result: { score: number; total: number; percentage: number; timeTaken: number; cheatingDetected: boolean }): void {
     const quiz = this.activeSession()?.quiz;
     if (!quiz) return;
 
@@ -209,11 +260,18 @@ export class QcmPage {
       total: result.total,
       percentage: result.percentage,
       timeTaken: result.timeTaken,
-      sessionId: this.activeSession()!.sessionId
+      sessionId: this.activeSession()!.sessionId,
+      cheatingDetected: result.cheatingDetected
     });
     this.pageMode.set('results');
     this.assessmentSync.notifyRefresh();
     this.loadHistory();
+
+    if (result.cheatingDetected) {
+      this.certificationResult.set(null);
+      this.showCertModal.set(false);
+      return;
+    }
 
     // Check certification eligibility after completing a quiz
     this.checkCertification();

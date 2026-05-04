@@ -1,0 +1,148 @@
+<div class="nb-host relative" (click)="$event.stopPropagation()">
+  <button
+    type="button"
+    class="nb-trigger relative flex h-10 w-10 items-center justify-center rounded-lg text-background/90 transition-colors hover:bg-primary-hover/60 hover:text-background"
+    [class.nb-trigger--loading]="loading()"
+    (click)="toggle($event)"
+    [attr.aria-expanded]="dropdownOpen()"
+    [attr.aria-busy]="loading()"
+    aria-haspopup="true"
+    [attr.aria-label]="'Notifications, ' + unreadCount() + ' unread'"
+  >
+    <span class="sr-only">Open notifications</span>
+    @if (loading()) {
+      <span class="nb-trigger-spinner" aria-hidden="true">
+        <svg class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          />
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          />
+        </svg>
+      </span>
+    } @else {
+      <svg class="nb-bell-icon h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+      </svg>
+    }
+    <!-- Unread count badge (0 when all read). -->
+    <span
+      class="nb-badge absolute -right-0.5 -top-0.5 flex min-h-[1.125rem] min-w-[1.125rem] items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none ring-2 ring-white/90"
+      [class.nb-badge--has-unread]="unreadCount() > 0"
+      [attr.aria-label]="'Unread: ' + unreadCount()"
+    >
+      {{ unreadCount() > 99 ? '99+' : unreadCount() }}
+    </span>
+  </button>
+
+  @if (dropdownOpen()) {
+    <div
+      class="nb-panel absolute right-0 z-[60] mt-2 flex max-h-[min(24rem,70vh)] w-[min(22rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-xl border border-border bg-white text-text shadow-xl"
+      role="dialog"
+      aria-label="Notification list"
+    >
+      <div class="nb-panel-header flex items-center justify-between gap-2 border-b border-border px-3 py-2">
+        <span class="text-sm font-semibold">Notifications</span>
+        <div class="flex shrink-0 flex-wrap items-center justify-end gap-1">
+          <button
+            type="button"
+            class="rounded px-2 py-1 text-xs font-medium text-secondary ring-1 ring-border hover:bg-light"
+            (click)="sendTestDemo($event)"
+            [disabled]="loading() || testBusy()"
+            title="Create a test notification (POST /api/notifications)"
+          >
+            Test
+          </button>
+          <button
+            type="button"
+            class="rounded px-2 py-1 text-xs font-medium text-primary hover:bg-light"
+            (click)="markAll($event)"
+            [disabled]="loading() || items().length === 0 || unreadCount() === 0"
+          >
+            Mark all read
+          </button>
+        </div>
+      </div>
+
+      @if (loading()) {
+        <div class="nb-loading-banner flex items-center justify-center gap-2 px-3 py-8 text-sm text-secondary">
+          <svg class="h-5 w-5 shrink-0 animate-spin text-primary" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            />
+          </svg>
+          <span>Loading…</span>
+        </div>
+      } @else if (error(); as errMsg) {
+        <div class="m-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800">
+          {{ errMsg }}
+          <button type="button" class="mt-2 block w-full rounded bg-red-100 py-1 text-red-900" (click)="load()">
+            Retry
+          </button>
+        </div>
+      } @else if (items().length === 0) {
+        <div class="px-3 py-8 text-center text-sm text-secondary">No notifications yet.</div>
+      } @else {
+        <ul class="nb-list flex-1 overflow-y-auto overscroll-contain p-1">
+          @for (n of items(); track n.id) {
+            <li
+              class="nb-item mb-1 rounded-lg border px-3 py-2.5 transition-colors"
+              [class.nb-item--unread]="!n.read"
+              [class.nb-item--read]="n.read"
+              [class.nb-item--clickable]="!n.read"
+              [attr.title]="!n.read ? 'Click to mark as read' : null"
+              (click)="onRowClick(n, $event)"
+            >
+              <div class="flex min-w-0 flex-col gap-1.5">
+                <div class="flex items-center justify-between gap-2">
+                  <span
+                    class="nb-type-badge shrink-0 rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-800"
+                    [attr.title]="n.type"
+                  >
+                    {{ typeLabel(n.type) }}
+                  </span>
+                  <span
+                    class="nb-read-badge shrink-0 whitespace-nowrap text-[11px] font-semibold"
+                    [class.text-sky-800]="!n.read"
+                    [class.text-secondary]="n.read"
+                  >
+                    {{ readLabel(n.read) }}
+                  </span>
+                </div>
+                @if (showTitleRow(n)) {
+                  <p class="text-sm font-semibold leading-snug text-text">{{ titleForDisplay(n) }}</p>
+                }
+                <p class="line-clamp-3 text-xs leading-relaxed text-secondary">{{ messageForDisplay(n) }}</p>
+                <p class="text-[11px] text-secondary/90">
+                  {{ n.createdAt | date: 'MMM d, y • h:mm a' }}
+                </p>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+
+      <div class="border-t border-border px-2 py-2">
+        <button
+          type="button"
+          class="w-full rounded-lg py-1.5 text-center text-xs font-medium text-primary hover:bg-light"
+          (click)="openFullPage($event)"
+        >
+          Open notifications page
+        </button>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,89 @@
+<div class="mx-auto max-w-7xl px-6 py-8">
+  <header class="mb-8 flex items-start justify-between">
+    <div>
+      <h1 class="font-serif text-5xl font-semibold text-text">Sessions Management</h1>
+      <p class="mt-2 text-secondary">Manage all language learning sessions.</p>
+    </div>
+    <div>
+      <button type="button" class="inline-flex items-center gap-2 bg-primary text-white px-5 py-3 rounded-lg shadow-md hover:bg-primary-hover">
+        <span class="text-xl">+</span> Add Session
+      </button>
+    </div>
+  </header>
+
+  @if (sessions().length > 0) {
+    <div class="grid grid-cols-4 gap-4 mb-6">
+      <div class="p-4 rounded-lg border border-border bg-white">
+        <div class="text-2xl font-semibold text-text">Total Sessions</div>
+        <div class="text-secondary">{{ sessions().length }}</div>
+      </div>
+      <div class="p-4 rounded-lg border border-border bg-white">
+        <div class="text-lg font-medium text-text">Scheduled</div>
+        <div class="text-blue-600">0</div>
+      </div>
+      <div class="p-4 rounded-lg border border-border bg-white">
+        <div class="text-lg font-medium text-text">In Progress</div>
+        <div class="text-green-600">0</div>
+      </div>
+      <div class="p-4 rounded-lg border border-border bg-white">
+        <div class="text-lg font-medium text-text">Completed</div>
+        <div class="text-purple-600">{{ sessions().length }}</div>
+      </div>
+    </div>
+  }
+
+  @if (error()) {
+    <div class="mb-4 p-4 rounded-lg bg-red-50 text-red-800 flex items-center justify-between">
+      <span>{{ error() }}</span>
+      <button type="button" (click)="load()" class="px-3 py-1 rounded bg-red-200 hover:bg-red-300">Retry</button>
+    </div>
+  }
+
+  @if (loading()) {
+    <p class="text-secondary">Loading sessions...</p>
+  }
+
+  @if (!loading() && sessions().length > 0) {
+    <div class="overflow-x-auto rounded-lg border border-border bg-white">
+      <table class="w-full text-left">
+        <thead class="bg-gray-50 border-b border-border">
+          <tr>
+            <th class="px-4 py-3 font-semibold text-text">DATE</th>
+            <th class="px-4 py-3 font-semibold text-text">TYPE</th>
+            <th class="px-4 py-3 font-semibold text-text">COURSE</th>
+            <th class="px-4 py-3 font-semibold text-text">CAPACITY</th>
+            <th class="px-4 py-3 font-semibold text-text">ACCESS / CLASSROOM</th>
+            <th class="px-4 py-3 font-semibold text-text">ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (s of sessions(); track id(s)) {
+            <tr class="border-b border-border hover:bg-gray-50/50">
+              <td class="px-4 py-3">{{ formatDate(s.startDate ?? s.startTime) }}</td>
+              <td class="px-4 py-3">
+                @if (s.type === 'On-site') {
+                  <span class="inline-block px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">On-Site</span>
+                } @else {
+                  <span class="inline-block px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">Online</span>
+                }
+              </td>
+              <td class="px-4 py-3">{{ courseMap()[String(s.courseId)] ?? '-' }}</td>
+              <td class="px-4 py-3">{{ s.capacity ?? s.maxParticipants ?? '-' }}</td>
+              <td class="px-4 py-3">{{ s.classroomId != null ? classroomMap()[String(s.classroomId)] : '-' }}</td>
+              <td class="px-4 py-3 flex gap-2">
+                <button type="button" class="px-3 py-1 rounded border border-primary text-primary text-sm hover:bg-primary/10">Update</button>
+                <button type="button" (click)="deleteSession(s.id)" class="px-3 py-1 rounded border border-red-500 text-red-600 text-sm hover:bg-red-50">Delete</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (!loading() && sessions().length === 0 && !error()) {
+    <div class="p-8 text-center rounded-lg border border-border bg-gray-50">
+      <p class="text-secondary">No sessions yet. Add one to get started.</p>
+    </div>
+  }
+</div>

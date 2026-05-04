@@ -20,7 +20,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const isPublicEventRsvp = req.method === 'POST' &&
     /\/api\/events\/\d+\/registrations(?:\?.*)?$/.test(url);
 
-  if (isPublicEventRead || isPublicEventRsvp) {
+  // Community endpoints are intentionally public for this project flow.
+  // Keep them token-free to avoid 401 caused by stale/invalid bearer tokens.
+  const isPublicCommunityApi = /\/api\/(clubs|clubMessages|comments|memberships|buddyPairs|buddySessions|calendrier|notifications)(?:\/|\?|$)/.test(url);
+
+  if (isPublicEventRead || isPublicEventRsvp || isPublicCommunityApi) {
     return next(req);
   }
   

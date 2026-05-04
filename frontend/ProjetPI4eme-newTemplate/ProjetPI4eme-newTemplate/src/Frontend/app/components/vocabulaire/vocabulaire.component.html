@@ -1,0 +1,150 @@
+<div class="vocabulaire-container">
+  <!-- Header -->
+  <div class="vocabulaire-header">
+    <h1 class="vocabulaire-title">📚 Mon vocabulaire</h1>
+    <p class="vocabulaire-subtitle">Gérez votre vocabulaire appris</p>
+  </div>
+
+  <!-- Messages -->
+  <div *ngIf="errorMessage" class="alert alert-error">
+    <span class="alert-icon">❌</span>
+    <span>{{ errorMessage }}</span>
+    <button (click)="clearMessages()" class="alert-close">×</button>
+  </div>
+
+  <div *ngIf="successMessage" class="alert alert-success">
+    <span class="alert-icon">✅</span>
+    <span>{{ successMessage }}</span>
+    <button (click)="clearMessages()" class="alert-close">×</button>
+  </div>
+
+  <!-- Filtres et recherche -->
+  <div class="filters-section">
+    <div class="search-container">
+      <input 
+        type="text" 
+        [(ngModel)]="searchTerm" 
+        (input)="applyFiltersAndSort()"
+        placeholder="🔍 Rechercher un mot ou une traduction..."
+        class="search-input">
+    </div>
+    
+    <div class="sort-container">
+      <label for="sort-select" class="sort-label">Trier par:</label>
+      <select 
+        id="sort-select"
+        [(ngModel)]="sortBy" 
+        (change)="applyFiltersAndSort()"
+        class="sort-select">
+        <option value="foisVu">Nombre de fois vu</option>
+        <option value="alphabetical">Ordre alphabétique</option>
+        <option value="date">Date du dernier scan</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Statistiques -->
+  <div class="stats-section" *ngIf="!isLoading">
+    <div class="stat-card">
+      <span class="stat-number">{{ vocabulaire.length }}</span>
+      <span class="stat-label">Mots au total</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-number">{{ filteredVocabulaire.length }}</span>
+      <span class="stat-label">Résultats filtrés</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-number">{{ getMotsMaitrises() }}</span>
+      <span class="stat-label">Mots maîtrisés</span>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading-section">
+    <div class="loading-spinner"></div>
+    <p class="loading-text">Chargement du vocabulaire...</p>
+  </div>
+
+  <!-- Liste du vocabulaire -->
+  <div *ngIf="!isLoading && getPaginatedItems().length > 0" class="vocabulaire-list">
+    <div *ngFor="let item of getPaginatedItems()" class="vocabulaire-card">
+      <div class="vocabulaire-header">
+        <div class="word-info">
+          <h3 class="word-english">{{ item.mot }}</h3>
+          <p class="word-french">{{ item.traduction }}</p>
+        </div>
+        <div class="word-actions">
+          <button 
+            (click)="supprimerMot(item.id, item.mot)" 
+            class="btn-delete"
+            title="Supprimer ce mot">
+            🗑️
+          </button>
+        </div>
+      </div>
+      
+      <div class="vocabulaire-details">
+        <div class="detail-item">
+          <span class="detail-icon">👁️</span>
+          <span class="detail-text">Vu {{ item.foisVu }} fois</span>
+        </div>
+        
+        <div class="detail-item">
+          <span class="detail-icon">📅</span>
+          <span class="detail-text">{{ formatDate(item.dateDernierScan) }}</span>
+        </div>
+        
+        <div class="detail-item">
+          <span class="detail-icon">{{ getMasteryLevel(item.foisVu).icon }}</span>
+          <span class="detail-text" [ngClass]="getMasteryLevel(item.foisVu).color">
+            Niveau {{ getMasteryLevel(item.foisVu).level }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- État vide -->
+  <div *ngIf="!isLoading && getPaginatedItems().length === 0" class="empty-state">
+    <div class="empty-content">
+      <span class="empty-icon">📚</span>
+      <h3 class="empty-title">Aucun mot trouvé</h3>
+      <p class="empty-text">
+        {{ searchTerm ? 'Essayez une autre recherche' : 'Commencez à scanner pour construire votre vocabulaire' }}
+      </p>
+      <a routerLink="/scanner" class="btn btn-primary">
+        <span class="btn-icon">📸</span>
+        Commencer à scanner
+      </a>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="!isLoading && totalPages > 1" class="pagination">
+    <button 
+      (click)="changePage(currentPage - 1)"
+      [disabled]="currentPage === 1"
+      class="pagination-btn"
+      title="Page précédente">
+      ←
+    </button>
+    
+    <div class="pagination-pages">
+      <button 
+        *ngFor="let page of getPages()"
+        (click)="changePage(page)"
+        [class.active]="page === currentPage"
+        class="pagination-page">
+        {{ page }}
+      </button>
+    </div>
+    
+    <button 
+      (click)="changePage(currentPage + 1)"
+      [disabled]="currentPage === totalPages"
+      class="pagination-btn"
+      title="Page suivante">
+      →
+    </button>
+  </div>
+</div>

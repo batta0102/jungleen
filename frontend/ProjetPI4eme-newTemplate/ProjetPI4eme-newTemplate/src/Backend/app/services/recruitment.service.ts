@@ -63,6 +63,22 @@ export interface InterviewPayload {
   candidature: { id: number };
 }
 
+export interface CVAnalysisResultDto {
+  score: number;
+  scoreGlobal?: number;
+  experienceScore: number;
+  skillsScore: number;
+  educationScore: number;
+  decision: 'ACCEPT' | 'REJECT' | 'REVIEW';
+  explanation: string[];
+  matchedSkills: string[];
+  missingSkills: string[];
+  resume?: string;
+  pointsForts?: string[];
+  pointsFaibles?: string[];
+  recommandations?: string[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -103,5 +119,9 @@ export class RecruitmentService {
 
   createInterview(payload: InterviewPayload): Observable<InterviewDto> {
     return this.http.post<InterviewDto>('/api/interview/add', payload);
+  }
+
+  analyzeCv(candidatureId: number): Observable<CVAnalysisResultDto> {
+    return this.http.post<CVAnalysisResultDto>(`/api/candidature/${candidatureId}/analyze-cv`, {});
   }
 }

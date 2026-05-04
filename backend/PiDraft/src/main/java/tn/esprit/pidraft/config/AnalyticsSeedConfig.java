@@ -32,9 +32,11 @@ public class AnalyticsSeedConfig {
     private final ResultatRepository resultatRepository;
     private final ReponseDonneeRepository reponseDonneeRepository;
 
-    // @Bean - DISABLED: Lombok setter generation issues (setTitre(), setContenu() not generated)
-    // This is just seed data for analytics - not critical to core functionality
-    CommandLineRunner seedAnalyticsDataDisabled() {
+    // Disabled seed config due to Lombok processing issue
+    // This will be re-enabled after Lombok configuration is fixed
+    /*
+    @Bean
+    CommandLineRunner seedAnalyticsData() {
         return args -> {
             if (resultatRepository.count() > 0 || reponseDonneeRepository.count() > 0) {
                 return;
@@ -113,44 +115,5 @@ public class AnalyticsSeedConfig {
             reponseDonneeRepository.saveAll(reponses);
         };
     }
-
-    private Question createQuestion(QCM qcm, String content) {
-        Question question = new Question();
-        question.setQcm(qcm);
-        question.setContenu(content);
-        return question;
-    }
-
-    private SessionTest createSession(QCM qcm, LocalDateTime start, Double percentage) {
-        SessionTest session = new SessionTest();
-        session.setQcm(qcm);
-        session.setDateDebut(start);
-        session.setDateFin(start.plusMinutes(qcm.getDureeMinutes()));
-        session.setStatut(StatutSession.TERMINEE);
-        session.setScoreTotal((percentage / 100.0) * qcm.getNoteMax());
-        session.setPourcentage(percentage);
-        session.setTempsPasseSecondes(1200L);
-        return session;
-    }
-
-    private Resultat createResultat(SessionTest session, LocalDateTime publicationDate, Double score, Double noteSur, Double percentage) {
-        Resultat resultat = new Resultat();
-        resultat.setSession(session);
-        resultat.setDatePublicationResultat(publicationDate);
-        resultat.setScore(score);
-        resultat.setNoteSur(noteSur);
-        resultat.setPourcentage(percentage);
-        return resultat;
-    }
-
-    private void addResponses(List<ReponseDonnee> target, SessionTest session, Question question, Boolean... correctness) {
-        for (Boolean isCorrect : correctness) {
-            ReponseDonnee response = new ReponseDonnee();
-            response.setSessionTest(session);
-            response.setQuestion(question);
-            response.setEstCorrect(isCorrect);
-            response.setScoreObtenu(Boolean.TRUE.equals(isCorrect) ? 1.0 : 0.0);
-            target.add(response);
-        }
-    }
+    */
 }
