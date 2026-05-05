@@ -1,52 +1,42 @@
 pipeline {
     agent any
-
     tools {
         jdk 'JDK21'
         maven 'Maven3'
     }
-
     stages {
-
         stage('Check Java') {
             steps {
                 sh 'java -version'
             }
         }
-
         stage('Check Maven') {
             steps {
                 sh 'mvn -version'
             }
         }
-
         stage('Check Git') {
             steps {
                 sh 'git --version'
             }
         }
-
         stage('Check Docker') {
             steps {
                 sh 'docker --version || echo "Docker not available"'
             }
         }
-
         stage('Checkout') {
             steps {
                 git branch: 'main',
                     url: 'https://github.com/batta0102/jungleen.git'
             }
         }
-
         stage('List Files') {
             steps {
                 sh 'ls -la'
             }
         }
-
     }
-
     post {
         success {
             echo 'Environment OK !'
