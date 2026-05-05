@@ -1,47 +1,6 @@
 pipeline {
     agent any
     tools {
-        jdk 'JDK21'
-        maven 'Maven3'
-    }
-    stages {
-        stage('Check Java') {
-            steps {
-                sh 'java -version'
-            }
-        }
-        stage('Check Maven') {
-            steps {
-                sh 'mvn -version'
-            }
-        }
-        stage('Check Git') {
-            steps {
-                sh 'git --version'
-            }
-        }
-        stage('Check Docker') {
-            steps {
-                sh 'docker --version || echo "Docker not available"'
-            }
-        }
-        stage('Checkout') {
-            steps {
-                git branch: 'main',
-                    url: 'https://github.com/batta0102/jungleen.git'
-            }
-        }
-        stage('List Files') {
-            steps {
-                sh 'ls -la'
-            }
-        }
-        stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('sonarqube') {
-                    dir('backend/event') {  // Change le chemin du répertoire pour Eventpipeline {
-    agent any
-    tools {
         jdk 'JDK21'  // Assure-toi que 'JDK21' est configuré dans Jenkins
         maven 'Maven3'  // Assure-toi que 'Maven3' est configuré dans Jenkins
     }
@@ -63,12 +22,12 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('sonarQube Server') {  
-                    dir('backend/event') {  
+                    dir('backend/event') {  // Change le répertoire pour ton microservice Event
                         sh '''
-                        mvn sonar:sonar \
-                            -Dsonar.projectKey=event \  
-                            -Dsonar.projectName=event \  // Nom de ton projet dans SonarQube
-                            -Dsonar.sources=src \  // Le répertoire où se trouve ton code source
+                        mvn sonar:sonar 
+                            -Dsonar.projectKey=event  // Clé du projet SonarQube
+                            -Dsonar.projectName=event  // Nom du projet dans SonarQube
+                            -Dsonar.sources=src  // Le répertoire où se trouve ton code source
                             -DskipTests  // Pour ignorer les tests pendant l'analyse
                         '''
                     }
@@ -85,29 +44,6 @@ pipeline {
         }
         always {
             cleanWs()  // Nettoie l'espace de travail à la fin du pipeline
-        }
-    }
-}
-                        sh '''
-                        mvn sonar:sonar \
-                            -Dsonar.projectKey=event \  // Remplace "event_project_key" par la clé de ton projet SonarQube
-                            -Dsonar.projectName=event \  // Change le nom du projet si nécessaire
-                            -DskipTests
-                        '''
-                    }
-                }
-            }
-        }
-    }
-    post {
-        success {
-            echo 'Pipeline OK !'
-        }
-        failure {
-            echo 'Something failed !'
-        }
-        always {
-            cleanWs()
         }
     }
 }
