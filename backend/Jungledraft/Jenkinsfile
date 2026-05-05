@@ -2,16 +2,10 @@ pipeline {
     agent any
 
     stages {
-        stage('Checkout') {
-            steps {
-                git branch: 'main', url: 'https://github.com/batta0102/jungleen.git'
-            }
-        }
-
         stage('Build') {
             steps {
                 dir('backend/Jungledraft') {
-                    sh 'mvn clean compile'
+                    sh '/usr/bin/mvn clean compile'
                 }
             }
         }
@@ -19,7 +13,7 @@ pipeline {
         stage('Test') {
             steps {
                 dir('backend/Jungledraft') {
-                    sh 'mvn test'
+                    sh '/usr/bin/mvn test'
                 }
             }
         }
@@ -27,7 +21,7 @@ pipeline {
         stage('Package') {
             steps {
                 dir('backend/Jungledraft') {
-                    sh 'mvn package'
+                    sh '/usr/bin/mvn package'
                 }
             }
         }
