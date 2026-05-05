@@ -1,17 +1,11 @@
-FROM maven:3.9.9-eclipse-temurin-17 AS build
-WORKDIR /workspace
-
-COPY pom.xml ./
-COPY .mvn .mvn
-COPY mvnw mvnw
-COPY src src
-
-RUN chmod +x mvnw && ./mvnw -q -DskipTests clean package
-
-FROM eclipse-temurin:17-jre
+FROM maven:3.9.9-eclipse-temurin-21 AS build
 WORKDIR /app
-
-COPY --from=build /workspace/target/*.jar /app/app.jar
-
+COPY pom.xml .
+COPY src src
+RUN mvn -q -DskipTests clean package
+ 
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8082
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
