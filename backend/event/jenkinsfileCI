@@ -4,24 +4,46 @@ pipeline {
         jdk 'JDK21'  // Assure-toi que 'JDK21' est configuré dans Jenkins
         maven 'Maven3'  // Assure-toi que 'Maven3' est configuré dans Jenkins
     }
-    environment {
-        SONARQUBE_URL = 'http://localhost:9000'  // URL de ton serveur SonarQube
-        SONARQUBE_CREDENTIALS = credentials('sonar-token')  // Utilise les credentials SonarQube dans Jenkins
-    }
     stages {
+        stage('Check Java') {
+            steps {
+                sh 'java -version'
+            }
+        }
+        stage('Check Maven') {
+            steps {
+                sh 'mvn -version'
+            }
+        }
+        stage('Check Git') {
+            steps {
+                sh 'git --version'
+            }
+        }
+        stage('Check Docker') {
+            steps {
+                sh 'docker --version || echo "Docker not available"'
+            }
+        }
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/batta0102/jungleen.git'  // Cloner ton repo GitHub
+                git branch: 'main',
+                    url: 'https://github.com/batta0102/jungleen.git'
+            }
+        }
+        stage('List Files') {
+            steps {
+                sh 'ls -la'
             }
         }
         stage('Maven Build') {
             steps {
-                sh './mvnw clean install -DskipTests'  // Compiler ton projet sans exécuter les tests
+                sh 'mvn clean install -DskipTests'  // Compiler ton projet sans exécuter les tests
             }
         }
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('sonarQube Server') {  
+                withSonarQubeEnv('sonarQube Server') {  // Utilise le serveur SonarQube configuré dans Jenkins
                     dir('backend/event') {  // Change le répertoire pour ton microservice Event
                         sh '''
                         mvn sonar:sonar 
