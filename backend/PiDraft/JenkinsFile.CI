@@ -36,10 +36,24 @@ pipeline {
                 sh 'ls -la'
             }
         }
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('sonarqube') {
+                    dir('backend/PiDraft') {
+                        sh '''
+                        mvn sonar:sonar \
+                            -Dsonar.projectKey=PiDraft \
+                            -Dsonar.projectName=PiDraft \
+                            -DskipTests
+                        '''
+                    }
+                }
+            }
+        }
     }
     post {
         success {
-            echo 'Environment OK !'
+            echo 'Pipeline OK !'
         }
         failure {
             echo 'Something failed !'
