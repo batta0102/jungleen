@@ -38,13 +38,15 @@ pipeline {
         }
         stage('Maven Build') {
             steps {
-                sh 'mvn clean install -DskipTests'  // Compiler ton projet sans exécuter les tests
+                dir('backend/event') {  // Assure-toi que tu es dans le bon répertoire
+                    sh 'mvn clean install -DskipTests'  // Exécute Maven dans le répertoire backend/event
+                }
             }
         }
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('sonarQube Server') {  // Utilise le serveur SonarQube configuré dans Jenkins
-                    dir('backend/event') {  // Change le répertoire pour ton microservice Event
+                withSonarQubeEnv('sonarQube Server') {
+                    dir('backend/event') {  // Utilise le même répertoire pour l'analyse
                         sh '''
                         mvn sonar:sonar 
                             -Dsonar.projectKey=event  // Clé du projet SonarQube
