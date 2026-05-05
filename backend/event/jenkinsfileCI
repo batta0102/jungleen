@@ -36,10 +36,72 @@ pipeline {
                 sh 'ls -la'
             }
         }
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('sonarqube') {
+                    dir('backend/event') {  // Change le chemin du répertoire pour Eventpipeline {
+    agent any
+    tools {
+        jdk 'JDK21'  // Assure-toi que 'JDK21' est configuré dans Jenkins
+        maven 'Maven3'  // Assure-toi que 'Maven3' est configuré dans Jenkins
+    }
+    environment {
+        SONARQUBE_URL = 'http://localhost:9000'  // URL de ton serveur SonarQube
+        SONARQUBE_CREDENTIALS = credentials('sonar-token')  // Utilise les credentials SonarQube dans Jenkins
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/batta0102/jungleen.git'  // Cloner ton repo GitHub
+            }
+        }
+        stage('Maven Build') {
+            steps {
+                sh './mvnw clean install -DskipTests'  // Compiler ton projet sans exécuter les tests
+            }
+        }
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('sonarQube Server') {  
+                    dir('backend/event') {  
+                        sh '''
+                        mvn sonar:sonar \
+                            -Dsonar.projectKey=event \  
+                            -Dsonar.projectName=event \  // Nom de ton projet dans SonarQube
+                            -Dsonar.sources=src \  // Le répertoire où se trouve ton code source
+                            -DskipTests  // Pour ignorer les tests pendant l'analyse
+                        '''
+                    }
+                }
+            }
+        }
     }
     post {
         success {
-            echo 'Environment OK !'
+            echo 'Pipeline exécuté avec succès et analyse SonarQube réussie !'
+        }
+        failure {
+            echo 'Une erreur s\'est produite pendant l\'exécution du pipeline ou l\'analyse SonarQube.'
+        }
+        always {
+            cleanWs()  // Nettoie l'espace de travail à la fin du pipeline
+        }
+    }
+}
+                        sh '''
+                        mvn sonar:sonar \
+                            -Dsonar.projectKey=event \  // Remplace "event_project_key" par la clé de ton projet SonarQube
+                            -Dsonar.projectName=event \  // Change le nom du projet si nécessaire
+                            -DskipTests
+                        '''
+                    }
+                }
+            }
+        }
+    }
+    post {
+        success {
+            echo 'Pipeline OK !'
         }
         failure {
             echo 'Something failed !'
