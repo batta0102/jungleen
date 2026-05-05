@@ -1,0 +1,35 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/batta0102/jungleen.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                dir('backend/Jungledraft') {
+                    sh 'mvn clean compile'
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                dir('backend/Jungledraft') {
+                    sh 'mvn test'
+                }
+            }
+        }
+
+        stage('Package') {
+            steps {
+                dir('backend/Jungledraft') {
+                    sh 'mvn package'
+                }
+            }
+        }
+    }
+}
