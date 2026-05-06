@@ -16,6 +16,24 @@ pipeline {
             }
         }
 
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                        dir('frontend/ProjetPI4eme-newTemplate/ProjetPI4eme-newTemplate') {
+                            sh '''
+                            npx sonar-scanner \
+                              -Dsonar.projectKey=frontend \
+                              -Dsonar.sources=. \
+                              -Dsonar.host.url=http://192.168.136.153:9000 \
+                              -Dsonar.login=$SONAR_TOKEN
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 dir('frontend/ProjetPI4eme-newTemplate/ProjetPI4eme-newTemplate') {
