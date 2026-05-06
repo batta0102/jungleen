@@ -20,6 +20,19 @@ pipeline {
             }
         }
 
+        stage('SonarQube Analysis') {
+            steps {
+                dir('backend/Jungledraft') {
+                    sh '''
+                    /usr/bin/mvn sonar:sonar \
+                    -Dsonar.projectKey=jungledraft \
+                    -Dsonar.host.url=http://192.168.136.153:9000 \
+                    -Dsonar.login=515afff06b1356acb6557ad4cc752dfdeb3920d8
+                    '''
+                }
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 dir('backend/Jungledraft') {
