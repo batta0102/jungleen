@@ -6,7 +6,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -23,19 +24,17 @@ public class OcrService {
     private String tessdataDir;
 
     public String extraireTexte(MultipartFile photo) throws Exception {
-        // Sauvegarder l'image temporairement
+
         Path tempImage = Files.createTempFile("ocr_", ".png");
         photo.transferTo(tempImage.toFile());
 
-        // Fichier de sortie
         Path tempOutput = Files.createTempFile("ocr_output_", "");
         String outputBase = tempOutput.toString().replace(".txt", "");
 
         log.info("📸 Analyse de l'image: {}", photo.getOriginalFilename());
 
-        // Exécuter Tesseract en ligne de commande
         ProcessBuilder pb = new ProcessBuilder(
-            resolveTesseractExecutable(),
+                resolveTesseractExecutable(),
                 tempImage.toString(),
                 outputBase,
                 "-l", "eng+fra"
@@ -50,18 +49,29 @@ public class OcrService {
         int exitCode = process.waitFor();
 
         String texte = "";
+
         if (exitCode == 0) {
             File outputFile = new File(outputBase + ".txt");
+
             if (outputFile.exists()) {
                 texte = Files.readString(outputFile.toPath()).trim();
-                outputFile.delete();
+
+                try {
+                    Files.deleteIfExists(outputFile.toPath());
+                } catch (IOException e) {
+                    log.error("❌ Erreur suppression fichier OCR: {}", outputFile.getAbsolutePath(), e);
+                }
+
                 log.info("📝 Texte extrait: {}", texte);
             }
         }
 
-        // Nettoyer
-        Files.deleteIfExists(tempImage);
-        Files.deleteIfExists(Path.of(outputBase + ".txt"));
+        try {
+            Files.deleteIfExists(tempImage);
+            Files.deleteIfExists(Path.of(outputBase + ".txt"));
+        } catch (IOException e) {
+            log.error("❌ Erreur nettoyage fichiers temporaires", e);
+        }
 
         return texte.isEmpty() ? "Aucun texte détecté" : texte;
     }
@@ -85,7 +95,7 @@ public class OcrService {
 
         throw new IllegalStateException(
                 "Tesseract n'est pas installé ou n'est pas accessible. " +
-                "Définissez app.ocr.tesseract-executable ou installez Tesseract OCR."
+                        "Définissez app.ocr.tesseract-executable ou installez Tesseract OCR."
         );
     }
 }
