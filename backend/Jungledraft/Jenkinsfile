@@ -6,7 +6,7 @@ pipeline {
     }
 
     environment {
-        IMAGE_NAME = "nouhasd/jungledraft"
+        IMAGE_NAME = "nouhasd/jungledraft:latest"
     }
 
     stages {
@@ -29,20 +29,23 @@ pipeline {
             }
         }
 
-      stage('Deploy to Nexus') {
-    steps {
-        configFileProvider([
-            configFile(
-                fileId: '7441f397-a3e6-4940-893e-6a097a26370e',
-                variable: 'MAVEN_SETTINGS'
-            )
-        ]) {
-            dir('backend/Jungledraft') {
-                sh '/usr/bin/mvn deploy -s $MAVEN_SETTINGS -DskipTests'
+        stage('Deploy to Nexus') {
+            steps {
+                configFileProvider([configFile(fileId: 'nexus', variable: 'MAVEN_SETTINGS')]) {
+                    dir('backend/Jungledraft') {
+                        sh '/usr/bin/mvn deploy -s $MAVEN_SETTINGS -DskipTests'
+                    }
+                }
             }
         }
-    }
-}
+
+        stage('Build Docker Image') {
+            steps {
+                dir('backend/Jungledraft') {
+                    sh 'docker build -t $IMAGE_NAME .'
+                }
+            }
+        }
 
         stage('Push to DockerHub') {
             steps {
