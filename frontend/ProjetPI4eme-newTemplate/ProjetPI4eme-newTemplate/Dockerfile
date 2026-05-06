@@ -18,7 +18,7 @@ RUN npm run build
 FROM nginx:alpine
 
 # Copier build Angular vers nginx
-COPY --from=build /app/dist/jungle-in-english /usr/share/nginx/html
+COPY --from=build /app/dist /usr/share/nginx/html
 
 # Exposer port
 EXPOSE 80
