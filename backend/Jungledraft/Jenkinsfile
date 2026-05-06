@@ -5,29 +5,47 @@ pipeline {
         jdk 'JDK17'
     }
 
+    environment {
+        IMAGE_NAME = "nouhasd/jungledraft"
+    }
+
     stages {
-        stage('Build') {
+
+        stage('Build JAR') {
             steps {
                 dir('backend/Jungledraft') {
                     sh 'java -version'
-                    sh '/usr/bin/mvn clean compile'
+                    sh '/usr/bin/mvn clean package -DskipTests'
                 }
             }
         }
 
-        stage('Test') {
+        stage('Build Docker Image') {
             steps {
                 dir('backend/Jungledraft') {
-                    sh '/usr/bin/mvn test'
+                    sh 'docker build -t $IMAGE_NAME .'
                 }
             }
         }
 
-        stage('Package') {
+        stage('Push to DockerHub') {
             steps {
-                dir('backend/Jungledraft') {
-                    sh '/usr/bin/mvn package'
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub',
+                    usernameVariable: 'USER',
+                    passwordVariable: 'PASS'
+                )]) {
+                    sh 'echo $PASS | docker login -u $USER --password-stdin'
+                    sh 'docker push $IMAGE_NAME'
                 }
+            }
+        }
+
+        stage('Run Container') {
+            steps {
+                sh 'docker stop jungledraft || true'
+                sh 'docker rm jungledraft || true'
+                sh 'docker run -d -p 9090:9090 --name jungledraft $IMAGE_NAME'
             }
         }
     }
