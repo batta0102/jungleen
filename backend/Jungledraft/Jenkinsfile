@@ -66,12 +66,13 @@ pipeline {
         }
 
         stage('Deploy to Kubernetes') {
-            steps {
-                dir('backend/Jungledraft') {
-                    sh 'kubectl apply -f k8s-backend.yaml'
-                    sh 'kubectl rollout restart deployment jungledraft-backend'
-                }
-            }
+    steps {
+        dir('backend/Jungledraft') {
+            sh 'export KUBECONFIG=/var/snap/jenkins/common/.kube/config'
+            sh 'kubectl apply -f k8s-backend.yaml --validate=false'
+            sh 'kubectl rollout restart deployment jungledraft-backend'
         }
+    }
+}
     }
 }
