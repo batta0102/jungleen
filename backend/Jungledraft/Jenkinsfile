@@ -65,11 +65,10 @@ pipeline {
             }
         }
 
-        stage('Run Container') {
+        stage('Deploy to Kubernetes') {
             steps {
-                sh 'docker stop jungledraft || true'
-                sh 'docker rm jungledraft || true'
-                sh 'docker run -d -p 9090:9090 --name jungledraft $IMAGE_NAME'
+                sh 'kubectl apply -f k8s-backend.yaml'
+                sh 'kubectl rollout restart deployment jungledraft-backend'
             }
         }
     }
