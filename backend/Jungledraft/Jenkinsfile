@@ -67,10 +67,10 @@ pipeline {
 
         // ✅ CORRECTION ICI
         stage('Deploy to Kubernetes') {
-            steps {
-                sh 'kubectl apply -f k8s-backend.yaml'
-                sh 'kubectl rollout restart deployment jungledraft-backend'
-            }
-        }
+    steps {
+        sh 'kubectl apply -f ../k8s-backend.yaml'
+        sh 'kubectl rollout restart deployment jungledraft-backend'
+    }
+}
     }
 }
