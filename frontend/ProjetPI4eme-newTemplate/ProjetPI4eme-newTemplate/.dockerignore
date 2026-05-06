@@ -1,0 +1,4 @@
+.kube
+node_modules
+.git
+.gitignore
