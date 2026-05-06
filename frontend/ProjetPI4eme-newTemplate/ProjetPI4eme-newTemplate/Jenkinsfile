@@ -55,16 +55,5 @@ pipeline {
             }
         }
 
-        stage('Deploy to Kubernetes') {
-            steps {
-                dir('frontend/ProjetPI4eme-newTemplate/ProjetPI4eme-newTemplate') {
-                    sh '''
-                    export KUBECONFIG=/var/snap/jenkins/common/.kube/config
-                    kubectl apply -f k8s-frontend.yaml --validate=false
-                    kubectl rollout restart deployment jungledraft-frontend
-                    '''
-                }
-            }
-        }
     }
 }
