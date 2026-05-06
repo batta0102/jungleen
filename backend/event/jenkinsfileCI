@@ -1,8 +1,8 @@
 pipeline {
     agent any
     tools {
-        jdk 'JDK21'  // Assure-toi que 'JDK21' est configuré dans Jenkins
-        maven 'Maven3'  // Assure-toi que 'Maven3' est configuré dans Jenkins
+        jdk 'JDK21'
+        maven 'Maven3'
     }
     stages {
         stage('Check Java') {
@@ -38,21 +38,36 @@ pipeline {
         }
         stage('Maven Build') {
             steps {
-                dir('backend/event') {  // Assure-toi que tu es dans le bon répertoire
-                    sh 'mvn clean install -DskipTests'  // Exécute Maven dans le répertoire backend/event
+                dir('backend/event') {
+                    sh 'mvn clean install -DskipTests'
+                }
+            }
+        }
+        stage('Maven Test') {
+            steps {
+                dir('backend/event') {
+                    sh 'mvn test'
+                }
+            }
+            post {
+                always {
+                    junit allowEmptyResults: true,
+                          testResults: 'backend/event/target/surefire-reports/*.xml'
                 }
             }
         }
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('sonarQube Server') {
-                    dir('backend/event') {  // Utilise le même répertoire pour l'analyse
+                    dir('backend/event') {
                         sh '''
-                        mvn sonar:sonar 
-                            -Dsonar.projectKey=event  // Clé du projet SonarQube
-                            -Dsonar.projectName=event  // Nom du projet dans SonarQube
-                            -Dsonar.sources=src  // Le répertoire où se trouve ton code source
-                            -DskipTests  // Pour ignorer les tests pendant l'analyse
+                            mvn sonar:sonar \
+                                -Dsonar.projectKey=event \
+                                -Dsonar.projectName=event \
+                                -Dsonar.sources=src/main/java \
+                                -Dsonar.tests=src/test/java \
+                                -Dsonar.java.binaries=target/classes \
+                                -Dsonar.host.url=http://host.docker.internal:9000
                         '''
                     }
                 }
@@ -61,13 +76,13 @@ pipeline {
     }
     post {
         success {
-            echo 'Pipeline exécuté avec succès et analyse SonarQube réussie !'
+            echo 'Pipeline exécuté avec succès !'
         }
         failure {
-            echo 'Une erreur s\'est produite pendant l\'exécution du pipeline ou l\'analyse SonarQube.'
+            echo 'Une erreur est survenue pendant le pipeline.'
         }
         always {
-            cleanWs()  // Nettoie l'espace de travail à la fin du pipeline
+            cleanWs()
         }
     }
 }
