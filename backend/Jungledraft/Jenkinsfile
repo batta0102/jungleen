@@ -3,6 +3,7 @@ pipeline {
 
     tools {
         jdk 'JDK17'
+        maven 'Maven3'
     }
 
     environment {
@@ -14,8 +15,7 @@ pipeline {
         stage('Build JAR') {
             steps {
                 dir('backend/Jungledraft') {
-                    sh 'java -version'
-                    sh '/usr/bin/mvn clean package -DskipTests'
+                    sh 'mvn clean package -DskipTests'
                 }
             }
         }
@@ -24,10 +24,26 @@ pipeline {
             steps {
                 withSonarQubeEnv('SonarQube') {
                     dir('backend/Jungledraft') {
-                        sh '''
-                        /usr/bin/mvn sonar:sonar \
-                        -Dsonar.projectKey=jungledraft
-                        '''
+                        sh 'mvn sonar:sonar -Dsonar.projectKey=jungledraft'
+                    }
+                }
+            }
+        }
+
+        // 🔥 ETAPE NEXUS (AJOUTÉE)
+        stage('Deploy to Nexus') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'nexus',
+                    usernameVariable: 'NEXUS_USER',
+                    passwordVariable: 'NEXUS_PASS'
+                )]) {
+                    dir('backend/Jungledraft') {
+                        sh """
+                        mvn deploy -DskipTests \
+                        -Dnexus.username=$NEXUS_USER \
+                        -Dnexus.password=$NEXUS_PASS
+                        """
                     }
                 }
             }
