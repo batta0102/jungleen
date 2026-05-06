@@ -24,7 +24,10 @@ pipeline {
             steps {
                 withSonarQubeEnv('SonarQube') {
                     dir('backend/Jungledraft') {
-                        sh '/usr/bin/mvn sonar:sonar'
+                        sh '''
+                        /usr/bin/mvn sonar:sonar \
+                        -Dsonar.projectKey=jungledraft
+                        '''
                     }
                 }
             }
