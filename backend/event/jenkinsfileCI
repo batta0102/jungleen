@@ -73,6 +73,17 @@ pipeline {
                 }
             }
         }
+        stage('Deploy to Nexus') {
+            steps {
+                dir('backend/event') {
+                    sh '''
+                        mvn deploy \
+                            -DskipTests \
+                            -DaltDeploymentRepository=nexus::default::http://172.17.0.1:8081/repository/maven-snapshots/
+                    '''
+                }
+            }
+        }
     }
     post {
         success {
