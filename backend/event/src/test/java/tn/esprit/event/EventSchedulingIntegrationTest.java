@@ -27,8 +27,8 @@ import tn.esprit.event.web.dto.ScheduleOptimizationRequest;
 import tn.esprit.event.web.exception.BadRequestException;
 
 @SpringBootTest
-@Import(TestSecurityConfig.class)
 @Transactional
+@Import(MockJwtDecoderConfig.class)
 class EventSchedulingIntegrationTest {
 
     @Autowired

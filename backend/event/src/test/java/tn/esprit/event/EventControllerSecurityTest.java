@@ -9,35 +9,45 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.web.servlet.SecurityFilterAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.web.servlet.ServletWebSecurityAutoConfiguration;
+import org.springframework.boot.security.oauth2.server.resource.autoconfigure.servlet.OAuth2ResourceServerAutoConfiguration;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import tn.esprit.event.config.SecurityConfig;
 import tn.esprit.event.model.OnlineEvent;
 import tn.esprit.event.service.EventSchedulingService;
 import tn.esprit.event.service.EventService;
 import tn.esprit.event.web.EventController;
-import tn.esprit.event.web.dto.OptimizedEventDto;
 
 @WebMvcTest(EventController.class)
-@Import(SecurityConfig.class)
+@Import({SecurityConfig.class, MockJwtDecoderConfig.class})
+@ImportAutoConfiguration({
+        SecurityAutoConfiguration.class,
+        SecurityFilterAutoConfiguration.class,
+        ServletWebSecurityAutoConfiguration.class
+})
+// ✅ Désactiver l'auto-config OAuth2 qui nécessite HttpSecurity
+@EnableAutoConfiguration(exclude = {
+        OAuth2ResourceServerAutoConfiguration.class
+})
 class EventControllerSecurityTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private EventService eventService;
 
-    @MockBean
+    @MockitoBean
     private EventSchedulingService schedulingService;
-
-    @MockBean
-    private JwtDecoder jwtDecoder;
 
     @Test
     void createOnlineEvent_shouldRejectStudentRole() throws Exception {
