@@ -4,36 +4,29 @@ pipeline {
         jdk 'JDK21'
         maven 'Maven3'
     }
+
+    environment {
+        DOCKER_IMAGE_BACKEND = 'bayakhouini/event-backend'
+        DOCKER_TAG = "${BUILD_NUMBER}"
+    }
+
     stages {
         stage('Check Java') {
-            steps {
-                sh 'java -version'
-            }
+            steps { sh 'java -version' }
         }
         stage('Check Maven') {
-            steps {
-                sh 'mvn -version'
-            }
+            steps { sh 'mvn -version' }
         }
         stage('Check Git') {
-            steps {
-                sh 'git --version'
-            }
+            steps { sh 'git --version' }
         }
         stage('Check Docker') {
-            steps {
-                sh 'docker --version || echo "Docker not available"'
-            }
+            steps { sh 'docker --version' }
         }
         stage('Checkout') {
             steps {
                 git branch: 'main',
                     url: 'https://github.com/batta0102/jungleen.git'
-            }
-        }
-        stage('List Files') {
-            steps {
-                sh 'ls -la'
             }
         }
         stage('Maven Build') {
@@ -84,16 +77,36 @@ pipeline {
                 }
             }
         }
+        stage('Build Docker Image') {
+            steps {
+                sh "docker build -t ${DOCKER_IMAGE_BACKEND}:${DOCKER_TAG} ./backend/event"
+                sh "docker tag ${DOCKER_IMAGE_BACKEND}:${DOCKER_TAG} ${DOCKER_IMAGE_BACKEND}:latest"
+            }
+        }
+        stage('Push Docker Image') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                    sh "docker push ${DOCKER_IMAGE_BACKEND}:${DOCKER_TAG}"
+                    sh "docker push ${DOCKER_IMAGE_BACKEND}:latest"
+                }
+            }
+        }
     }
     post {
         success {
-            echo 'Pipeline exécuté avec succès !'
+            echo 'Pipeline executed successfully!'
         }
         failure {
-            echo 'Une erreur est survenue pendant le pipeline.'
+            echo 'An error occurred during the pipeline.'
         }
         always {
             cleanWs()
+            sh 'docker logout || true'
         }
     }
 }
