@@ -67,7 +67,7 @@ pipeline {
                                 -Dsonar.sources=src/main/java \
                                 -Dsonar.tests=src/test/java \
                                 -Dsonar.java.binaries=target/classes \
-                                -Dsonar.host.url=http://host.docker.internal:9000
+                                -Dsonar.host.url=http://172.17.0.1:9000
                         '''
                     }
                 }
