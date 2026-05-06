@@ -29,19 +29,12 @@ pipeline {
             }
         }
 
+        // ✅ CORRECTION NEXUS (avec settings.xml Jenkins)
         stage('Deploy to Nexus') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'nexus',
-                    usernameVariable: 'NEXUS_USER',
-                    passwordVariable: 'NEXUS_PASS'
-                )]) {
+                configFileProvider([configFile(fileId: 'nexus-settings', variable: 'MAVEN_SETTINGS')]) {
                     dir('backend/Jungledraft') {
-                        sh '''
-                        /usr/bin/mvn deploy -DskipTests \
-                        -Dnexus.username=$NEXUS_USER \
-                        -Dnexus.password=$NEXUS_PASS
-                        '''
+                        sh '/usr/bin/mvn deploy -s $MAVEN_SETTINGS -DskipTests'
                     }
                 }
             }
