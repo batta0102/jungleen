@@ -72,8 +72,18 @@
             <version>1.18.32</version>
             <scope>provided</scope> <!-- Lombok is only needed during compile time -->
         </dependency>
-
-        <!-- Database dependencies -->
+             
+        <dependency>
+         <groupId>org.springframework.boot</groupId>
+         <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+         
+        <dependency>
+         <groupId>io.micrometer</groupId>
+         <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+        
+         <!-- Database dependencies -->
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
