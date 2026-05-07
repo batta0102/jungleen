@@ -19,6 +19,7 @@ ng serve --proxy-config proxy.conf.json
 Each backend service has its own Maven wrapper and Spring Boot entry point under `backend/`.
 amal test
 amal test2
+amal val
 
 ## Additional Resources
 
