@@ -37,4 +37,4 @@ export class NavbarComponent {
   }
 
   // English-only UI (no i18n layer).
-}
+} 

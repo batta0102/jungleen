@@ -140,5 +140,10 @@ export const FRONT_ROUTES: Routes = [
 		path: 'profile/admin',
 		title: 'Admin Space | Jungle in English',
 		loadComponent: () => import('./pages/profile/profile-admin.page').then((m) => m.ProfileAdminPage)
+	},
+	{
+		path: 'profile-assessment',
+		title: 'Learning Profile Assessment | Jungle in English',
+		loadComponent: () => import('./pages/profile/learning-profile-form.component').then((m) => m.LearningProfileFormComponent)
 	}
 ];
